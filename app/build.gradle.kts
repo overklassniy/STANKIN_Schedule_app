@@ -1,11 +1,11 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -22,26 +22,37 @@ android {
 
     defaultConfig {
 
-        applicationId = "com.vereshchagin.nikolay.stankinschedule"
+        applicationId = "com.overklassniy.stankinschedule"
 
         minSdk = appMinSdkVersion
         targetSdk = appTargetSdkVersion
         versionCode = appVersionCode
         versionName = appVersionName
 
-        setProperty("archivesBaseName", "stankin-schedule_v$versionName($versionCode)")
+        // setProperty("archivesBaseName", "stankin-schedule_v$versionName($versionCode)")
 
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
+        
+        // Opt-in to annotation defaults for Kotlin 2.x
         javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += mapOf(
-                    "room.schemaLocation" to "$projectDir/schemas",
-                    "room.incremental" to "true",
-                    "room.expandProjection" to "true"
-                )
-            }
+             annotationProcessorOptions {
+                 arguments["room.schemaLocation"] = "$projectDir/schemas"
+                 arguments["room.incremental"] = "true"
+                 arguments["room.expandProjection"] = "true"
+             }
+        }
+        
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+            arg("room.incremental", "true")
+            arg("room.expandProjection", "true")
+        }
+    }
+
+    kotlin {
+        compilerOptions {
+            freeCompilerArgs.add("-Xannotation-default-target=param-property")
         }
     }
 
@@ -71,22 +82,17 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-    }
+    // kotlinOptions removed - handled by AGP 9 or tasks.withType<KotlinCompile> in root
 
     buildFeatures {
         dataBinding = true
         viewBinding = true
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+        buildConfig = true
     }
 
     packaging {
@@ -97,12 +103,7 @@ android {
             )
         )
     }
-    namespace = "com.vereshchagin.nikolay.stankinschedule"
-}
-
-// Allow references to generated code
-kapt {
-    correctErrorTypes = true
+    namespace = "com.overklassniy.stankinschedule"
 }
 
 dependencies {
@@ -155,7 +156,7 @@ dependencies {
     implementation(libs.compose.activity)
     implementation(libs.compose.coil)
 
-    implementation(libs.accompanist.navigation)
+    implementation("androidx.compose.material:material-navigation:1.7.6")
 
     // Components
     implementation(libs.androidx.lifecycle.viewmodel)
@@ -177,15 +178,15 @@ dependencies {
 
     // Room DB
     implementation(libs.bundles.room)
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
 
     // Worker
     implementation(libs.work.runtime)
     implementation(libs.work.hilt)
-    kapt(libs.work.hiltCompiler)
+    ksp(libs.work.hiltCompiler)
 
     // DI
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 }

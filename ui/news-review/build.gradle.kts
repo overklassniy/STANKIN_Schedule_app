@@ -1,9 +1,10 @@
 plugins {
+    alias(libs.plugins.compose.compiler)
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    // id("org.jetbrains.kotlin.android")
 
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -15,7 +16,7 @@ android {
 
     defaultConfig {
         minSdk = appMinSdkVersion
-        targetSdk = appTargetSdkVersion
+
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
@@ -32,15 +33,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 
@@ -48,13 +46,10 @@ android {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 
-    namespace = "com.vereshchagin.nikolay.stankinschedule.news.review.ui"
+    namespace = "com.overklassniy.stankinschedule.news.review.ui"
 }
 
 // Allow references to generated code
-kapt {
-    correctErrorTypes = true
-}
 
 hilt {
     enableAggregatingTask = true
@@ -78,9 +73,9 @@ dependencies {
 
     // Room DB
     implementation(libs.bundles.room)
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
 
     // DI
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 }

@@ -10,7 +10,7 @@
     android:updatePeriodMillis="7200000"
 
     android:description="@string/widget_schedule_description"
-    android:configure="com.vereshchagin.nikolay.stankinschedule.schedule.widget.ui.configure.ScheduleWidgetConfigureActivity"
+    android:configure="com.overklassniy.stankinschedule.schedule.widget.ui.configure.ScheduleWidgetConfigureActivity"
     android:initialLayout="@layout/widget_schedule"
     android:previewLayout="@layout/widget_schedule"
     android:previewImage="@drawable/widget_schedule_preview"

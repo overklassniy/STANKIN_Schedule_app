@@ -1,22 +1,23 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    // id("org.jetbrains.kotlin.android")
 
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
 }
 
 android {
+    buildFeatures { buildConfig = true }
     val appCompileSdkVersion: Int by rootProject.extra
     val appMinSdkVersion: Int by rootProject.extra
     val appTargetSdkVersion: Int by rootProject.extra
 
     compileSdk = appCompileSdkVersion
-    namespace = "com.vereshchagin.nikolay.stankinschedule.schedule.repository.domain"
+    namespace = "com.overklassniy.stankinschedule.schedule.repository.domain"
 
     defaultConfig {
         minSdk = appMinSdkVersion
-        targetSdk = appTargetSdkVersion
+
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -32,15 +33,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
-
-kapt { correctErrorTypes = true }
 hilt { enableAggregatingTask = true }
 
 dependencies {
@@ -52,5 +48,5 @@ dependencies {
 
     // DI
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 }

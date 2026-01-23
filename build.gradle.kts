@@ -1,12 +1,12 @@
 // Top-level build file where you can add configuration options common to all subprojects/modules.
 
 ext {
-    extra["appCompileSdkVersion"] = 34
-    extra["appMinSdkVersion"] = 23
-    extra["appTargetSdkVersion"] = 34
-    extra["appVersionCode"] = 123
-    extra["appVersionName"] = "2.1.3"
-    extra["appBuildToolsVersion"] = "34.0.0"
+    extra["appCompileSdkVersion"] = 35
+    extra["appMinSdkVersion"] = 26
+    extra["appTargetSdkVersion"] = 35
+    extra["appVersionCode"] = 125
+    extra["appVersionName"] = "2.3.0"
+    extra["appBuildToolsVersion"] = "36.0.0"
 }
 
 buildscript {
@@ -31,7 +31,8 @@ buildscript {
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.android.kotlin) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.compose.compiler) apply false
 }
 
 allprojects {
@@ -46,11 +47,25 @@ allprojects {
 
 subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        }
+    }
 
+    plugins.withType<org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper> {
+        extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension> {
+            jvmToolchain(21)
+        }
+    }
+
+    tasks.withType<JavaCompile> {
+        val javaToolchains = project.extensions.getByType<JavaToolchainService>()
+        javaCompiler.set(javaToolchains.compilerFor {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        })
     }
 }
 
 tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory)
 }

@@ -1,73 +1,76 @@
 [versions]
 # Main
-kotlin = "1.8.22"
-coroutines = "1.7.3"
-agp = "8.1.1"
-core = "1.12.0"
-ksp = "1.8.10-1.0.9"
+kotlin = "2.1.0"
+coroutines = "1.10.1"
+agp = "9.0.0"
+core = "1.15.0"
+ksp = "2.1.0-1.0.29"
 
 # Compose
-compose = "2023.08.00"
-compose-compiler = "1.4.8"
+compose = "2025.01.00"
+compose-compiler = "1.4.8" # Ignored in Kotlin 2.0+ usually, but kept for reference or legacy
+# Note: Kotlin 2.0+ uses the Compose Compiler Gradle plugin
 
-accompanist = "0.31.6-rc"
-coil = "2.4.0"
-navigation = "2.6.0"
-material3 = "1.1.1"
+accompanist = "0.36.0"
+coil = "2.7.0"
+navigation = "2.8.5"
+material3 = "1.3.1"
 
 # App components
-activity = "1.7.2"
-activity-compose = "1.7.2"
-paging = "3.2.1"
-paging-compose = "3.2.1"
+activity = "1.10.1"
+activity-compose = "1.10.1"
+paging = "3.3.0"
+paging-compose = "3.3.0"
 
-appcompat = "1.6.1"
-fragment = "1.6.1"
-glance = "1.0.0-alpha05"
-lifecycle = "2.6.2"
-material = "1.9.0"
+appcompat = "1.7.0"
+fragment = "1.8.1"
+glance = "1.1.0"
+lifecycle = "2.8.7"
+material = "1.12.0"
 preference = "1.2.1"
 security = "1.1.0-alpha06"
 swiperefreshlayout = "1.1.0"
-webkit = "1.8.0"
-datastore = "1.0.0"
-startup = "1.1.1"
+webkit = "1.12.1"
+datastore = "1.1.1"
+startup = "1.2.0"
 splashscreen = "1.0.1"
 
 # Integration
-browser = "1.6.0"
-coreGooglePlay = "1.8.1"
-googleServices = "4.3.15"
+browser = "1.8.0"
+coreGooglePlay = "2.0.1"
+googleServices = "4.4.2"
 inAppUpdate = "2.1.0"
 
 # Firebase
-firebase = "32.2.3"
-firebaseGradle = "2.9.9"
+firebase = "33.7.0"
+firebaseGradle = "3.0.2"
 
 # Network
-retrofit = "2.9.0"
-okhttp3 = "4.8.0"
+retrofit = "2.11.0"
+okhttp3 = "4.12.0"
 
 # Room DB
-room = "2.5.2"
+room = "2.7.0-alpha12"
 
 # DI
-hilt = "2.48"
-hilt-work = "1.0.0"
-hilt-nav = "1.0.0"
+hilt = "2.59"
+hilt-work = "1.2.0"
+hilt-nav = "1.2.0"
 
 # Worker
-work = "2.8.1"
-work-hilt = "1.0.0"
+work = "2.10.0"
+work-hilt = "1.2.0"
 
 # Other
-joda = "2.12.5"
+joda = "2.13.0"
 reorderable = "0.9.6"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-android-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+# android-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" } # Removed for AGP 9
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [libraries]
 # Main
@@ -78,7 +81,9 @@ androidx-core = { module = "androidx.core:core-ktx", version.ref = "core" }
 
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 
-ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+# ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" } 
+# Not usually needed as a library dependency, but maybe for some advanced usage.
+# Keeping it if referenced, but typically we use the plugin.
 
 # Compose
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose" }

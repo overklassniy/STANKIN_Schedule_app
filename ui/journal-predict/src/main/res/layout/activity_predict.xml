@@ -27,7 +27,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <com.vereshchagin.nikolay.stankinschedule.journal.predict.ui.view.KeyboardDismissingRecyclerView
+        <com.overklassniy.stankinschedule.journal.predict.ui.view.KeyboardDismissingRecyclerView
             android:id="@+id/predict_marks"
             android:layout_width="match_parent"
             android:layout_height="0dp"

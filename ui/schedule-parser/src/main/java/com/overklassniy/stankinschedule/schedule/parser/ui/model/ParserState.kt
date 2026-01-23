@@ -1,0 +1,39 @@
+package com.overklassniy.stankinschedule.schedule.parser.ui.model
+
+import android.graphics.Bitmap
+import com.overklassniy.stankinschedule.core.ui.components.UIState
+import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParserSettings
+
+abstract class ParserState(val step: Int) {
+
+
+    open val isSuccess: Boolean get() = true
+
+    class SelectFile(
+        val file: SelectedFile? = null,
+        val preview: Bitmap? = null
+    ) : ParserState(1) {
+        override val isSuccess: Boolean get() = file != null
+    }
+
+    class Settings(val settings: ParserSettings) : ParserState(2)
+
+    class ParserResult(
+        val state: UIState<ParsedFile>
+    ) : ParserState(3) {
+        override val isSuccess: Boolean get() = state is UIState.Success
+    }
+
+    class SaveResult(
+        val scheduleName: String,
+        val saveScheduleError: SaveScheduleError? = null
+    ) : ParserState(4)
+
+    class ImportFinish(
+        val state: UIState<Unit>
+    ) : ParserState(5)
+
+    companion object {
+        const val STEP_TOTAL = 5
+    }
+}

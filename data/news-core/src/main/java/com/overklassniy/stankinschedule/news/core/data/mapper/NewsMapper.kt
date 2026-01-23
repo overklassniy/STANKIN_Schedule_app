@@ -1,0 +1,55 @@
+package com.overklassniy.stankinschedule.news.core.data.mapper
+
+import com.overklassniy.stankinschedule.news.core.data.api.NewsResponse
+import com.overklassniy.stankinschedule.news.core.data.api.PostResponse
+import com.overklassniy.stankinschedule.news.core.data.api.StankinNewsAPI
+import com.overklassniy.stankinschedule.news.core.data.db.NewsEntity
+import com.overklassniy.stankinschedule.news.core.domain.model.NewsContent
+import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
+
+
+fun NewsResponse.NewsData.NewsItem.toPost(): NewsPost {
+    return NewsPost(
+        id = id,
+        title = title,
+        previewImageUrl = StankinNewsAPI.BASE_URL + logo,
+        date = date.split(" ").first(),
+        relativeUrl = null
+    )
+}
+
+fun NewsPost.toEntity(
+    index: Int,
+    newsSubdivision: Int,
+): NewsEntity {
+    return NewsEntity(
+        id = id,
+        indexOrder = index,
+        newsSubdivision = newsSubdivision,
+        title = title,
+        date = date,
+        logo = previewImageUrl ?: "",
+        relativeUrl = relativeUrl
+    )
+}
+
+fun PostResponse.NewsPost.toNewsContent(): NewsContent {
+    return NewsContent(
+        id = id,
+        date = datetime.split(" ").first(),
+        title = title,
+        previewImageUrl = StankinNewsAPI.BASE_URL + logo,
+        text = text,
+        deltaFormat = delta
+    )
+}
+
+fun NewsEntity.toPost(): NewsPost {
+    return NewsPost(
+        id = id,
+        title = title,
+        previewImageUrl = logo,
+        date = date,
+        relativeUrl = relativeUrl
+    )
+}
