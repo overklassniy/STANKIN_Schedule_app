@@ -42,20 +42,7 @@ android {
                  arguments["room.expandProjection"] = "true"
              }
         }
-        
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-            arg("room.incremental", "true")
-            arg("room.expandProjection", "true")
-        }
     }
-
-    kotlin {
-        compilerOptions {
-            freeCompilerArgs.add("-Xannotation-default-target=param-property")
-        }
-    }
-
 
     buildTypes {
         debug {
@@ -104,6 +91,18 @@ android {
         )
     }
     namespace = "com.overklassniy.stankinschedule"
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.expandProjection", "true")
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    }
 }
 
 dependencies {
@@ -156,7 +155,7 @@ dependencies {
     implementation(libs.compose.activity)
     implementation(libs.compose.coil)
 
-    implementation("androidx.compose.material:material-navigation:1.7.6")
+    implementation(libs.compose.materialNavigation)
 
     // Components
     implementation(libs.androidx.lifecycle.viewmodel)
