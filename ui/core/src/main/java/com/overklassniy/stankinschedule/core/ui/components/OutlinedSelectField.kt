@@ -22,7 +22,7 @@ fun <T> OutlinedSelectField(
 
     ExposedDropdownMenuBox(
         expanded = isExposed,
-        onExpandedChange = { isExposed = !isExposed },
+        onExpandedChange = { isExposed = it },
     ) {
         OutlinedTextField(
             value = menuLabel(value),

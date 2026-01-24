@@ -37,9 +37,6 @@ android {
         buildConfig = true
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
 }
 
 dependencies {
@@ -55,6 +52,8 @@ dependencies {
     implementation(libs.compose.paging)
     implementation(libs.compose.coil)
     implementation(libs.compose.activity)
+    implementation(libs.compose.material.icons.core)
+    implementation(libs.compose.material.icons.extended)
 
     implementation(libs.accompanist.permission)
     implementation(libs.ui.material)

@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.schedule.parser.ui
 
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
@@ -67,7 +68,7 @@ class ScheduleParserViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val preview = parserUseCase.renderPreview(filePath)
-                val uri = Uri.parse(filePath)
+                val uri = filePath.toUri()
                 val selectedFile = SelectedFile(uri, fileName)
 
                 _parserState.value = ParserState.SelectFile(selectedFile, preview)

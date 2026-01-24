@@ -2,7 +2,6 @@ package com.overklassniy.stankinschedule.schedule.parser.ui
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels

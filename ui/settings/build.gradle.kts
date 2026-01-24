@@ -48,13 +48,7 @@ android {
         compose = true
         buildConfig = true
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
 }
-
-// Allow references to generated code
 
 hilt {
     enableAggregatingTask = true

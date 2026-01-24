@@ -1,78 +1,67 @@
 [versions]
 # Main
-kotlin = "2.1.0"
-coroutines = "1.10.1"
+kotlin = "2.3.0"
+coroutines = "1.10.2"
 agp = "9.0.0"
-core = "1.15.0"
-ksp = "2.1.0-1.0.29"
+core = "1.17.0"
+ksp = "2.3.3"
 
 # Compose
-compose = "2025.01.00"
-compose-compiler = "1.4.8" # Ignored in Kotlin 2.0+ usually, but kept for reference or legacy
-# Note: Kotlin 2.0+ uses the Compose Compiler Gradle plugin
+compose = "2026.01.00"
 
-accompanist = "0.36.0"
+accompanist = "0.37.3"
 coil = "2.7.0"
-navigation = "2.8.5"
-material3 = "1.3.1"
-materialNavigation = "1.7.6"
+navigation = "2.9.6"
+material3 = "1.4.0"
+materialNavigation = "1.10.1"
+runtime-livedata = "1.7.6"
 
 # App components
-activity = "1.10.1"
-activity-compose = "1.10.1"
-paging = "3.3.0"
-paging-compose = "3.3.0"
+activity = "1.12.2"
+activity-compose = "1.12.2"
+paging = "3.3.6"
+paging-compose = "3.3.6"
 
-appcompat = "1.7.0"
-fragment = "1.8.1"
-glance = "1.1.0"
-lifecycle = "2.8.7"
-material = "1.12.0"
+appcompat = "1.7.1"
+fragment = "1.8.9"
+lifecycle = "2.10.0"
+material = "1.13.0"
 preference = "1.2.1"
-security = "1.1.0-alpha06"
-swiperefreshlayout = "1.1.0"
-webkit = "1.12.1"
-datastore = "1.1.1"
+security = "1.1.0"
+swiperefreshlayout = "1.2.0"
+webkit = "1.15.0"
+datastore = "1.2.0"
 startup = "1.2.0"
-splashscreen = "1.0.1"
+splashscreen = "1.2.0"
 
 # Integration
-browser = "1.8.0"
-coreGooglePlay = "2.0.1"
-googleServices = "4.4.2"
+browser = "1.9.0"
+googleServices = "4.4.4"
 inAppUpdate = "2.1.0"
 
 # Firebase
-firebase = "33.7.0"
-firebaseGradle = "3.0.2"
+firebase = "34.8.0"
+firebaseGradle = "3.0.6"
 
 # Network
-retrofit = "2.11.0"
-jsoup = "1.18.1"
-okhttp3 = "4.12.0"
+retrofit = "3.0.0"
+jsoup = "1.22.1"
+okhttp3 = "5.3.2"
 
 # Room DB
-room = "2.7.0-alpha12"
+room = "2.8.4"
 
 # DI
 hilt = "2.59"
-hilt-work = "1.2.0"
-hilt-nav = "1.2.0"
-
-# Worker
-work = "2.10.0"
-work-hilt = "1.2.0"
+hilt-nav = "1.3.0"
 
 # Other
-joda = "2.13.0"
+joda = "2.14.0"
 reorderable = "0.9.6"
 
-[plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
-# android-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" } # Removed for AGP 9
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+# Worker
+work = "2.11.0"
+work-hilt = "1.3.0"
 
 [libraries]
 # Main
@@ -83,10 +72,6 @@ androidx-core = { module = "androidx.core:core-ktx", version.ref = "core" }
 
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 
-# ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" } 
-# Not usually needed as a library dependency, but maybe for some advanced usage.
-# Keeping it if referenced, but typically we use the plugin.
-
 # Compose
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose" }
 compose-ui = { module = "androidx.compose.ui:ui" }
@@ -95,10 +80,11 @@ compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview"
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material = { module = "androidx.compose.material:material" }
 compose-materialNavigation = { module = "androidx.compose.material:material-navigation", version.ref = "materialNavigation" }
+compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
+compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "runtime-livedata" }
 
 
-accompanist-placeholder = { module = "com.google.accompanist:accompanist-placeholder-material", version.ref = "accompanist" }
-accompanist-navigation = { module = "com.google.accompanist:accompanist-navigation-material", version.ref = "accompanist" }
 accompanist-permission = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
 compose-coil = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
@@ -106,14 +92,11 @@ compose-navigation = { module = "androidx.navigation:navigation-compose", versio
 compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 compose-activity = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 compose-paging = { module = "androidx.paging:paging-compose", version.ref = "paging-compose" }
-compose-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
-compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
 
 # Components
 androidx-activity = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
 androidx-fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-androidx-glance = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 
 androidx-pagingCommon = { module = "androidx.paging:paging-common", version.ref = "paging" }
 androidx-paging = { module = "androidx.paging:paging-runtime-ktx", version.ref = "paging" }
@@ -124,9 +107,7 @@ androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "startup" }
 androidx-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
-androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-androidx-lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-java8 = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "lifecycle" }
 
 # Integration
@@ -140,9 +121,9 @@ ui-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayo
 
 # Firebase
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase" }
-firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
-firebase-storage = { module = "com.google.firebase:firebase-storage-ktx" }
-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-plugin = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebaseGradle" }
 
 # Network
@@ -165,15 +146,20 @@ hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.re
 hilt-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 hilt-navigation = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-nav" }
 
+# Other
+other-joda = { module = "joda-time:joda-time", version.ref = "joda" }
+other-reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "reorderable" }
+
 # Worker
-# Use androidx.* namespace aliases in build.gradle.kts
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 androidx-work-hilt = { module = "androidx.hilt:hilt-work", version.ref = "work-hilt" }
 androidx-work-hiltCompiler = { module = "androidx.hilt:hilt-compiler", version.ref = "work-hilt" }
 
-# Other
-other-joda = { module = "joda-time:joda-time", version.ref = "joda" }
-other-reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "reorderable" }
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [bundles]
 compose = [
@@ -193,8 +179,4 @@ network = [
 room = [
     "room-runtime",
     "room-ktx"
-]
-firebase = [
-    "firebase-analytics",
-    "firebase-crashlytics"
 ]

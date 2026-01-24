@@ -4,11 +4,16 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.*
+import androidx.compose.material.BackdropScaffold
+import androidx.compose.material.BackdropValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.rememberBackdropScaffoldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -40,6 +45,9 @@ fun ScheduleRepositoryScreen(
     var isChooseName by remember { mutableStateOf<DownloadState.RequiredName?>(null) }
     var currentWorkerName by remember { mutableStateOf<String?>(null) }
 
+    val downloadFailedMessage = stringResource(R.string.repository_download_failed)
+    val startDownloadMessage = stringResource(R.string.repository_start_download)
+
     val scope = rememberCoroutineScope()
     BackHandler(scaffoldState.isRevealed) {
         scope.launch { scaffoldState.conceal() }
@@ -65,7 +73,7 @@ fun ScheduleRepositoryScreen(
                 }
                 WorkInfo.State.FAILED -> {
                     scaffoldState.snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.repository_download_failed),
+                        message = downloadFailedMessage,
                         duration = SnackbarDuration.Short
                     )
                     currentWorkerName = null
@@ -86,9 +94,7 @@ fun ScheduleRepositoryScreen(
                 )
                 currentWorkerName = workerName
                 scaffoldState.snackbarHostState.showSnackbar(
-                    message = context.getString(
-                        R.string.repository_start_download, state.scheduleName
-                    ),
+                    message = String.format(startDownloadMessage, state.scheduleName),
                     duration = SnackbarDuration.Short
                 )
             }
@@ -121,7 +127,6 @@ fun ScheduleRepositoryScreen(
         )
     }
 
-    val category by viewModel.category.collectAsState()
     val grade by viewModel.grade.collectAsState()
     val course by viewModel.course.collectAsState()
     
@@ -157,11 +162,8 @@ fun ScheduleRepositoryScreen(
         backLayerContent = {
             Stateful(
                 state = description,
-                onSuccess = { data ->
+                onSuccess = { _ ->
                     BackLayerContent(
-                        selectedCategory = category,
-                        scheduleCategories = data.categories,
-                        onCategorySelected = { viewModel.updateCategory(it) },
                         selectedGrade = grade,
                         onGradeSelected = { viewModel.updateGrade(it) },
                         selectedCourse = course,

@@ -12,6 +12,7 @@ import dagger.hilt.android.scopes.ViewModelScoped
 
 @Module
 @InstallIn(ViewModelComponent::class)
+@Suppress("unused")
 interface RepositoryModule {
 
     @Binds

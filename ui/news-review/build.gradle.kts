@@ -42,14 +42,8 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
-
     namespace = "com.overklassniy.stankinschedule.news.review.ui"
 }
-
-// Allow references to generated code
 
 hilt {
     enableAggregatingTask = true

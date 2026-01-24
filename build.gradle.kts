@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all subprojects/modules.
 
 ext {
-    extra["appCompileSdkVersion"] = 35
+    extra["appCompileSdkVersion"] = 36
     extra["appMinSdkVersion"] = 26
     extra["appTargetSdkVersion"] = 35
     extra["appVersionCode"] = 125

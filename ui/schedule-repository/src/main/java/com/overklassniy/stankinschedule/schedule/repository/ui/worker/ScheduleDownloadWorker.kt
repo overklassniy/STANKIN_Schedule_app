@@ -140,8 +140,6 @@ class ScheduleDownloadWorker @AssistedInject constructor(
 
     companion object {
 
-        private const val TAG = "ScheduleWorkerLog"
-
         const val WORKER_TAG = "schedule_download_worker_tag"
 
         private const val SCHEDULE_DOWNLOAD_ONLY = "schedule_download_only"

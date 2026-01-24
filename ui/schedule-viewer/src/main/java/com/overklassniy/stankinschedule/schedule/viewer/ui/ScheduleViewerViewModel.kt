@@ -46,9 +46,9 @@ class ScheduleViewerViewModel @Inject constructor(
     private val viewerUseCase: ScheduleViewerUseCase,
     private val scheduleUseCase: ScheduleUseCase,
     private val scheduleDeviceUseCase: ScheduleDeviceUseCase,
-    private val settingsUseCase: ScheduleSettingsUseCase,
+    settingsUseCase: ScheduleSettingsUseCase,
     private val iCalExporterUseCase: ICalExporterUseCase,
-    private val handle: SavedStateHandle,
+    private val handle: SavedStateHandle
 ) : ViewModel() {
 
     val isVerticalViewer: Flow<Boolean> = settingsUseCase.isVerticalViewer()

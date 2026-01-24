@@ -18,14 +18,10 @@ import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.Course
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.Grade
-import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryCategory
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
 
 @Composable
 fun BackLayerContent(
-    selectedCategory: RepositoryCategory?,
-    scheduleCategories: List<RepositoryCategory>,
-    onCategorySelected: (category: RepositoryCategory) -> Unit,
     selectedGrade: Grade?,
     onGradeSelected: (grade: Grade) -> Unit,
     selectedCourse: Course?,
@@ -51,7 +47,7 @@ fun BackLayerContent(
         )
         FilterRow(
             selected = selectedGrade,
-            items = Grade.values().toList(),
+            items = Grade.entries,
             title = {
                 @StringRes val res: Int = when (it) {
                     Grade.Bachelor -> R.string.repository_bachelor
@@ -76,11 +72,11 @@ fun BackLayerContent(
         )
 
         val availableCourses = when (selectedGrade) {
-            Grade.Bachelor -> Course.values().take(4)
-            Grade.Specialist -> Course.values().take(5)
-            Grade.Magistracy -> Course.values().take(2)
-            Grade.Postgraduate -> Course.values().take(3)
-            null -> Course.values().toList()
+            Grade.Bachelor -> Course.entries.take(4)
+            Grade.Specialist -> Course.entries.take(5)
+            Grade.Magistracy -> Course.entries.take(2)
+            Grade.Postgraduate -> Course.entries.take(3)
+            null -> Course.entries
         }
         
         FilterRow(

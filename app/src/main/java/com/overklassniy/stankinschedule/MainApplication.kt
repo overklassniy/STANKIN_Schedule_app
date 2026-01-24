@@ -8,9 +8,9 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
+import com.google.firebase.analytics.analytics
+import com.google.firebase.crashlytics.crashlytics
 import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
 import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
 import com.overklassniy.stankinschedule.core.ui.R

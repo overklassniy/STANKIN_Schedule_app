@@ -39,7 +39,7 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
 
         try {
             Log.d(TAG, "Connecting to Moodle URL: $moodleUrl")
-            var response = Jsoup.connect(moodleUrl)
+            val response = Jsoup.connect(moodleUrl)
                 .userAgent(USER_AGENT)
                 .execute()
             

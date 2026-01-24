@@ -1,6 +1,6 @@
 package com.overklassniy.stankinschedule.core.ui.components
 
-import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.Icons.AutoMirrored
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,7 +22,7 @@ fun BackButton(
         modifier = modifier
     ) {
         Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            imageVector = AutoMirrored.Filled.ArrowBack,
             contentDescription = stringResource(R.string.back_button),
             tint = color,
         )

@@ -23,7 +23,7 @@ import java.net.Proxy
 import javax.inject.Inject
 
 class MoodleLoaderService @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val parserUseCase: ParserUseCase
 ) : ScheduleLoaderService {
 
@@ -122,7 +122,7 @@ class MoodleLoaderService @Inject constructor(
             loginPageResponse.close()
 
             val doc = Jsoup.parse(loginPageHtml)
-            val loginToken = doc.select("input[name=logintoken]").attr("value") ?: ""
+            val loginToken = doc.select("input[name=logintoken]").attr("value")
 
             val formBody = FormBody.Builder()
                 .add("username", "guest")

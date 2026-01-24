@@ -42,10 +42,8 @@ android {
         viewBinding = true
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
 }
+
 hilt { enableAggregatingTask = true }
 
 dependencies {

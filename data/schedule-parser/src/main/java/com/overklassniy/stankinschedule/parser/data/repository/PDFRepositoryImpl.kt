@@ -2,7 +2,7 @@ package com.overklassniy.stankinschedule.parser.data.repository
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
+import androidx.core.net.toUri
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.rendering.PDFRenderer
@@ -22,7 +22,7 @@ import kotlin.math.abs
 import kotlin.math.max
 
 class PDFRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : PDFRepository {
 
     override suspend fun parsePDF(
@@ -51,7 +51,7 @@ class PDFRepositoryImpl @Inject constructor(
 
     private fun openInputStream(path: String): InputStream? {
         return if (path.startsWith("content://") || path.startsWith("file://")) {
-            context.contentResolver.openInputStream(Uri.parse(path))
+            context.contentResolver.openInputStream(path.toUri())
         } else {
             val file = File(path)
             if (file.exists()) FileInputStream(file) else null

@@ -40,13 +40,7 @@ android {
         buildConfig = true
         compose = true
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
 }
-
-// Allow references to generated code
 
 hilt {
     enableAggregatingTask = true
@@ -68,6 +62,8 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
+    implementation(libs.compose.material.icons.core)
+    implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.runtime.livedata)
 
     // Components

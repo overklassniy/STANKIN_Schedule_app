@@ -57,11 +57,11 @@ fun ScheduleScreen(
     var isScheduleRemove by remember { mutableStateOf<ScheduleInfo?>(null) }
     var isSelectedRemove by remember { mutableStateOf<Int?>(null) }
 
-    isScheduleRemove?.let {
+    isScheduleRemove?.let { scheduleToRemove ->
         ScheduleRemoveDialog(
-            text = stringResource(R.string.schedule_single_remove, it.scheduleName),
+            text = stringResource(R.string.schedule_single_remove, scheduleToRemove.scheduleName),
             onRemove = {
-                viewModel.removeSchedule(it)
+                viewModel.removeSchedule(scheduleToRemove)
                 isScheduleRemove = null
             },
             onDismiss = {
@@ -70,9 +70,9 @@ fun ScheduleScreen(
         )
     }
 
-    isSelectedRemove?.let {
+    isSelectedRemove?.let { countToRemove ->
         ScheduleRemoveDialog(
-            text = stringResource(R.string.schedule_selected_remove, it),
+            text = stringResource(R.string.schedule_selected_remove, countToRemove),
             onRemove = {
                 viewModel.removeSelectedSchedules()
                 isSelectedRemove = null
