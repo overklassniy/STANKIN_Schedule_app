@@ -14,7 +14,7 @@ coil = "2.7.0"
 navigation = "2.9.6"
 material3 = "1.4.0"
 materialNavigation = "1.10.1"
-runtime-livedata = "1.7.6"
+runtime-livedata = "1.10.1"
 
 # App components
 activity = "1.12.2"
