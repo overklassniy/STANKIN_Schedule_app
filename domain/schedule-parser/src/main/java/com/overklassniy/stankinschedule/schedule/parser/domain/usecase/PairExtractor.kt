@@ -11,6 +11,7 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 import com.overklassniy.stankinschedule.schedule.parser.domain.model.CellBound
 import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParseResult
 import com.overklassniy.stankinschedule.schedule.parser.domain.model.TimeCellBound
+import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import kotlin.math.abs
@@ -106,7 +107,11 @@ class PairExtractor {
 
     private fun extractLecturer(lecturer: String): String {
         if (lecturer.isEmpty()) return ""
-        return lecturer.dropLast(1).trim()
+        return if (lecturer.endsWith('.')) {
+            lecturer.dropLast(1).trim()
+        } else {
+            lecturer.trim()
+        }
     }
 
     private fun extractClassroom(classroom: String): String {
@@ -117,8 +122,9 @@ class PairExtractor {
     private fun extractType(type: String): Type {
         return when (type.dropLast(1).trim().lowercase()) {
             "семинар" -> Type.SEMINAR
-            "лекции" -> Type.LECTURE
-            "лабораторные занятия" -> Type.LABORATORY
+            "лекции", "лекция" -> Type.LECTURE
+            "лабораторные занятия", "лабораторная" -> Type.LABORATORY
+            "" -> Type.LECTURE
             else -> throw IllegalArgumentException("Unknown type: '$type'")
         }
     }
@@ -183,14 +189,33 @@ class PairExtractor {
     }
 
     private fun dateConvertor(date: String): LocalDate {
-        return dateFormatter.parseLocalDate("$date.$dateYear")
+        val parsedDate = dateFormatter.parseLocalDate("$date.$dateYear")
+        val now = LocalDate.now()
+
+        val previousYearDate = dateFormatter.parseLocalDate("$date.${dateYear - 1}")
+        if (abs(daysBetween(now, parsedDate)) > abs(daysBetween(now, previousYearDate))) {
+            if (previousYearDate.dayOfWeek != DateTimeConstants.SUNDAY) {
+                return previousYearDate
+            }
+        }
+
+        if (parsedDate.dayOfWeek == DateTimeConstants.SUNDAY) {
+            if (previousYearDate.dayOfWeek != DateTimeConstants.SUNDAY) {
+                return previousYearDate
+            }
+        }
+        return parsedDate
+    }
+
+    private fun daysBetween(d1: LocalDate, d2: LocalDate): Int {
+        return org.joda.time.Days.daysBetween(if (d1 < d2) d1 else d2, if (d1 < d2) d2 else d1).days
     }
 
     object ParserPatterns {
 
         const val Title = "([а-яА-ЯёЁa-zA-Z0-9\\.\\s\\,\\-\\(\\)\\/\\:]+?\\.)"
         const val Lecturer = "([а-яА-ЯёЁae\\s\\_]+\\s([а-яА-я]\\.?){1,2})?"
-        const val Type = "((лабораторные занятия|семинар|лекции)?\\.)"
+        const val Type = "((лабораторные занятия|Лабораторные занятия|Лабораторная|семинар|Семинар|лекции|Лекции|лекция|Лекция)\\.|(?<=\\s)\\.)"
         const val Subgroup = "(\\([абАБ]\\)\\.)?"
         const val Classroom = "([^\\[\\]]+?\\.)"
         const val Date =
