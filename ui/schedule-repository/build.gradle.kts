@@ -54,6 +54,7 @@ hilt {
 
 dependencies {
     implementation(project(":ui:core"))
+    implementation(project(":ui:schedule-parser"))
     implementation(project(":data:core"))
     implementation(project(":domain:core"))
     implementation(project(":domain:schedule-core"))
@@ -67,6 +68,7 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
+    implementation(libs.compose.runtime.livedata)
 
     // Components
     implementation(libs.androidx.lifecycle.viewmodel)
@@ -83,9 +85,9 @@ dependencies {
     ksp(libs.room.compiler)
 
     // Worker
-    implementation(libs.work.runtime)
-    implementation(libs.work.hilt)
-    ksp(libs.work.hiltCompiler)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.work.hilt)
+    ksp(libs.androidx.work.hiltCompiler)
 
     // DI
     implementation(libs.hilt.android)

@@ -63,6 +63,24 @@ class ScheduleParserViewModel @Inject constructor(
         }
     }
 
+    fun selectFileFromPath(filePath: String, fileName: String) {
+        viewModelScope.launch {
+            try {
+                val preview = parserUseCase.renderPreview(filePath)
+                val uri = Uri.parse(filePath)
+                val selectedFile = SelectedFile(uri, fileName)
+
+                _parserState.value = ParserState.SelectFile(selectedFile, preview)
+                _selectedFile = selectedFile
+                _scheduleName = fileName
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                loggerAnalytics.recordException(e)
+            }
+        }
+    }
+
     fun onSetupSettings(settings: ParserSettings) {
         _parserSettings = settings
     }

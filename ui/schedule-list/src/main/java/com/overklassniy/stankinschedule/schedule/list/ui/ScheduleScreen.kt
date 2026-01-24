@@ -128,18 +128,6 @@ fun ScheduleScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Text(
-                text = stringResource(R.string.schedule_my_list),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.padding(
-                    horizontal = Dimen.ContentPadding * 2,
-                    vertical = Dimen.ContentPadding
-                )
-            )
-
-            HorizontalDivider()
-
             LazyColumn(
                 state = reorderState.listState,
                 verticalArrangement = Arrangement.spacedBy(2.dp),

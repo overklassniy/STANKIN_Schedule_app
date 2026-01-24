@@ -117,6 +117,14 @@ class ScheduleViewerViewModel @Inject constructor(
                             isEmpty = model.isEmpty()
                         )
 
+                        if (startDate == null) {
+                            val limitedDate = model.limitDate(currentDay)
+                            if (limitedDate != currentDay) {
+                                updatePagingDate(limitedDate)
+                                _scheduleStartDay.value = limitedDate
+                            }
+                        }
+
                         clearPager.send(Unit)
                         _schedule.value = model
                         _scheduleId = model.info.id

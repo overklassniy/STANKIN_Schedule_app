@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.overklassniy.stankinschedule.core.ui.components.Stateful
 import com.overklassniy.stankinschedule.core.ui.components.TrackCurrentScreen
-import com.overklassniy.stankinschedule.core.ui.components.getOrNull
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
+import com.overklassniy.stankinschedule.schedule.parser.ui.ScheduleParserActivity
 import com.overklassniy.stankinschedule.schedule.repository.ui.components.*
 import com.overklassniy.stankinschedule.schedule.repository.ui.worker.ScheduleDownloadWorker
 import kotlinx.coroutines.launch
@@ -35,21 +38,53 @@ fun ScheduleRepositoryScreen(
 
     var isRequiredName by remember { mutableStateOf<DownloadState.RequiredName?>(null) }
     var isChooseName by remember { mutableStateOf<DownloadState.RequiredName?>(null) }
+    var currentWorkerName by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
     BackHandler(scaffoldState.isRevealed) {
         scope.launch { scaffoldState.conceal() }
     }
 
+    currentWorkerName?.let { workerName ->
+        val workManager = WorkManager.getInstance(context)
+        val workInfoLiveData = workManager.getWorkInfosForUniqueWorkLiveData(workerName)
+        val workInfos by workInfoLiveData.observeAsState(initial = emptyList())
+        
+        LaunchedEffect(workInfos) {
+            val workInfo = workInfos.firstOrNull()
+            when (workInfo?.state) {
+                WorkInfo.State.SUCCEEDED -> {
+                    val filePath = workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_FILE_PATH)
+                    val scheduleName = workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_SCHEDULE_NAME)
+                    
+                    if (filePath != null && scheduleName != null) {
+                        val intent = ScheduleParserActivity.createIntent(context, filePath, scheduleName)
+                        context.startActivity(intent)
+                        currentWorkerName = null
+                    }
+                }
+                WorkInfo.State.FAILED -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.repository_download_failed),
+                        duration = SnackbarDuration.Short
+                    )
+                    currentWorkerName = null
+                }
+                else -> {}
+            }
+        }
+    }
+
     LaunchedEffect(download.value) {
         when (val state = download.value) {
             is DownloadState.StartDownload -> {
-                ScheduleDownloadWorker.startWorker(
+                val workerName = ScheduleDownloadWorker.startWorker(
                     context = context,
                     scheduleName = state.scheduleName,
                     item = state.item,
-                    replaceExist = false
+                    downloadOnly = true
                 )
+                currentWorkerName = workerName
                 scaffoldState.snackbarHostState.showSnackbar(
                     message = context.getString(
                         R.string.repository_start_download, state.scheduleName
@@ -89,14 +124,28 @@ fun ScheduleRepositoryScreen(
     val category by viewModel.category.collectAsState()
     val grade by viewModel.grade.collectAsState()
     val course by viewModel.course.collectAsState()
+    
+    val isSearchActive by viewModel.isSearchActive.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     BackdropScaffold(
         appBar = {
             RepositoryToolBar(
-                lastUpdate = description.getOrNull()?.lastUpdate,
-                scaffoldState = scaffoldState,
+                isSearchActive = isSearchActive,
+                searchQuery = searchQuery,
+                onSearchQueryChange = { viewModel.updateSearchQuery(it) },
+                onSearchToggle = { viewModel.toggleSearch() },
+                onFilterClick = {
+                    if (scaffoldState.isRevealed) {
+                        scope.launch { scaffoldState.conceal() }
+                    } else {
+                        scope.launch { scaffoldState.reveal() }
+                    }
+                },
+                onRefresh = { viewModel.refresh() },
                 onBackPressed = onBackPressed,
-                onRefreshRepository = { viewModel.refresh() }
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
             )
         },
         frontLayerBackgroundColor = MaterialTheme.colorScheme.surface,

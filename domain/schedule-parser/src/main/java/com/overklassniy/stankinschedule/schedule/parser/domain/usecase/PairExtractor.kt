@@ -107,10 +107,11 @@ class PairExtractor {
 
     private fun extractLecturer(lecturer: String): String {
         if (lecturer.isEmpty()) return ""
-        return if (lecturer.endsWith('.')) {
-            lecturer.dropLast(1).trim()
+        val trimmed = lecturer.trim()
+        return if (trimmed.endsWith('.')) {
+            trimmed
         } else {
-            lecturer.trim()
+            "$trimmed."
         }
     }
 

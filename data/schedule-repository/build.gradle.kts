@@ -55,25 +55,23 @@ dependencies {
     implementation(project(":domain:core"))
     implementation(project(":domain:schedule-core"))
     implementation(project(":domain:schedule-repository"))
+    implementation(project(":domain:schedule-parser"))
 
     // Kotlin
     implementation(libs.androidx.core)
 
     // Network
     implementation(libs.bundles.network)
-
-    // Firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.storage)
+    implementation(libs.network.jsoup)
 
     // Room DB
     implementation(libs.bundles.room)
     ksp(libs.room.compiler)
 
     // Worker
-    implementation(libs.work.runtime)
-    implementation(libs.work.hilt)
-    ksp(libs.work.hiltCompiler)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.work.hilt)
+    ksp(libs.androidx.work.hiltCompiler)
 
     // DI
     implementation(libs.hilt.android)

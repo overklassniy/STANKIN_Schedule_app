@@ -74,7 +74,7 @@ fun FrontLayerContent(
                 }
             }
 
-            items(repositoryItems, key = { it.name }) { item ->
+            items(repositoryItems, key = { "${it.name}_${it.path}" }) { item ->
                 RepositorySchedule(
                     item = item,
                     onItemClicked = onItemClicked,

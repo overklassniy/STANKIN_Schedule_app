@@ -36,6 +36,12 @@ class ScheduleRepositoryViewModel @Inject constructor(
     private val _course = MutableStateFlow<Course?>(null)
     val course = _course.asStateFlow()
 
+    private val _isSearchActive = MutableStateFlow(false)
+    val isSearchActive = _isSearchActive.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
     init {
         reloadDescription()
     }
@@ -61,11 +67,15 @@ class ScheduleRepositoryViewModel @Inject constructor(
         }
 
         val part = item.name.split('-').getOrNull(0) ?: return true
+
+        if (part.equals("АСП", ignoreCase = true)) {
+             return currentGrade == Grade.Postgraduate
+        }
+
         val itemGrade = when (part.last().uppercaseChar()) {
             'Б' -> Grade.Bachelor
             'М' -> Grade.Magistracy
             'С' -> Grade.Specialist
-            'П' -> Grade.Postgraduate
             else -> null
         } ?: return true
 
@@ -124,6 +134,18 @@ class ScheduleRepositoryViewModel @Inject constructor(
         }
     }
 
+    fun toggleSearch() {
+        _isSearchActive.value = !_isSearchActive.value
+        if (!_isSearchActive.value) {
+            updateSearchQuery("")
+        }
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        updateCategoryFilters()
+    }
+
     fun onDownloadEvent(event: DownloadEvent) {
         viewModelScope.launch {
             when (event) {
@@ -147,11 +169,9 @@ class ScheduleRepositoryViewModel @Inject constructor(
         val part = item.name.split('-').getOrNull(1) ?: return true
         val groupYear = part.toIntOrNull() ?: return true
 
-        if ((year % 100 - (currentCourse.number - 1)) == groupYear) {
-            return true
-        }
-
-        return false
+        val expectedGroupYear = (year % 100) - (currentCourse.number - 1)
+        
+        return expectedGroupYear == groupYear
     }
 
     private fun updateCategoryFilters() {
@@ -160,6 +180,7 @@ class ScheduleRepositoryViewModel @Inject constructor(
         val currentGrade = _grade.value
         val currentCourse = _course.value
         val currentYear = _category.value?.year
+        val currentQuery = _searchQuery.value
 
         viewModelScope.launch {
             val filterItems = cache
@@ -169,6 +190,32 @@ class ScheduleRepositoryViewModel @Inject constructor(
                 .filter { item ->
                     courseFilter(item, currentCourse, currentYear)
                 }
+                .filter { item ->
+                    if (currentQuery.isBlank()) return@filter true
+                    fun normalize(s: String): String = s.replace(" ", "").replace("-", "").lowercase()
+                    
+                    val normalizedName = normalize(item.name)
+                    val normalizedQuery = normalize(currentQuery)
+                    
+                    normalizedName.contains(normalizedQuery)
+                }
+                .sortedWith(
+                    compareBy<RepositoryItem> { item ->
+                        val part = item.name.split('-').getOrNull(0) ?: ""
+                        when {
+                            part.endsWith('Б', ignoreCase = true) -> 1
+                            part.endsWith('С', ignoreCase = true) -> 2
+                            part.endsWith('М', ignoreCase = true) -> 3
+                            part.equals("АСП", ignoreCase = true) -> 4
+                            else -> 5
+                        }
+                    }.thenBy { item ->
+                        val part = item.name.split('-').getOrNull(1) ?: "0"
+                        -(part.toIntOrNull() ?: 0) 
+                    }.thenBy { item ->
+                        item.name
+                    }
+                )
 
             _repositoryItems.value = UIState.success(filterItems)
         }

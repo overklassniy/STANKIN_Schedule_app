@@ -68,9 +68,9 @@ dependencies {
     implementation(libs.ui.material)
 
     // Worker
-    implementation(libs.work.runtime)
-    implementation(libs.work.hilt)
-    ksp(libs.work.hiltCompiler)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.work.hilt)
+    ksp(libs.androidx.work.hiltCompiler)
 
     // DI
     implementation(libs.hilt.android)

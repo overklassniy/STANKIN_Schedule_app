@@ -45,19 +45,28 @@ class ScheduleDownloadWorker @AssistedInject constructor(
         val scheduleName = inputData.getString(SCHEDULE_NAME)!!
         val schedulePath = inputData.getString(SCHEDULE_PATH)!!
         val scheduleCategory = inputData.getString(SCHEDULE_CATEGORY)!!
-        val replaceExist = inputData.getBoolean(SCHEDULE_REPLACE_EXIST, false)
+        val downloadOnly = inputData.getBoolean(SCHEDULE_DOWNLOAD_ONLY, true)
 
         // val notificationId = createID()
         // val info = createForegroundInfo(scheduleName, notificationId)
         // setForeground(info)
 
-        download(scheduleCategory, schedulePath, scheduleName, replaceExist)
-
-        return Result.success(
-            Data.Builder()
-                .putString("scheduleName", scheduleName)
-                .build()
-        )
+        return if (downloadOnly) {
+            val filePath = downloadOnly(scheduleCategory, schedulePath, scheduleName)
+            Result.success(
+                Data.Builder()
+                    .putString(OUTPUT_SCHEDULE_NAME, scheduleName)
+                    .putString(OUTPUT_FILE_PATH, filePath)
+                    .build()
+            )
+        } else {
+            download(scheduleCategory, schedulePath, scheduleName, false)
+            Result.success(
+                Data.Builder()
+                    .putString(OUTPUT_SCHEDULE_NAME, scheduleName)
+                    .build()
+            )
+        }
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
@@ -99,10 +108,23 @@ class ScheduleDownloadWorker @AssistedInject constructor(
     ) {
         setProgress(
             data = Data.Builder()
-                .putString("scheduleName", scheduleName)
+                .putString(OUTPUT_SCHEDULE_NAME, scheduleName)
                 .build()
         )
         loaderUseCase.loadSchedule(scheduleCategory, schedulePath, scheduleName, replaceExist)
+    }
+
+    private suspend fun downloadOnly(
+        scheduleCategory: String,
+        schedulePath: String,
+        scheduleName: String
+    ): String {
+        setProgress(
+            data = Data.Builder()
+                .putString(OUTPUT_SCHEDULE_NAME, scheduleName)
+                .build()
+        )
+        return loaderUseCase.downloadScheduleFile(scheduleCategory, schedulePath, scheduleName)
     }
 
     /**
@@ -122,20 +144,24 @@ class ScheduleDownloadWorker @AssistedInject constructor(
 
         const val WORKER_TAG = "schedule_download_worker_tag"
 
-        private const val SCHEDULE_REPLACE_EXIST = "schedule_replace_exist"
+        private const val SCHEDULE_DOWNLOAD_ONLY = "schedule_download_only"
         private const val SCHEDULE_NAME = "schedule_save_name"
         private const val SCHEDULE_PATH = "schedule_path"
         private const val SCHEDULE_CATEGORY = "schedule_category"
 
+        const val OUTPUT_SCHEDULE_NAME = "scheduleName"
+        const val OUTPUT_FILE_PATH = "filePath"
+
         /**
          * Запускает worker для загрузки расписания.
+         * По умолчанию скачивает файл и возвращает путь для ручного импорта.
          */
         fun startWorker(
             context: Context,
             scheduleName: String,
             item: RepositoryItem,
-            replaceExist: Boolean,
-        ) {
+            downloadOnly: Boolean = true,
+        ): String {
             val manager = WorkManager.getInstance(context)
 
             // уникальное имя worker'а
@@ -153,7 +179,7 @@ class ScheduleDownloadWorker @AssistedInject constructor(
                         .putString(SCHEDULE_NAME, scheduleName)
                         .putString(SCHEDULE_PATH, item.path)
                         .putString(SCHEDULE_CATEGORY, item.category)
-                        .putBoolean(SCHEDULE_REPLACE_EXIST, replaceExist)
+                        .putBoolean(SCHEDULE_DOWNLOAD_ONLY, downloadOnly)
                         .build()
                 )
                 .keepResultsForAtLeast(24, TimeUnit.HOURS)
@@ -161,6 +187,8 @@ class ScheduleDownloadWorker @AssistedInject constructor(
                 .build()
 
             manager.enqueueUniqueWork(workerName, ExistingWorkPolicy.KEEP, worker)
+            
+            return workerName
         }
     }
 }

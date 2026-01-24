@@ -48,6 +48,7 @@ firebaseGradle = "3.0.2"
 
 # Network
 retrofit = "2.11.0"
+jsoup = "1.18.1"
 okhttp3 = "4.12.0"
 
 # Room DB
@@ -106,6 +107,7 @@ compose-material3 = { module = "androidx.compose.material3:material3", version.r
 compose-activity = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 compose-paging = { module = "androidx.paging:paging-compose", version.ref = "paging-compose" }
 compose-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
 
 # Components
 androidx-activity = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
@@ -148,6 +150,7 @@ network-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "
 network-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 network-mock = { module = "com.squareup.retrofit2:retrofit-mock", version.ref = "retrofit" }
 network-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
+network-jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 network-okhttp3 = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp3" }
 
 # Room DB
@@ -163,9 +166,10 @@ hilt-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version
 hilt-navigation = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-nav" }
 
 # Worker
-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
-work-hilt = { module = "androidx.hilt:hilt-work", version.ref = "work-hilt" }
-work-hiltCompiler = { module = "androidx.hilt:hilt-compiler", version.ref = "work-hilt" }
+# Use androidx.* namespace aliases in build.gradle.kts
+androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+androidx-work-hilt = { module = "androidx.hilt:hilt-work", version.ref = "work-hilt" }
+androidx-work-hiltCompiler = { module = "androidx.hilt:hilt-compiler", version.ref = "work-hilt" }
 
 # Other
 other-joda = { module = "joda-time:joda-time", version.ref = "joda" }

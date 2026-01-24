@@ -40,6 +40,7 @@ import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
 fun ScheduleParserScreen(
     viewModel: ScheduleParserViewModel,
     onBackPressed: () -> Unit,
+    onImportSuccess: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TrackCurrentScreen(screen = "ScheduleParserScreen")
@@ -150,7 +151,7 @@ fun ScheduleParserScreen(
                 parserState = parserState,
                 navigateBack = viewModel::back,
                 navigateNext = viewModel::next,
-                navigateDone = onBackPressed,
+                navigateDone = onImportSuccess,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Dimen.ContentPadding)

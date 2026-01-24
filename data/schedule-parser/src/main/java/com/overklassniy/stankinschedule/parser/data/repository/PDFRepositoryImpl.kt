@@ -13,6 +13,8 @@ import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParseDetail
 import com.overklassniy.stankinschedule.schedule.parser.domain.repository.PDFRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
 import java.io.InputStream
 import java.io.OutputStreamWriter
 import javax.inject.Inject
@@ -29,7 +31,7 @@ class PDFRepositoryImpl @Inject constructor(
     ): ParseDetail {
         PDFBoxResourceLoader.init(context)
 
-        return context.contentResolver.openInputStream(Uri.parse(path)).use { stream ->
+        return openInputStream(path).use { stream ->
             if (stream == null) throw IllegalAccessException("Failed to get file descriptor")
             ParseDetail(
                 scheduleName = "",
@@ -41,9 +43,18 @@ class PDFRepositoryImpl @Inject constructor(
     override suspend fun renderPDF(path: String): Bitmap {
         PDFBoxResourceLoader.init(context)
 
-        return context.contentResolver.openInputStream(Uri.parse(path)).use { stream ->
+        return openInputStream(path).use { stream ->
             if (stream == null) throw IllegalAccessException("Failed to get file descriptor")
             render(stream)
+        }
+    }
+
+    private fun openInputStream(path: String): InputStream? {
+        return if (path.startsWith("content://") || path.startsWith("file://")) {
+            context.contentResolver.openInputStream(Uri.parse(path))
+        } else {
+            val file = File(path)
+            if (file.exists()) FileInputStream(file) else null
         }
     }
 

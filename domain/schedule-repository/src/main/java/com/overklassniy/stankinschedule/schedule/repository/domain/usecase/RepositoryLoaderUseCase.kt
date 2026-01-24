@@ -23,4 +23,12 @@ class RepositoryLoaderUseCase @Inject constructor(
         }
         scheduleStorage.saveSchedule(model, replaceExist)
     }
+
+    suspend fun downloadScheduleFile(
+        category: String,
+        path: String,
+        fileName: String
+    ): String {
+        return remoteService.downloadScheduleFile(category, path, fileName)
+    }
 }

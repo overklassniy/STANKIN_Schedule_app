@@ -35,7 +35,7 @@ fun <T> OutlinedSelectField(
             supportingText = supportingText,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExposed) },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-            modifier = modifier.menuAnchor()
+            modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
         )
 
         ExposedDropdownMenu(

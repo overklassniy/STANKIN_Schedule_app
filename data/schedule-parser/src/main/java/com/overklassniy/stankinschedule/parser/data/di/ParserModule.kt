@@ -5,15 +5,15 @@ import com.overklassniy.stankinschedule.schedule.parser.domain.repository.PDFRep
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.android.scopes.ViewModelScoped
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
-@InstallIn(ViewModelComponent::class)
+@InstallIn(SingletonComponent::class)
 interface ParserModule {
 
     @Binds
-    @ViewModelScoped
+    @Singleton
     fun provideParseRepository(repository: PDFRepositoryImpl): PDFRepository
 
 }

@@ -43,23 +43,6 @@ fun BackLayerContent(
     ) {
 
         Text(
-            text = stringResource(R.string.repository_title_category),
-            color = contentColor,
-            modifier = Modifier
-                .padding(Dimen.ContentPadding)
-                .fillMaxWidth()
-        )
-        FilterRow(
-            selected = selectedCategory,
-            items = scheduleCategories,
-            title = { it.name },
-            onItemSelected = onCategorySelected,
-            containerColor = containerColor,
-            contentColor = contentColor,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Text(
             text = stringResource(R.string.repository_title_degree),
             color = contentColor,
             modifier = Modifier
@@ -91,9 +74,18 @@ fun BackLayerContent(
                 .padding(Dimen.ContentPadding)
                 .fillMaxWidth()
         )
+
+        val availableCourses = when (selectedGrade) {
+            Grade.Bachelor -> Course.values().take(4)
+            Grade.Specialist -> Course.values().take(5)
+            Grade.Magistracy -> Course.values().take(2)
+            Grade.Postgraduate -> Course.values().take(3)
+            null -> Course.values().toList()
+        }
+        
         FilterRow(
             selected = selectedCourse,
-            items = Course.values().toList(),
+            items = availableCourses,
             title = {
                 stringResource(R.string.repository_course, it.number)
             },

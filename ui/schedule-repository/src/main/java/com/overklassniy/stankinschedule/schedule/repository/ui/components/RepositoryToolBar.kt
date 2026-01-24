@@ -1,112 +1,107 @@
 package com.overklassniy.stankinschedule.schedule.repository.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.BackdropScaffoldState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.TopAppBar
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import com.overklassniy.stankinschedule.core.ui.components.BackButton
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
-import kotlinx.coroutines.launch
-import com.overklassniy.stankinschedule.core.ui.R as R_core
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepositoryToolBar(
-    lastUpdate: String?,
-    scaffoldState: BackdropScaffoldState,
+    isSearchActive: Boolean,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    onSearchToggle: () -> Unit,
+    onFilterClick: () -> Unit,
+    onRefresh: () -> Unit,
     onBackPressed: () -> Unit,
-    onRefreshRepository: () -> Unit,
-    modifier: Modifier = Modifier,
+    containerColor: Color,
+    contentColor: Color
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-
-    CompositionLocalProvider(
-        LocalContentColor provides MaterialTheme.colorScheme.onSecondaryContainer
-    ) {
-        TopAppBar(
-            title = {
-                Column {
-                    Text(
-                        text = stringResource(R.string.repository_title),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    AnimatedVisibility(
-                        visible = !lastUpdate.isNullOrEmpty()
-                    ) {
-                        Text(
-                            text = stringResource(
-                                R.string.repository_last_update,
-                                lastUpdate ?: ""
-                            ),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
-                }
-            },
-            navigationIcon = {
-                if (scaffoldState.isRevealed) {
-                    IconButton(
-                        onClick = { scope.launch { scaffoldState.conceal() } }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_backdrop_close),
-                            contentDescription = null
-                        )
-                    }
-                } else {
-                    BackButton(
-                        onClick = onBackPressed,
-                    )
-                }
-            },
-            actions = {
-                IconButton(
-                    onClick = {
-                        if (scaffoldState.isRevealed) {
-                            scope.launch { scaffoldState.conceal() }
-                        } else {
-                            scope.launch { scaffoldState.reveal() }
-                        }
-                    }
-                ) {
+    TopAppBar(
+        title = {
+            if (isSearchActive) {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChange,
+                    placeholder = { Text("Поиск группы...") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Search
+                    ),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Text(text = stringResource(id = R.string.repository_title))
+            }
+        },
+        navigationIcon = {
+            if (isSearchActive) {
+                IconButton(onClick = onSearchToggle) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_backdrop_tune),
-                        contentDescription = null,
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close search"
                     )
                 }
-
-                IconButton(onClick = { showMenu = !showMenu }) {
+            } else {
+                BackButton(onClick = onBackPressed)
+            }
+        },
+        actions = {
+            if (!isSearchActive) {
+                IconButton(onClick = onRefresh) {
                     Icon(
-                        painter = painterResource(R_core.drawable.ic_action_more),
-                        contentDescription = null
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh"
                     )
                 }
-
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(text = stringResource(R.string.repository_refresh))
-                        },
-                        onClick = {
-                            onRefreshRepository()
-                            showMenu = false
-                        }
+            }
+            IconButton(onClick = onSearchToggle) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search"
+                )
+            }
+            if (!isSearchActive) {
+                IconButton(onClick = onFilterClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.List,
+                        contentDescription = "Filter"
                     )
                 }
-            },
-            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = modifier
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = containerColor,
+            titleContentColor = contentColor,
+            actionIconContentColor = contentColor
         )
-    }
+    )
 }

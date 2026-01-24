@@ -1,6 +1,6 @@
 package com.overklassniy.stankinschedule.schedule.repository.data.di
 
-import com.overklassniy.stankinschedule.schedule.repository.data.repository.FirebaseRemoteService
+import com.overklassniy.stankinschedule.schedule.repository.data.repository.MoodleRemoteService
 import com.overklassniy.stankinschedule.schedule.repository.data.repository.RepositoryStorageImpl
 import com.overklassniy.stankinschedule.schedule.repository.domain.repository.RepositoryStorage
 import com.overklassniy.stankinschedule.schedule.repository.domain.repository.ScheduleRemoteService
@@ -16,7 +16,7 @@ interface RepositoryModule {
 
     @Binds
     @ViewModelScoped
-    fun provideRepositoryService(service: FirebaseRemoteService): ScheduleRemoteService
+    fun provideRepositoryService(service: MoodleRemoteService): ScheduleRemoteService
 
     @Binds
     @ViewModelScoped
