@@ -11,7 +11,7 @@
     <string name="pref_schedule_summary">Изменение настроек расписания</string>
 
     <string name="pref_more">Дополнительно</string>
-    <string name="pref_more_summary">Прочии настройки</string>
+    <string name="pref_more_summary">Прочие настройки</string>
 
     <string name="pref_notification">Уведомления</string>
     <string name="pref_notification_summary">Настройка уведомлений</string>
@@ -22,22 +22,11 @@
     <string name="privacy_policy">Политика конфиденциальности</string>
     <string name="privacy_policy_summary">Сбор и обработка персональных данных пользователей</string>
 
-    <string name="about_description_developer">Разработчик: Верещагин Николай</string>
-    <string name="about_description_text">
-        \tСпасибо за тестирование:  \n
-        \t\t - Богодайко С.       \n
-        \t\t - Биннятов Р.        \n
-        \t\t - Одинцова Э.        \n
-        \t\t - Алексеев С.        \n
-        \t\t - Алтунин А.         \n
-        \t\t - Матвейчук П.       \n
-        \t\t - Лопатин Д.         \n
-        \t\t - Архипова Д.        \n
-        \t\t - Еловиков А.        \n
-        \t\t - Дума А.            \n
-        \t\t - Добровольский Д.   \n
-        \t\t - Белова Е.          \n
-    </string>
+    <string name="about_developer_legacy">Основано на приложении</string>
+    <string name="about_developer_legacy_name">Верещагина\u00A0Николая</string>
+
+    <string name="about_developer_fork">Разработчик:</string>
+    <string name="about_developer_fork_name">Киани Сейед Карен</string>
 
     <string name="setting_schedule_title">Настройки расписания</string>
 
@@ -60,5 +49,14 @@
 
     <string name="default_color">По умолчанию</string>
     <string name="version">Версия: </string>
+    <string name="changelog">История изменений</string>
+
+    <string name="support_title">Техподдержка</string>
+    <string name="support_email_title">E-mail</string>
+    <string name="support_email_summary">s.kiani@stankin.ru</string>
+    <string name="support_github_title">GitHub Issues</string>
+    <string name="support_github_summary">Сообщить о проблеме на GitHub</string>
+    <string name="support_email">s.kiani@stankin.ru</string>
+    <string name="support_github_issues">GitHub Issues</string>
 
 </resources>

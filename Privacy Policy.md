@@ -1,54 +1,117 @@
-**Privacy Policy**
+**Политика конфиденциальности**
 
-Nikolay Vereshchagin built the Stankin Schedule app as a Free app. This SERVICE is provided by Nikolay Vereshchagin at no cost and is intended for use as is.
+**Последнее обновление: 25 января 2026 года**
 
-This page is used to inform visitors regarding my policies with the collection, use, and disclosure of Personal Information if anyone decided to use my Service.
+Киани Сейед Карен ("мы", "наш" или "нас") управляет мобильным приложением Stankin Schedule ("Приложение"). Настоящая Политика конфиденциальности информирует вас о наших политиках в отношении сбора, использования и раскрытия персональных данных при использовании нашего Приложения.
 
-If you choose to use my Service, then you agree to the collection and use of information in relation to this policy. The Personal Information that I collect is used for providing and improving the Service. I will not use or share your information with anyone except as described in this Privacy Policy.
+Используя Приложение, вы соглашаетесь на сбор и использование информации в соответствии с настоящей политикой.
 
-The terms used in this Privacy Policy have the same meanings as in our Terms and Conditions, which is accessible at Stankin Schedule unless otherwise defined in this Privacy Policy.
+**1. Информация, которую мы собираем**
 
-**Information Collection and Use**
+**1.1. Информация, хранящаяся локально**
 
-For a better experience, while using our Service, I may require you to provide us with certain personally identifiable information. The information that I request will be retained on your device and is not collected by me in any way.
+Приложение хранит определенную информацию локально на вашем устройстве, включая:
+- Данные расписания и пользовательские настройки
+- Настройки и конфигурации приложения
+- Кэшированные данные для офлайн-функциональности
 
-The app does use third party services that may collect information used to identify you.
+Эта информация хранится только на вашем устройстве и не передается нам или третьим лицам.
 
-**Log Data**
+**1.2. Сторонние сервисы**
 
-I want to inform you that whenever you use my Service, in a case of an error in the app I collect data and information (through third party products) on your phone called Log Data. This Log Data may include information such as your device Internet Protocol (“IP”) address, device name, operating system version, the configuration of the app when utilizing my Service, the time and date of your use of the Service, and other statistics.
+Приложение использует сторонние сервисы, которые могут собирать информацию, используемую для вашей идентификации. Эти сервисы включают:
+- Сервисы Google Play (для функциональности приложения и обновлений)
 
-**Cookies**
+Мы рекомендуем вам ознакомиться с политиками конфиденциальности этих сторонних поставщиков услуг.
 
-Cookies are files with a small amount of data that are commonly used as anonymous unique identifiers. These are sent to your browser from the websites that you visit and are stored on your device's internal memory.
+**1.3. Данные журнала**
 
-This Service does not use these “cookies” explicitly. However, the app may use third party code and libraries that use “cookies” to collect information and improve their services. You have the option to either accept or refuse these cookies and know when a cookie is being sent to your device. If you choose to refuse our cookies, you may not be able to use some portions of this Service.
+Когда вы используете Приложение, в случае ошибки мы можем собирать данные и информацию (через сторонние продукты) на вашем устройстве, называемые "Данными журнала". Эти Данные журнала могут включать:
+- Адрес интернет-протокола ("IP") устройства
+- Название и модель устройства
+- Версию операционной системы
+- Конфигурацию приложения
+- Время и дату использования Приложения
+- Другую диагностическую информацию
 
-**Service Providers**
+**1.4. Файлы cookie и аналогичные технологии**
 
-I may employ third-party companies and individuals due to the following reasons:
+Хотя Приложение явно не использует "файлы cookie" в традиционном веб-смысле, оно может использовать сторонний код и библиотеки, которые используют аналогичные технологии для сбора информации и улучшения своих сервисов.
 
-*   To facilitate our Service;
-*   To provide the Service on our behalf;
-*   To perform Service-related services; or
-*   To assist us in analyzing how our Service is used.
+**2. Как мы используем вашу информацию**
 
-I want to inform users of this Service that these third parties have access to your Personal Information. The reason is to perform the tasks assigned to them on our behalf. However, they are obligated not to disclose or use the information for any other purpose.
+Мы используем собранную информацию для:
+- Предоставления и поддержания работы Приложения
+- Улучшения и оптимизации функциональности Приложения
+- Диагностики технических проблем
+- Обеспечения безопасности Приложения и предотвращения мошенничества
 
-**Security**
+**3. Хранение данных и безопасность**
 
-I value your trust in providing us your Personal Information, thus we are striving to use commercially acceptable means of protecting it. But remember that no method of transmission over the internet, or method of electronic storage is 100% secure and reliable, and I cannot guarantee its absolute security.
+**3.1. Локальное хранение**
 
-**Links to Other Sites**
+Персональные данные, хранящиеся Приложением, сохраняются локально на вашем устройстве. У нас нет доступа к этим данным, если вы явно не поделитесь ими с нами (например, через отчеты об ошибках).
 
-This Service may contain links to other sites. If you click on a third-party link, you will be directed to that site. Note that these external sites are not operated by me. Therefore, I strongly advise you to review the Privacy Policy of these websites. I have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.
+**3.2. Меры безопасности**
 
-**Changes to This Privacy Policy**
+Мы стремимся использовать коммерчески приемлемые средства для защиты вашей информации. Однако ни один метод передачи через интернет или электронного хранения не является на 100% безопасным. Хотя мы применяем разумные меры безопасности, мы не можем гарантировать абсолютную безопасность.
 
-I may update our Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes. I will notify you of any changes by posting the new Privacy Policy on this page.
+**3.3. Ваша ответственность**
 
-This policy is effective as of 2020-09-24
+Вы несете ответственность за:
+- Обеспечение безопасности вашего устройства
+- Отсутствие взлома или рутирования вашего устройства, так как это может поставить под угрозу безопасность
+- Поддержание операционной системы вашего устройства в актуальном состоянии
 
-**Contact Us**
+**4. Поставщики сторонних услуг**
 
-If you have any questions or suggestions about my Privacy Policy, do not hesitate to contact me at nick.vereshchagin@gmail.com.
+Мы можем привлекать сторонние компании и частных лиц для:
+- Облегчения нашего Сервиса
+- Предоставления Сервиса от нашего имени
+- Выполнения услуг, связанных с Сервисом
+- Помощи нам в анализе того, как используется наш Сервис
+
+Эти третьи стороны имеют доступ к вашей информации только для выполнения этих задач от нашего имени и обязаны не раскрывать и не использовать ее для любых других целей.
+
+**5. Ссылки на другие сайты**
+
+Приложение может содержать ссылки на внешние веб-сайты. Мы не контролируем и не несем ответственности за содержание, политики конфиденциальности или практику любых сторонних сайтов или сервисов. Мы настоятельно рекомендуем вам ознакомиться с Политикой конфиденциальности каждого сайта, который вы посещаете.
+
+**6. Конфиденциальность детей**
+
+Приложение не предназначено для использования детьми в возрасте до 13 лет. Мы сознательно не собираем личную информацию от детей младше 13 лет. Если вы являетесь родителем или опекуном и считаете, что ваш ребенок предоставил нам личную информацию, пожалуйста, немедленно свяжитесь с нами.
+
+**7. Ваши права**
+
+В зависимости от вашего местоположения, вы можете иметь определенные права в отношении вашей личной информации, включая:
+- Право на доступ к вашим персональным данным
+- Право на исправление неточных данных
+- Право на запрос удаления ваших данных
+- Право на возражение против обработки ваших данных
+
+Для осуществления этих прав, пожалуйста, свяжитесь с нами, используя информацию, указанную ниже.
+
+**8. Хранение данных**
+
+Мы сохраняем локально хранящиеся данные на вашем устройстве до тех пор, пока вы не удалите Приложение или не удалите данные вручную. Данные журнала, собранные через сторонние сервисы, подчиняются политикам хранения этих сервисов.
+
+**9. Изменения в настоящей Политике конфиденциальности**
+
+Мы можем время от времени обновлять нашу Политику конфиденциальности. Мы уведомим вас о любых изменениях путем:
+- Размещения новой Политики конфиденциальности на этой странице
+- Обновления даты "Последнее обновление"
+
+Вам рекомендуется периодически просматривать настоящую Политику конфиденциальности на предмет любых изменений. Изменения вступают в силу при размещении на этой странице.
+
+**10. Международные передачи данных**
+
+Ваша информация может быть передана и храниться на компьютерах, расположенных за пределами вашего штата, провинции, страны или другой правительственной юрисдикции, где законы о защите данных могут отличаться. Используя Приложение, вы соглашаетесь на передачу вашей информации на объекты, расположенные за пределами вашей юрисдикции.
+
+**11. Связаться с нами**
+
+Если у вас есть вопросы или опасения относительно настоящей Политики конфиденциальности или наших практик работы с данными, пожалуйста, свяжитесь с нами:
+
+**Электронная почта:** s.kiani@stankin.ru  
+**GitHub Issues:** https://github.com/overklassniy/STANKIN_Schedule_app/issues
+
+**Дата вступления в силу:** 25 января 2026 года

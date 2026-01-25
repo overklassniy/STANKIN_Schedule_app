@@ -21,22 +21,11 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="privacy_policy_summary">Collection and processing of personal data</string>
 
-    <string name="about_description_developer">Developer: Vereshchagin Nikolay</string>
-    <string name="about_description_text">
-        \tThanks for the closed beta: \n
-        \t\t - Bogodaiko S.     \n
-        \t\t - Binniatov R.     \n
-        \t\t - Odintsova E.     \n
-        \t\t - Alekseev S.      \n
-        \t\t - Altunin A.       \n
-        \t\t - Matveychuk P.    \n
-        \t\t - Lopatin D.       \n
-        \t\t - Arkhipova D.     \n
-        \t\t - Elovikov A.      \n
-        \t\t - Duma A.          \n
-        \t\t - Dobrovolsky D.   \n
-        \t\t - Belova E.        \n
-    </string>
+    <string name="about_developer_legacy">Based on application by</string>
+    <string name="about_developer_legacy_name">Vereshchagin Nikolay</string>
+
+    <string name="about_developer_fork">Developer:</string>
+    <string name="about_developer_fork_name">Kiani Seyed Karen</string>
 
     <string name="setting_schedule_title">Schedule settings</string>
 
@@ -59,5 +48,14 @@
 
     <string name="default_color">Default</string>
     <string name="version">Version: </string>
+    <string name="changelog">Changelog</string>
+
+    <string name="support_title">Support</string>
+    <string name="support_email_title">E-mail</string>
+    <string name="support_email_summary">s.kiani@stankin.ru</string>
+    <string name="support_github_title">GitHub Issues</string>
+    <string name="support_github_summary">Report an issue on GitHub</string>
+    <string name="support_email">s.kiani@stankin.ru</string>
+    <string name="support_github_issues">GitHub Issues</string>
 
 </resources>

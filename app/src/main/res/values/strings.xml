@@ -1,6 +1,6 @@
 <resources>
     <!-- main -->
-    <string name="app_name" translatable="false">Stankin</string>
+    <string name="app_name">STANKIN Schedule</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_schedule">Schedule</string>
