@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.schedule.viewer.ui
 
 import android.content.Intent
+import android.content.ClipData
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -33,19 +34,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
@@ -66,6 +69,8 @@ import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleRe
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleState
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleViewerToolBar
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.rememberSaveFormatDialogState
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.joda.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,7 +91,7 @@ fun ScheduleViewerScreen(
         viewModel.loadSchedule(scheduleId, startDate?.let { LocalDate.parse(it) })
     }
 
-    val scheduleState by viewModel.scheduleState.collectAsState()
+    val scheduleState by viewModel.scheduleState.collectAsStateWithLifecycle()
     LaunchedEffect(scheduleState) {
         val state = scheduleState
         if (state is ScheduleState.NotFound) {
@@ -99,7 +104,8 @@ fun ScheduleViewerScreen(
     }
 
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val clipboardScope = rememberCoroutineScope()
 
     val saveFileState = rememberFileSaveState(
         onPickerResult = {
@@ -119,7 +125,7 @@ fun ScheduleViewerScreen(
     val snackBarHostState = remember { SnackbarHostState() }
     val successfullySaved = stringResource(R.string.successfully_saved)
     val openAction = stringResource(R.string.open)
-    val saveProgress by viewModel.saveProgress.collectAsState()
+    val saveProgress by viewModel.saveProgress.collectAsStateWithLifecycle()
 
     LaunchedEffect(saveProgress) {
         when (val progress = saveProgress) {
@@ -157,7 +163,7 @@ fun ScheduleViewerScreen(
 
     var isDaySelector by remember { mutableStateOf(false) }
     var isRemoveSchedule by remember { mutableStateOf(false) }
-    val renameState by viewModel.renameState.collectAsState()
+    val renameState by viewModel.renameState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -220,8 +226,8 @@ fun ScheduleViewerScreen(
         val scheduleDays = viewModel.scheduleDays.collectAsLazyPagingItems()
         val scheduleListState = rememberLazyListState()
 
-        val isVerticalViewer by viewModel.isVerticalViewer.collectAsState(false)
-        val pairColorGroup by viewModel.pairColorGroup.collectAsState(PairColorGroup.default())
+        val isVerticalViewer by viewModel.isVerticalViewer.collectAsStateWithLifecycle(false)
+        val pairColorGroup by viewModel.pairColorGroup.collectAsStateWithLifecycle(PairColorGroup.default())
         val pairColors by remember(pairColorGroup) { derivedStateOf { pairColorGroup.toColor() } }
 
         if (scheduleState.isLoading) {
@@ -234,14 +240,15 @@ fun ScheduleViewerScreen(
             }
         }
 
-        val visibleItem by remember(scheduleListState) {
-            derivedStateOf { scheduleListState.firstVisibleItemIndex }
-        }
-
-        LaunchedEffect(visibleItem) {
-            if (scheduleDays.itemCount > 0 && visibleItem < scheduleDays.itemCount) {
-                viewModel.updatePagingDate(scheduleDays.peek(visibleItem)?.day)
-            }
+        LaunchedEffect(scheduleListState, scheduleDays) {
+            snapshotFlow { scheduleListState.firstVisibleItemIndex }
+                .distinctUntilChanged()
+                .collect { index ->
+                    if (index >= 0 && index < scheduleDays.itemCount) {
+                        val day = scheduleDays.peek(index)?.day ?: return@collect
+                        viewModel.updatePagingDate(day)
+                    }
+                }
         }
 
         PairsList(
@@ -267,7 +274,11 @@ fun ScheduleViewerScreen(
                             BrowserUtils.openLink(context, url)
                         },
                         onLinkCopied = {
-                            clipboardManager.setText(AnnotatedString((it)))
+                            clipboardScope.launch {
+                                clipboard.setClipEntry(
+                                    ClipData.newPlainText(null, it).toClipEntry()
+                                )
+                            }
                             Toast.makeText(context, R.string.link_copied, Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.fillParentMaxWidth()

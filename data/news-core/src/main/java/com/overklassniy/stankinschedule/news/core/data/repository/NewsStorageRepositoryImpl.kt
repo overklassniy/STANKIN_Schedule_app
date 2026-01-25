@@ -11,11 +11,18 @@ import com.overklassniy.stankinschedule.news.core.domain.repository.NewsStorageR
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Provider
 
 class NewsStorageRepositoryImpl @Inject constructor(
-    private val db: NewsDatabase,
-    private val dao: NewsDao,
+    private val dbProvider: Provider<NewsDatabase>,
+    private val daoProvider: Provider<NewsDao>,
 ) : NewsStorageRepository {
+
+    private val db: NewsDatabase
+        get() = dbProvider.get()
+
+    private val dao: NewsDao
+        get() = daoProvider.get()
 
     override fun news(newsSubdivision: Int): PagingSource<Int, NewsPost> {
         return dao.all(newsSubdivision) // .transform(mapper = { it.toPost() })

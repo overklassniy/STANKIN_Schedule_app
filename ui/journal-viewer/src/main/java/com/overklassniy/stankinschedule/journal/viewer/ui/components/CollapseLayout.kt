@@ -1,13 +1,11 @@
 package com.overklassniy.stankinschedule.journal.viewer.ui.components
 
-import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
-import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
@@ -42,13 +40,7 @@ fun CollapseLayout(
     val heightInPx = with(density) { headerHeight.toPx() }
 
     val state = remember {
-        AnchoredDraggableState<SwipingStates>(
-            initialValue = SwipingStates.EXPANDED,
-            positionalThreshold = { distance: Float -> distance * 0.5f },
-            velocityThreshold = { with(density) { 0.5.dp.toPx() } },
-            snapAnimationSpec = tween(durationMillis = 300),
-            decayAnimationSpec = exponentialDecay(),
-        )
+        AnchoredDraggableState(initialValue = SwipingStates.EXPANDED)
     }
 
     SideEffect {
@@ -87,7 +79,7 @@ fun CollapseLayout(
 
             override suspend fun onPreFling(available: Velocity): Velocity {
                 return if (available.y < 0) {
-                    state.settle(available.y)
+                    state.settle(tween(durationMillis = 300))
                     available
                 } else {
                     Velocity.Zero
@@ -98,7 +90,7 @@ fun CollapseLayout(
                 consumed: Velocity,
                 available: Velocity,
             ): Velocity {
-                state.settle(available.y)
+                state.settle(tween(durationMillis = 300))
                 return super.onPostFling(consumed, available)
             }
         }

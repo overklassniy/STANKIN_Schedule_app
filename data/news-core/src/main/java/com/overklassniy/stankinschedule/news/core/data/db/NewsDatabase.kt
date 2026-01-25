@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
     entities = [
         NewsEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class NewsDatabase : RoomDatabase() {
@@ -39,7 +39,7 @@ abstract class NewsDatabase : RoomDatabase() {
                     context,
                     NewsDatabase::class.java,
                     "news_database"
-                ).fallbackToDestructiveMigration()
+                ).fallbackToDestructiveMigration(true)
 
                 val database = databaseBuilder.build()
                 instance = database

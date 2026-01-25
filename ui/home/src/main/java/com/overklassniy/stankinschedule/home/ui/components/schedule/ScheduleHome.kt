@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.home.ui.components.schedule
 
 import android.widget.Toast
+import android.content.ClipData
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -10,11 +11,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.home.ui.R
@@ -23,6 +25,7 @@ import com.overklassniy.stankinschedule.schedule.core.ui.ScheduleDayCard
 import com.overklassniy.stankinschedule.schedule.core.ui.toColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewDay
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -43,7 +46,8 @@ fun ScheduleHome(
 
 
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val clipboardScope = rememberCoroutineScope()
 
     Column(modifier = modifier) {
 
@@ -65,7 +69,11 @@ fun ScheduleHome(
                 onPairClicked = {},
                 onLinkClicked = onLinkClicked,
                 onLinkCopied = {
-                    clipboardManager.setText(AnnotatedString((it)))
+                    clipboardScope.launch {
+                        clipboard.setClipEntry(
+                            ClipData.newPlainText(null, it).toClipEntry()
+                        )
+                    }
                     Toast.makeText(context, R.string.link_copied, Toast.LENGTH_SHORT).show()
                 },
                 enabled = false,

@@ -19,17 +19,19 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
+import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import javax.inject.Singleton
 
 @Module
-@InstallIn(ViewModelComponent::class)
-object NewsModule {
+@InstallIn(SingletonComponent::class)
+object NewsNetworkModule {
 
     @Provides
-    @ViewModelScoped
+    @Singleton
     fun provideNewsService(client: OkHttpClient): StankinNewsAPI {
         return Retrofit.Builder()
             .baseUrl(StankinNewsAPI.BASE_URL)
@@ -48,7 +50,7 @@ object NewsModule {
     }
 
     @Provides
-    @ViewModelScoped
+    @Singleton
     fun provideNews2024Service(client: OkHttpClient): StankinNews2024API {
         return Retrofit.Builder()
             .baseUrl(StankinNews2024API.BASE_URL)
@@ -57,6 +59,11 @@ object NewsModule {
             .build()
             .create(StankinNews2024API::class.java)
     }
+}
+
+@Module
+@InstallIn(ViewModelComponent::class)
+object NewsModule {
 
     @Provides
     @ViewModelScoped

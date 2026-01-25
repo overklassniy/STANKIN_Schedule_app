@@ -182,8 +182,9 @@ class ScheduleRepositoryViewModel @Inject constructor(
         val currentYear = _category.value?.year
         val currentQuery = _searchQuery.value
 
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.Default) {
             val filterItems = cache
+                .asSequence()
                 .filter { item ->
                     gradeFilter(item, currentGrade)
                 }
@@ -216,6 +217,7 @@ class ScheduleRepositoryViewModel @Inject constructor(
                         item.name
                     }
                 )
+                .toList()
 
             _repositoryItems.value = UIState.success(filterItems)
         }

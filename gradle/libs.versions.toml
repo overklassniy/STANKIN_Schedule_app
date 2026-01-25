@@ -6,6 +6,13 @@ agp = "9.0.0"
 core = "1.17.0"
 ksp = "2.3.3"
 
+# Benchmark / performance
+benchmark = "1.5.0-alpha01"
+profileinstaller = "1.2.2"
+androidx-test-runner = "1.6.2"
+androidx-test-ext-junit = "1.2.1"
+uiautomator = "2.3.0"
+
 # Compose
 compose = "2026.01.00"
 
@@ -33,6 +40,7 @@ webkit = "1.15.0"
 datastore = "1.2.0"
 startup = "1.2.0"
 splashscreen = "1.2.0"
+documentfile = "1.1.0"
 
 # Integration
 browser = "1.9.0"
@@ -72,6 +80,13 @@ androidx-core = { module = "androidx.core:core-ktx", version.ref = "core" }
 
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 
+# Benchmark / performance
+androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark" }
+androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }
+androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
+
 # Compose
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose" }
 compose-ui = { module = "androidx.compose.ui:ui" }
@@ -104,11 +119,13 @@ androidx-paging = { module = "androidx.paging:paging-runtime-ktx", version.ref =
 androidx-preference = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
 androidx-security = { module = "androidx.security:security-crypto", version.ref = "security" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
+androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "startup" }
 androidx-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-java8 = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "lifecycle" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 
 # Integration
 integration-browser = { module = "androidx.browser:browser", version.ref = "browser" }

@@ -68,6 +68,7 @@ fun ScheduleRepositoryScreen(
                     if (filePath != null && scheduleName != null) {
                         val intent = ScheduleParserActivity.createIntent(context, filePath, scheduleName)
                         context.startActivity(intent)
+                        @Suppress("UNUSED_VALUE")
                         currentWorkerName = null
                     }
                 }
@@ -76,6 +77,7 @@ fun ScheduleRepositoryScreen(
                         message = downloadFailedMessage,
                         duration = SnackbarDuration.Short
                     )
+                    @Suppress("UNUSED_VALUE")
                     currentWorkerName = null
                 }
                 else -> {}

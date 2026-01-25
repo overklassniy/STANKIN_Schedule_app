@@ -15,7 +15,7 @@ import androidx.room.RoomDatabase
     entities = [
         RepositoryEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 
@@ -46,7 +46,7 @@ abstract class RepositoryDatabase : RoomDatabase() {
                     context,
                     RepositoryDatabase::class.java,
                     "schedule_repository_database"
-                ).fallbackToDestructiveMigration()
+                ).fallbackToDestructiveMigration(true)
 
                 val database = databaseBuilder.build()
                 instance = database

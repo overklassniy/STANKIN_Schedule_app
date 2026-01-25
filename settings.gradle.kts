@@ -56,4 +56,5 @@ include(
     ":ui:schedule-repository",
     ":ui:schedule-widget",
     ":ui:settings",
-)
+
+    )

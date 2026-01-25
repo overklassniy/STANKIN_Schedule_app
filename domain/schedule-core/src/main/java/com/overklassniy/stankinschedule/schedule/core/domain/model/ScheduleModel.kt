@@ -15,10 +15,17 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
     private val days = linkedMapOf<DayOfWeek, ScheduleDayModel>()
 
     /**
+     * Кэш диапазона дат (start, end). Инвалидируется при изменении расписания.
+     */
+    @Volatile
+    private var dateRangeCache: Pair<LocalDate?, LocalDate?>? = null
+
+    /**
      * Добавляет пару в расписание.
      */
     fun add(pair: PairModel) {
         dayFor(pair).add(pair)
+        invalidateCache()
     }
 
     /**
@@ -26,51 +33,51 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
      */
     fun remove(pair: PairModel) {
         dayFor(pair).remove(pair)
+        invalidateCache()
+    }
+
+    /**
+     * Инвалидирует кэш дат.
+     */
+    private fun invalidateCache() {
+        dateRangeCache = null
+    }
+
+    /**
+     * Вычисляет диапазон дат за один проход по всем дням.
+     */
+    private fun computeDateRange(): Pair<LocalDate?, LocalDate?> {
+        dateRangeCache?.let { return it }
+
+        var start: LocalDate? = null
+        var last: LocalDate? = null
+
+        for (day in days.values) {
+            val dayStart = day.startDate()
+            val dayEnd = day.endDate()
+
+            if (dayStart != null) {
+                start = if (start == null || dayStart < start) dayStart else start
+            }
+            if (dayEnd != null) {
+                last = if (last == null || dayEnd > last) dayEnd else last
+            }
+        }
+
+        return (start to last).also { dateRangeCache = it }
     }
 
     /**
      * Возвращает дату, с которого начинается расписание.
      * Если расписание пустое, то возвращается null.
      */
-    fun startDate(): LocalDate? {
-        var start: LocalDate? = null
-
-        for (day in days.values) {
-            val firstDay = day.startDate()
-            if (firstDay != null) {
-                if (start == null) {
-                    start = firstDay
-                } else {
-                    if (firstDay < start) {
-                        start = firstDay
-                    }
-                }
-            }
-        }
-        return start
-    }
+    fun startDate(): LocalDate? = computeDateRange().first
 
     /**
      * Возвращает дату, на которую заканчивается расписание.
      * Если расписание пустое, то возвращается null.
      */
-    fun endDate(): LocalDate? {
-        var last: LocalDate? = null
-
-        for (day in days.values) {
-            val lastDay = day.endDate()
-            if (lastDay != null) {
-                if (last == null) {
-                    last = lastDay
-                } else {
-                    if (lastDay > last) {
-                        last = lastDay
-                    }
-                }
-            }
-        }
-        return last
-    }
+    fun endDate(): LocalDate? = computeDateRange().second
 
     /**
      * Возвращает список всех дисциплин в расписании.

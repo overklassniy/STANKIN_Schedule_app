@@ -15,11 +15,18 @@ class ScheduleDayModel : Iterable<PairModel> {
     private val pairs = arrayListOf<PairModel>()
 
     /**
+     * Кэш диапазона дат (start, end). Инвалидируется при изменении пар.
+     */
+    @Volatile
+    private var dateRangeCache: Pair<LocalDate?, LocalDate?>? = null
+
+    /**
      * Добавляет пару в день.
      */
     fun add(pair: PairModel) {
         isAddCheck(pair)
         pairs.add(pair)
+        invalidateCache()
     }
 
     /**
@@ -27,58 +34,59 @@ class ScheduleDayModel : Iterable<PairModel> {
      */
     fun remove(pair: PairModel) {
         pairs.removeIf7 { it == pair }
+        invalidateCache()
+    }
+
+    /**
+     * Инвалидирует кэш дат.
+     */
+    private fun invalidateCache() {
+        dateRangeCache = null
+    }
+
+    /**
+     * Вычисляет диапазон дат за один проход.
+     */
+    private fun computeDateRange(): Pair<LocalDate?, LocalDate?> {
+        dateRangeCache?.let { return it }
+
+        if (pairs.isEmpty()) {
+            return (null to null).also { dateRangeCache = it }
+        }
+
+        var first: LocalDate? = null
+        var last: LocalDate? = null
+
+        for (pair in pairs) {
+            val pairStart = pair.date.startDate()
+            val pairEnd = pair.date.endDate()
+
+            if (pairStart != null) {
+                first = if (first == null || pairStart < first) pairStart else first
+            }
+            if (pairEnd != null) {
+                last = if (last == null || pairEnd > last) pairEnd else last
+            }
+        }
+
+        return (first to last).also { dateRangeCache = it }
     }
 
     /**
      * Возвращает дату, с которого начинается расписание.
      * Если расписание пустое, то возвращается null.
      */
-    fun startDate(): LocalDate? {
-        if (pairs.isEmpty()) {
-            return null
-        }
-
-        var first: LocalDate? = null
-        for (pair in pairs) {
-            val firstPair = pair.date.startDate()
-            if (first != null) {
-                if (firstPair != null && firstPair < first) {
-                    first = firstPair
-                }
-            } else {
-                first = firstPair
-            }
-        }
-
-        return first
-    }
+    fun startDate(): LocalDate? = computeDateRange().first
 
     /**
      * Возвращает дату, на которую заканчивается расписание.
      * Если расписание пустое, то возвращается null.
      */
-    fun endDate(): LocalDate? {
-        if (pairs.isEmpty()) {
-            return null
-        }
-
-        var last: LocalDate? = null
-        for (pair in pairs) {
-            val lastPair = pair.date.endDate()
-            if (last != null) {
-                if (lastPair != null && lastPair > last) {
-                    last = lastPair
-                }
-            } else {
-                last = lastPair
-            }
-        }
-
-        return last
-    }
+    fun endDate(): LocalDate? = computeDateRange().second
 
     /**
      * Проверяет, можно ли добавить пару в расписание.
+     * Использует раннее прерывание при нахождении конфликта.
      */
     @Throws(PairIntersectException::class)
     private fun isAddCheck(added: PairModel) {
@@ -111,28 +119,20 @@ class ScheduleDayModel : Iterable<PairModel> {
 
     /**
      * Возвращает список пар, которые есть в заданный день.
+     * Оптимизировано: фильтрация с использованием asSequence для ленивой обработки.
      */
     fun pairsByDate(date: LocalDate): List<PairModel> {
-        val pairsDate = ArrayList<PairModel>()
-        for (pair in pairs) {
-            if (pair.date.intersect(date)) {
-                pairsDate.add(pair)
-            }
-        }
-        return pairsDate.sorted()
+        return pairs.asSequence()
+            .filter { it.date.intersect(date) }
+            .sortedWith(compareBy { it })
+            .toList()
     }
 
     /**
      * Возвращает список всех пар по названию дисциплины.
      */
     fun pairsByDiscipline(discipline: String): List<PairModel> {
-        val result = arrayListOf<PairModel>()
-        for (pair in pairs) {
-            if (pair.title == discipline) {
-                result.add(pair)
-            }
-        }
-        return result
+        return pairs.filter { it.title == discipline }
     }
 
     override fun iterator(): Iterator<PairModel> = pairs.iterator()

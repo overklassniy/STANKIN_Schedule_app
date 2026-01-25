@@ -15,11 +15,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Provider
 
 class ScheduleStorageImpl @Inject constructor(
-    private val db: ScheduleDatabase,
-    private val dao: ScheduleDao,
+    private val dbProvider: Provider<ScheduleDatabase>,
+    private val daoProvider: Provider<ScheduleDao>,
 ) : ScheduleStorage {
+
+    private val db: ScheduleDatabase
+        get() = dbProvider.get()
+
+    private val dao: ScheduleDao
+        get() = daoProvider.get()
 
     override fun schedules(): Flow<List<ScheduleInfo>> {
         return dao.getAllSchedules().map { data -> data.map { it.toInfo() } }
@@ -79,8 +86,10 @@ class ScheduleStorageImpl @Inject constructor(
     }
 
     override suspend fun removeSchedules(schedules: List<ScheduleInfo>) {
+        if (schedules.isEmpty()) return
         db.withTransaction {
-            schedules.forEach { schedule -> dao.deleteSchedule(schedule.id) }
+            val ids = schedules.map { it.id }
+            dao.deleteSchedulesByIds(ids)
         }
     }
 

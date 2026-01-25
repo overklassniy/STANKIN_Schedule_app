@@ -22,10 +22,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -111,12 +111,12 @@ fun HomeScreen(
             }
         }
 
-        val favorite by viewModel.favorite.collectAsState()
-        val scheduleDays by viewModel.days.collectAsState()
-        val pairColorGroup by viewModel.pairColorGroup.collectAsState(PairColorGroup.default())
+        val favorite by viewModel.favorite.collectAsStateWithLifecycle()
+        val scheduleDays by viewModel.days.collectAsStateWithLifecycle()
+        val pairColorGroup by viewModel.pairColorGroup.collectAsStateWithLifecycle(PairColorGroup.default())
         val pairColors by remember(pairColorGroup) { derivedStateOf { pairColorGroup.toColor() } }
 
-        val news by viewModel.news.collectAsState()
+        val news by viewModel.news.collectAsStateWithLifecycle(emptyList())
 
         LazyColumn(
             state = columnState,

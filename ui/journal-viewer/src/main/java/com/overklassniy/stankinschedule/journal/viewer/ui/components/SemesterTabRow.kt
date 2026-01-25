@@ -1,6 +1,6 @@
 package com.overklassniy.stankinschedule.journal.viewer.ui.components
 
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,7 +18,7 @@ fun SemesterTabRow(
 ) {
     val pagerScroller = rememberCoroutineScope()
 
-    ScrollableTabRow(
+    PrimaryScrollableTabRow(
         selectedTabIndex = currentPage,
         edgePadding = 0.dp,
         divider = {},

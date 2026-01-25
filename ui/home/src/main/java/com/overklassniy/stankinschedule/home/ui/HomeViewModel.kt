@@ -14,11 +14,13 @@ import com.overklassniy.stankinschedule.schedule.settings.domain.usecase.Schedul
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewDay
 import com.overklassniy.stankinschedule.schedule.viewer.domain.usecase.ScheduleViewerUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import javax.inject.Inject
@@ -42,6 +44,15 @@ class HomeViewModel @Inject constructor(
 
     private val _news = MutableStateFlow<List<NewsPost>>(emptyList())
     val news = _news.asStateFlow()
+
+    private data class DaysKey(
+        val scheduleId: Long,
+        val from: LocalDate,
+        val to: LocalDate,
+    )
+
+    private var lastDaysKey: DaysKey? = null
+    private var lastDaysValue: List<ScheduleViewDay> = emptyList()
 
     init {
         val delta = 3
@@ -76,18 +87,36 @@ class HomeViewModel @Inject constructor(
         return applicationPreference.lastInAppUpdate
     }
 
-    private fun updateScheduleBlock(model: ScheduleModel?, delta: Int) {
+    private suspend fun updateScheduleBlock(model: ScheduleModel?, delta: Int) {
         if (model == null) {
             _favorite.value = null
             _days.value = UIState.Success(emptyList())
             return
         }
 
-        val days = scheduleViewerUseCase.scheduleViewDays(
-            model = model,
-            from = LocalDate.now().minusDays(delta),
-            to = LocalDate.now().plusDays(delta + 1)
+        val now = LocalDate.now()
+        val from = now.minusDays(delta)
+        val to = now.plusDays(delta + 1)
+        val key = DaysKey(
+            scheduleId = model.info.id,
+            from = from,
+            to = to,
         )
+
+        val days = if (key == lastDaysKey) {
+            lastDaysValue
+        } else {
+            val computed = withContext(Dispatchers.Default) {
+                scheduleViewerUseCase.scheduleViewDays(
+                    model = model,
+                    from = from,
+                    to = to
+                )
+            }
+            lastDaysKey = key
+            lastDaysValue = computed
+            computed
+        }
 
         _favorite.value = model.info
         _days.value = UIState.success(days)

@@ -40,7 +40,7 @@ abstract class ScheduleDatabase : RoomDatabase() {
                     context,
                     ScheduleDatabase::class.java,
                     "schedule_database"
-                ).fallbackToDestructiveMigration()
+                ).fallbackToDestructiveMigration(true)
 
                 val database = databaseBuilder.build()
                 instance = database

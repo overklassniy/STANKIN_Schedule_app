@@ -57,10 +57,26 @@ android {
                 "proguard-rules.pro"
             )
         }
+        create("benchmark") {
+            initWith(getByName("release"))
+            matchingFallbacks += listOf("release")
+
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            signingConfig = signingConfigs.getByName("debug")
+
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+                "benchmark-rules.pro",
+            )
+        }
         release {
             isDebuggable = false
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -165,6 +181,7 @@ dependencies {
     implementation(libs.androidx.paging)
     implementation(libs.androidx.startup)
     implementation(libs.androidx.splashscreen)
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.ui.material)
 
     implementation(libs.integration.googleServices)

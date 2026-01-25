@@ -36,10 +36,10 @@ interface ScheduleDao {
     fun getScheduleWithPairs(id: Long): Flow<ScheduleWithPairs?>
 
     /**
-     * Возвращает flow элемента расписания.
+     * Возвращает элемент расписания по названию.
      */
     @Query("SELECT * FROM schedule_entities WHERE schedule_name = :scheduleName LIMIT 1")
-    fun getScheduleEntity(scheduleName: String): ScheduleEntity?
+    suspend fun getScheduleEntity(scheduleName: String): ScheduleEntity?
 
     /**
      * Возвращает flow элемента расписания.
@@ -133,4 +133,10 @@ interface ScheduleDao {
     @Transaction
     @Delete
     suspend fun deleteSchedule(schedule: ScheduleEntity)
+
+    /**
+     * Удаляет несколько расписаний по списку ID за один запрос.
+     */
+    @Query("DELETE FROM schedule_entities WHERE id IN (:scheduleIds)")
+    suspend fun deleteSchedulesByIds(scheduleIds: List<Long>)
 }

@@ -11,7 +11,11 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "news_posts",
     indices = [
-        Index("relative_url", unique = true)
+        Index("relative_url", unique = true),
+        Index(
+            value = ["news_subdivision", "index_order"],
+            unique = false,
+        ),
     ]
 )
 data class NewsEntity(

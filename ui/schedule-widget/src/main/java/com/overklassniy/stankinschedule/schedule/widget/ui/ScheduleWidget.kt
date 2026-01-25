@@ -85,13 +85,15 @@ object ScheduleWidget {
 
         // установка адаптера
         val dataIntent = remoteAdapterIntent(context, appWidgetId)
+        @Suppress("DEPRECATION")
         views.setRemoteAdapter(R.id.widget_days, dataIntent)
 
         // Обновление виджета
         appWidgetManager.updateAppWidget(appWidgetId, views)
 
         if (fullUpdate) {
-            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_days)
+            @Suppress("DEPRECATION")
+            appWidgetManager.notifyAppWidgetViewDataChanged(intArrayOf(appWidgetId), R.id.widget_days)
         }
     }
 

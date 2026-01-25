@@ -4,7 +4,7 @@ import com.overklassniy.stankinschedule.schedule.core.domain.repository.Schedule
 import com.overklassniy.stankinschedule.schedule.core.domain.repository.ScheduleStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
@@ -14,8 +14,12 @@ class ScheduleDeviceUseCase @Inject constructor(
     private val device: ScheduleDeviceRepository
 ) {
 
+    /**
+     * Сохраняет расписание на устройство.
+     * Возвращает Flow для корректной композиции в UI (catch/collect).
+     */
     fun saveToDevice(scheduleId: Long, path: String): Flow<Boolean> = flow {
-        val schedule = storage.scheduleModel(scheduleId).firstOrNull()
+        val schedule = storage.scheduleModel(scheduleId).first()
             ?: throw RuntimeException("Schedule not found")
         device.saveToDevice(schedule, path)
         emit(true)

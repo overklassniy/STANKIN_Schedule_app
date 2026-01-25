@@ -31,8 +31,6 @@
 # hide the original source file name.
 # -renamesourcefileattribute SourceFile
 
--dontobfuscate
-
 -keepattributes InnerClasses
 -keep class **.R$* {
     <fields>;
@@ -79,4 +77,10 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+#===================================================================================================
+# Optional deps referenced by libraries (R8)
+-dontwarn com.gemalto.jp2.**
+-dontwarn com.google.re2j.**
+-dontwarn org.slf4j.impl.StaticLoggerBinder
 #===================================================================================================

@@ -2,6 +2,7 @@ package com.overklassniy.stankinschedule.journal.predict.ui.paging
 
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.overklassniy.stankinschedule.journal.predict.ui.model.PredictMark
 
@@ -29,7 +30,7 @@ class PredictAdapter(
     }
 
     private fun updateData() {
-        data = if (showExposed) {
+        val newData = if (showExposed) {
             fullData.flatMap {
                 listOf(HeaderItem(it.key)) + it.value.map { mark -> ContentItem(mark) }
             }
@@ -47,8 +48,47 @@ class PredictAdapter(
             }
         }
 
+        val diffCallback = PredictDiffCallback(data, newData)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        
+        data = newData
         onItemCountChanged(data.size)
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    private class PredictDiffCallback(
+        private val oldList: List<PredictItem>,
+        private val newList: List<PredictItem>
+    ) : DiffUtil.Callback() {
+
+        override fun getOldListSize(): Int = oldList.size
+
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+            return when {
+                oldItem is HeaderItem && newItem is HeaderItem -> 
+                    oldItem.discipline == newItem.discipline
+                oldItem is ContentItem && newItem is ContentItem -> 
+                    oldItem.mark.discipline == newItem.mark.discipline && 
+                    oldItem.mark.type == newItem.mark.type
+                else -> false
+            }
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+            return when {
+                oldItem is HeaderItem && newItem is HeaderItem -> 
+                    oldItem.discipline == newItem.discipline
+                oldItem is ContentItem && newItem is ContentItem -> 
+                    oldItem.mark == newItem.mark
+                else -> false
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ComposeRecyclerHolder {

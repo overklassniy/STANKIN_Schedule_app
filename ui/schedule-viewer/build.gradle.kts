@@ -71,6 +71,7 @@ dependencies {
     // Components
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.lifecycle.java8)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.paging)
     implementation(libs.ui.material)
 

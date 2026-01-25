@@ -11,12 +11,19 @@ import com.overklassniy.stankinschedule.schedule.repository.domain.model.Reposit
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryItem
 import com.overklassniy.stankinschedule.schedule.repository.domain.repository.RepositoryStorage
 import javax.inject.Inject
+import javax.inject.Provider
 
 class RepositoryStorageImpl @Inject constructor(
     private val cache: CacheManager,
-    private val db: RepositoryDatabase,
-    private val dao: RepositoryDao,
+    private val dbProvider: Provider<RepositoryDatabase>,
+    private val daoProvider: Provider<RepositoryDao>,
 ) : RepositoryStorage {
+
+    private val db: RepositoryDatabase
+        get() = dbProvider.get()
+
+    private val dao: RepositoryDao
+        get() = daoProvider.get()
 
     init {
         cache.addStartedPath(ROOT)
@@ -38,11 +45,11 @@ class RepositoryStorageImpl @Inject constructor(
     }
 
     override suspend fun getRepositoryEntries(category: String): List<RepositoryItem> {
-        return db.withTransaction { dao.getAll(category) }.map { it.toItem() }
+        return dao.getAll(category).map { it.toItem() }
     }
 
     override suspend fun clearEntries() {
-        db.withTransaction { dao.deleteAll() }
+        dao.deleteAll()
     }
 
     companion object {

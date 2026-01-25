@@ -21,7 +21,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +35,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -69,21 +69,22 @@ fun JournalScreen(
 ) {
     TrackCurrentScreen(screen = "JournalScreen")
 
-    val isSignIn by viewModel.isSignIn.collectAsState()
+    val isSignIn by viewModel.isSignIn.collectAsStateWithLifecycle()
     LaunchedEffect(isSignIn) {
         if (!isSignIn) {
             navigateToLogging()
         }
     }
 
-    val student by viewModel.student.collectAsState()
-    val rating by viewModel.rating.collectAsState()
-    val predictRating by viewModel.predictedRating.collectAsState()
-    val forceRefreshing by viewModel.isForceRefreshing.collectAsState()
+    val student by viewModel.student.collectAsStateWithLifecycle()
+    val rating by viewModel.rating.collectAsStateWithLifecycle()
+    val predictRating by viewModel.predictedRating.collectAsStateWithLifecycle()
+    val forceRefreshing by viewModel.isForceRefreshing.collectAsStateWithLifecycle()
 
     val semesters = viewModel.semesters.collectAsLazyPagingItems()
-    val semesterError: Throwable? = with(semesters.loadState) {
-        listOf(append, refresh, prepend)
+    val loadState = semesters.loadState
+    val semesterError: Throwable? = remember(loadState.refresh, loadState.append, loadState.prepend) {
+        listOf(loadState.append, loadState.refresh, loadState.prepend)
             .filterIsInstance(LoadState.Error::class.java)
             .firstOrNull()?.error
     }
@@ -102,7 +103,7 @@ fun JournalScreen(
     )
 
     val context = LocalContext.current
-    val isNotification by viewModel.isNotification.collectAsState(false)
+    val isNotification by viewModel.isNotification.collectAsStateWithLifecycle(initialValue = false)
     LaunchedEffect(isNotification) {
         if (isNotification) {
             JournalMarksUpdateWorker.startWorker(context)

@@ -11,8 +11,8 @@ import javax.inject.Inject
 
 class FirebaseLoggerAnalytics @Inject constructor() : LoggerAnalytics {
 
-    private val analytics = Firebase.analytics
-    private val crashlytics = Firebase.crashlytics
+    private val analytics: FirebaseAnalytics by lazy { Firebase.analytics }
+    private val crashlytics: FirebaseCrashlytics by lazy { Firebase.crashlytics }
 
     override fun logEvent(type: String, value: String) {
         analytics.logEvent(type) { param("event", value) }

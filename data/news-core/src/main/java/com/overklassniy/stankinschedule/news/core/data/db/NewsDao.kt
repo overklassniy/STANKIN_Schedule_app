@@ -16,7 +16,7 @@ interface NewsDao {
      * @param items список новостей.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(items: List<NewsEntity>)
+    suspend fun insert(items: List<NewsEntity>)
 
     /**
      * Возвращает список (DataSource) за кэшированных новостей.
@@ -42,23 +42,23 @@ interface NewsDao {
     fun latest(max: Int = 3): Flow<List<NewsEntity>>
 
     /**
-     * Очищает за кэшированные новости.
+     * Очищает закэшированные новости.
      * @param newsSubdivision номер отдела новостей.
      */
     @Query("DELETE FROM news_posts WHERE news_subdivision = :newsSubdivision")
-    fun clear(newsSubdivision: Int)
+    suspend fun clear(newsSubdivision: Int)
 
     /**
      * Количество новостей в кэше.
      * @param newsSubdivision номер отдела новостей.
      */
     @Query("SELECT COUNT(*) FROM news_posts WHERE news_subdivision = :newsSubdivision")
-    fun count(newsSubdivision: Int): Int
+    suspend fun count(newsSubdivision: Int): Int
 
     /**
      * Возвращает следующий порядковый индекс для новостей.
      * @param newsSubdivision номер отдела новостей.
      */
     @Query("SELECT MAX(index_order) + 1 FROM news_posts WHERE news_subdivision = :newsSubdivision")
-    fun nextIndexInResponse(newsSubdivision: Int): Int
+    suspend fun nextIndexInResponse(newsSubdivision: Int): Int
 }

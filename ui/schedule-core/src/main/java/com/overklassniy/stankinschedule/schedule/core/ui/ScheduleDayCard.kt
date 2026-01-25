@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -46,17 +47,19 @@ fun ScheduleDayCard(
         }
 
         scheduleDay.pairs.forEach { pair ->
-            PairCard(
-                pair = pair,
-                pairColors = pairColors,
-                onClicked = { onPairClicked(pair) },
-                enabled = enabled,
-                onLinkClicked = onLinkClicked,
-                onLinkCopied = onLinkCopied,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimen.ContentPadding)
-            )
+            key(pair.id) {
+                PairCard(
+                    pair = pair,
+                    pairColors = pairColors,
+                    onClicked = { onPairClicked(pair) },
+                    enabled = enabled,
+                    onLinkClicked = onLinkClicked,
+                    onLinkCopied = onLinkCopied,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Dimen.ContentPadding)
+                )
+            }
         }
     }
 }
