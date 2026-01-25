@@ -3,7 +3,7 @@
 ## Version 3.0.0 (25.01.26)
 - Fixed schedule import functionality;
 - Added import from MGTU STANKIN Electronic Educational Environment repository;
-- Resumed functionality after discontinuation of Nikolay's main application.
+- Resumed functionality after discontinuation of Vereschagin Nikolay's main application.
 
 ## Version 2.0.2 (16.01.23)
 - Updated SplashScreen;

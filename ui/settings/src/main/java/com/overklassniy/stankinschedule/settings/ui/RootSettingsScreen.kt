@@ -139,8 +139,11 @@ fun RootSettingsScreen(
         }
         val isRussian = currentLanguage == "ru"
 
+        val termsTitle = stringResource(R.string.terms_and_conditions)
+        val privacyTitle = stringResource(R.string.privacy_policy)
+
         RegularPreference(
-            title = stringResource(R.string.terms_and_conditions),
+            title = termsTitle,
             subtitle = stringResource(R.string.terms_and_conditions_summary),
             onClick = {
                 val url = if (isRussian) {
@@ -148,13 +151,14 @@ fun RootSettingsScreen(
                 } else {
                     "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/Terms%20%26%20Conditions_en.md"
                 }
-                BrowserUtils.openLink(context = context, url = url)
+                val intent = MarkdownViewerActivity.createIntent(context, termsTitle, url)
+                context.startActivity(intent)
             },
             icon = R.drawable.ic_terms
         )
 
         RegularPreference(
-            title = stringResource(R.string.privacy_policy),
+            title = privacyTitle,
             subtitle = stringResource(R.string.privacy_policy_summary),
             onClick = {
                 val url = if (isRussian) {
@@ -162,7 +166,8 @@ fun RootSettingsScreen(
                 } else {
                     "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/Privacy%20Policy_en.md"
                 }
-                BrowserUtils.openLink(context = context, url = url)
+                val intent = MarkdownViewerActivity.createIntent(context, privacyTitle, url)
+                context.startActivity(intent)
             },
             icon = R.drawable.ic_privacy_policy
         )
@@ -221,7 +226,12 @@ fun RootSettingsScreen(
                                 val offset = layout.getOffsetForPosition(pos)
                                 changelogAnnotatedText.getStringAnnotations(tag = "URL", start = offset, end = offset)
                                     .firstOrNull()?.let { annotation ->
-                                        BrowserUtils.openLink(context, annotation.item)
+                                        val intent = MarkdownViewerActivity.createIntent(
+                                            context, 
+                                            changelogText, 
+                                            annotation.item
+                                        )
+                                        context.startActivity(intent)
                                     }
                             }
                         }

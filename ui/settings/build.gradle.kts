@@ -47,6 +47,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        viewBinding = true
     }
 }
 
@@ -78,8 +79,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.lifecycle.java8)
     implementation(libs.ui.material)
+    implementation(libs.ui.swiperefreshlayout)
 
-    implementation("com.godaddy.android.colorpicker:compose-color-picker-android:0.5.1")
+    implementation("com.godaddy.android.colorpicker:compose-color-picker-android:0.7.0")
+
+    // Network
+    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+    implementation(libs.androidx.webkit)
 
     // DI
     implementation(libs.hilt.android)
