@@ -3,14 +3,14 @@ package com.overklassniy.stankinschedule.parser.data.repository
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.net.toUri
+import com.overklassniy.stankinschedule.schedule.parser.domain.model.CellBound
+import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParseDetail
+import com.overklassniy.stankinschedule.schedule.parser.domain.repository.PDFRepository
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.rendering.PDFRenderer
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
-import com.overklassniy.stankinschedule.schedule.parser.domain.model.CellBound
-import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParseDetail
-import com.overklassniy.stankinschedule.schedule.parser.domain.repository.PDFRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -21,10 +21,21 @@ import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.max
 
+/**
+ * Реализация репозитория для работы с PDF файлами расписания.
+ */
 class PDFRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context
-) : PDFRepository {
+    ) : PDFRepository {
 
+    /**
+     * Парсит PDF файл и извлекает ячейки с текстом.
+     *
+     * @param path Путь к PDF файлу
+     * @param multilineTextThreshold Порог для объединения многострочного текста
+     * @return Детали парсинга с ячейками
+     * @throws IllegalAccessException если не удалось открыть файл
+     */
     override suspend fun parsePDF(
         path: String,
         multilineTextThreshold: Float
@@ -40,6 +51,13 @@ class PDFRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Рендерит первую страницу PDF файла в изображение.
+     *
+     * @param path Путь к PDF файлу
+     * @return Bitmap изображение первой страницы
+     * @throws IllegalAccessException если не удалось открыть файл
+     */
     override suspend fun renderPDF(path: String): Bitmap {
         PDFBoxResourceLoader.init(context)
 
@@ -49,6 +67,12 @@ class PDFRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Открывает InputStream для файла по пути.
+     *
+     * @param path Путь к файлу (может быть content://, file:// или обычный путь)
+     * @return InputStream или null, если файл не существует
+     */
     private fun openInputStream(path: String): InputStream? {
         return if (path.startsWith("content://") || path.startsWith("file://")) {
             context.contentResolver.openInputStream(path.toUri())
@@ -58,6 +82,12 @@ class PDFRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Рендерит первую страницу PDF документа в изображение.
+     *
+     * @param pdf InputStream PDF документа
+     * @return Bitmap изображение первой страницы
+     */
     fun render(pdf: InputStream): Bitmap {
         return PDDocument.load(pdf).use { document ->
             val renderer = PDFRenderer(document)
@@ -65,6 +95,13 @@ class PDFRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Импортирует текст из PDF документа и извлекает ячейки.
+     *
+     * @param pdf InputStream PDF документа
+     * @param multilineTextThreshold Порог для объединения многострочного текста
+     * @return Список ячеек с текстом и координатами
+     */
     fun import(pdf: InputStream, multilineTextThreshold: Float): List<CellBound> {
         return PDDocument.load(pdf).use { document ->
             val stripper = StringBoundStripper()
@@ -73,6 +110,13 @@ class PDFRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Объединяет строки текста в ячейки на основе близости и одинакового шрифта.
+     *
+     * @param bounds Список границ строк текста
+     * @param multilineTextThreshold Порог для объединения многострочного текста
+     * @return Список объединенных ячеек
+     */
     private fun mergeStringBounds(
         bounds: List<StringBoundStripper.StringBound>,
         multilineTextThreshold: Float
@@ -81,9 +125,9 @@ class PDFRepositoryImpl @Inject constructor(
 
         for (bound in bounds) {
             val cell = cells.find { cell ->
-                abs(cell.maxFontHeight - bound.h) < 0.1f && // equal font
-                        (bound.y - (cell.y + cell.h)) < cell.maxFontHeight * multilineTextThreshold && // close (< maxFontHeight) 'y'
-                        abs(cell.x - bound.x) < 1f // equal text block start 'x'
+                abs(cell.maxFontHeight - bound.h) < 0.1f &&
+                        (bound.y - (cell.y + cell.h)) < cell.maxFontHeight * multilineTextThreshold &&
+                        abs(cell.x - bound.x) < 1f
             }
             cells += if (cell != null) {
                 cells.remove(cell)
@@ -110,6 +154,9 @@ class PDFRepositoryImpl @Inject constructor(
         return cells
     }
 
+    /**
+     * Класс для извлечения текста и его позиций из PDF документа.
+     */
     private class StringBoundStripper : PDFTextStripper() {
 
         private var blocks = mutableListOf<StringBound>()
@@ -118,6 +165,12 @@ class PDFRepositoryImpl @Inject constructor(
             sortByPosition = true
         }
 
+        /**
+         * Обрабатывает документ и извлекает границы всех строк текста.
+         *
+         * @param document PDF документ
+         * @return Список границ строк текста с координатами
+         */
         fun processStringBounds(document: PDDocument): List<StringBound> {
             blocks = mutableListOf()
 
@@ -127,12 +180,16 @@ class PDFRepositoryImpl @Inject constructor(
             return blocks
         }
 
+        /**
+         * Переопределенный метод для извлечения позиций текста.
+         *
+         * @param text Текст строки
+         * @param textPositions Список позиций символов в строке
+         */
         override fun writeString(
             text: String,
             textPositions: MutableList<TextPosition>
         ) {
-            // super.writeString(text, textPositions)
-
             val x = textPositions.minOf { pos -> pos.xDirAdj }
             val y = textPositions.minOf { pos -> pos.yDirAdj }
             val h = textPositions.maxOf { pos -> pos.heightDir }
@@ -141,6 +198,15 @@ class PDFRepositoryImpl @Inject constructor(
             blocks += StringBound(text, x, y, h, w)
         }
 
+        /**
+         * Класс для хранения границ строки текста с координатами.
+         *
+         * @param text Текст строки
+         * @param x X координата начала
+         * @param y Y координата начала
+         * @param h Высота строки
+         * @param w Ширина строки
+         */
         class StringBound(
             val text: String,
             val x: Float,

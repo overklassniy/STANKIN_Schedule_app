@@ -1,6 +1,10 @@
 package com.overklassniy.stankinschedule.schedule.core.data.db
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 import com.overklassniy.stankinschedule.schedule.core.data.mapper.DateTimeConverter
 import org.joda.time.DateTime
 

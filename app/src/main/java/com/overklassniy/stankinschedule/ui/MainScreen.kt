@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material.navigation.ModalBottomSheetLayout
+import androidx.compose.material.navigation.rememberBottomSheetNavigator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,8 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.material.navigation.ModalBottomSheetLayout
-import androidx.compose.material.navigation.rememberBottomSheetNavigator
 import com.overklassniy.stankinschedule.navigation.HomeNavEntry
 import com.overklassniy.stankinschedule.navigation.JournalNavEntry
 import com.overklassniy.stankinschedule.navigation.ScheduleNavEntry
@@ -28,6 +28,10 @@ import com.overklassniy.stankinschedule.navigation.moduleJournal
 import com.overklassniy.stankinschedule.navigation.schedule
 import kotlinx.coroutines.launch
 
+/**
+ * Главный экран приложения с навигацией и bottom navigation bar.
+ * Содержит NavHost для навигации между экранами и отображает snackbar для уведомлений.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
@@ -70,7 +74,6 @@ fun MainScreen() {
                 homePage(navController)
                 schedule(navController, showSnackBarState)
                 moduleJournal(navController)
-                // news(navController)
             }
         }
     }

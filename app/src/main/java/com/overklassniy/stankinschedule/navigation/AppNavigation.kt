@@ -23,6 +23,11 @@ object HomeNavEntry : BottomNavEntry(
 
 private const val STANKIN_NEWS = "https://stankin.ru/news/"
 
+/**
+ * Настраивает навигацию для главной страницы приложения.
+ *
+ * @param navController Контроллер навигации
+ */
 fun NavGraphBuilder.homePage(navController: NavController) {
     composable(route = HomeNavEntry.route) {
 

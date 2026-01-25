@@ -3,7 +3,13 @@ package com.overklassniy.stankinschedule.schedule.table.domain.model
 import android.graphics.Color
 import android.graphics.Paint
 import android.text.TextPaint
-import com.overklassniy.stankinschedule.schedule.core.domain.model.*
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateRange
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateSingle
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DayOfWeek
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Frequency
+import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 
 class DrawScheduleTable(
     val scheduleName: String,

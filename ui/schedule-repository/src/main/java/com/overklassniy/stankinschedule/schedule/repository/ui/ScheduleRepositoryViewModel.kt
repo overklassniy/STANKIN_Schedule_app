@@ -3,12 +3,20 @@ package com.overklassniy.stankinschedule.schedule.repository.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.core.ui.components.UIState
-import com.overklassniy.stankinschedule.schedule.repository.domain.model.*
+import com.overklassniy.stankinschedule.schedule.repository.domain.model.Course
+import com.overklassniy.stankinschedule.schedule.repository.domain.model.Grade
+import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryCategory
+import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryDescription
+import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryItem
 import com.overklassniy.stankinschedule.schedule.repository.domain.usecase.RepositoryUseCase
 import com.overklassniy.stankinschedule.schedule.repository.ui.components.DownloadEvent
 import com.overklassniy.stankinschedule.schedule.repository.ui.components.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

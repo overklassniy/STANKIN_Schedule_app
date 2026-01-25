@@ -2,8 +2,18 @@ package com.overklassniy.stankinschedule.journal.core.data.di
 
 import com.google.gson.GsonBuilder
 import com.overklassniy.stankinschedule.journal.core.data.api.ModuleJournalAPI
-import com.overklassniy.stankinschedule.journal.core.data.repository.*
-import com.overklassniy.stankinschedule.journal.core.domain.repository.*
+import com.overklassniy.stankinschedule.journal.core.data.repository.JournalPagingRepositoryImpl
+import com.overklassniy.stankinschedule.journal.core.data.repository.JournalPreferenceImpl
+import com.overklassniy.stankinschedule.journal.core.data.repository.JournalRepositoryImpl
+import com.overklassniy.stankinschedule.journal.core.data.repository.JournalSecureRepositoryImpl
+import com.overklassniy.stankinschedule.journal.core.data.repository.JournalServiceRepositoryImpl
+import com.overklassniy.stankinschedule.journal.core.data.repository.JournalStorageRepositoryImpl
+import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalPagingRepository
+import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalPreference
+import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalRepository
+import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalSecureRepository
+import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalServiceRepository
+import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalStorageRepository
 import com.overklassniy.stankinschedule.journal.core.domain.utils.Constants
 import dagger.Module
 import dagger.Provides

@@ -5,7 +5,13 @@ import com.google.gson.JsonElement
 import com.overklassniy.stankinschedule.schedule.core.data.db.PairEntity
 import com.overklassniy.stankinschedule.schedule.core.data.db.ScheduleEntity
 import com.overklassniy.stankinschedule.schedule.core.data.db.ScheduleWithPairs
-import com.overklassniy.stankinschedule.schedule.core.domain.model.*
+import com.overklassniy.stankinschedule.schedule.core.domain.model.PairInfo
+import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
+import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
+import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Time
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 
 fun ScheduleWithPairs.toScheduleModel(): ScheduleModel {
     val info = ScheduleInfo(

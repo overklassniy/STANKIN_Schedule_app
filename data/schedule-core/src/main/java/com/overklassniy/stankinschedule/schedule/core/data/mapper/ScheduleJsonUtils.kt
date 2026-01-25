@@ -3,7 +3,11 @@ package com.overklassniy.stankinschedule.schedule.core.data.mapper
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.overklassniy.stankinschedule.schedule.core.domain.model.*
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateItem
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateModel
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateRange
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateSingle
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Frequency
 
 object ScheduleJsonUtils {
 

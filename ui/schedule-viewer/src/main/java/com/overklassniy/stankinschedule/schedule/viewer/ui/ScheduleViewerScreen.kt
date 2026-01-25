@@ -1,7 +1,7 @@
 package com.overklassniy.stankinschedule.schedule.viewer.ui
 
-import android.content.Intent
 import android.content.ClipData
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -39,9 +39,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
@@ -50,6 +49,7 @@ import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.overklassniy.stankinschedule.core.ui.components.CalendarDialog
@@ -69,8 +69,8 @@ import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleRe
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleState
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleViewerToolBar
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.rememberSaveFormatDialogState
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -213,7 +213,6 @@ fun ScheduleViewerScreen(
             )
         }
 
-        // TODO("Изменение имени расписания на виджете")
         renameState?.let {
             ScheduleRenameDialog(
                 currentScheduleName = currentScheduleName,

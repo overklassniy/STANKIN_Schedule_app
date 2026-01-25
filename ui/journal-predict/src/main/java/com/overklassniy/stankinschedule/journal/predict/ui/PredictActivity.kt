@@ -35,11 +35,9 @@ class PredictActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = ActivityPredictBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // TODO("Нет fitSystemWindow, из-за особенностей layout")
         binding.appBar.setLiftableOverrideEnabled(true)
         binding.appBar.setLiftable(true)
         binding.appBar.isLifted = false

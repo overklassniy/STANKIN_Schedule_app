@@ -5,12 +5,12 @@ import com.overklassniy.stankinschedule.schedule.repository.domain.model.Reposit
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryDescription
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryItem
 import com.overklassniy.stankinschedule.schedule.repository.domain.repository.ScheduleRemoteService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
 

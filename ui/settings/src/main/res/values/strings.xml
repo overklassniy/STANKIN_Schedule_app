@@ -50,12 +50,10 @@
     <string name="version">Version: </string>
     <string name="changelog">Changelog</string>
 
-    <string name="support_title">Support</string>
     <string name="support_email_title">E-mail</string>
     <string name="support_email_summary">s.kiani@stankin.ru</string>
     <string name="support_github_title">GitHub Issues</string>
     <string name="support_github_summary">Report an issue on GitHub</string>
     <string name="support_email">s.kiani@stankin.ru</string>
-    <string name="support_github_issues">GitHub Issues</string>
 
 </resources>

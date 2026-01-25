@@ -4,6 +4,7 @@ import android.graphics.Path
 import android.graphics.PointF
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
+import com.overklassniy.stankinschedule.schedule.parser.data.test.R
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine
 import com.tom_roush.pdfbox.cos.COSName
@@ -12,7 +13,6 @@ import com.tom_roush.pdfbox.pdmodel.PDPage
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
-import com.overklassniy.stankinschedule.schedule.parser.data.test.R
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream

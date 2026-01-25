@@ -27,6 +27,10 @@ import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана парсера расписания из PDF.
+ * Управляет состоянием парсинга, выбором файла, настройками и сохранением расписания.
+ */
 @HiltViewModel
 class ScheduleParserViewModel @Inject constructor(
     private val deviceUseCase: DeviceUseCase,
@@ -38,7 +42,6 @@ class ScheduleParserViewModel @Inject constructor(
     private val _parserState = MutableStateFlow<ParserState>(ParserState.SelectFile())
     val parserState = _parserState.asStateFlow()
 
-    // cache
     private var _selectedFile: SelectedFile? = null
     private var _parserSettings: ParserSettings = ParserSettings(
         scheduleYear = LocalDate.now().year,

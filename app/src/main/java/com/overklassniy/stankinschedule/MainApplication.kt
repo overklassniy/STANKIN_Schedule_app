@@ -36,7 +36,6 @@ class MainApplication : Application(), Configuration.Provider {
         Firebase.analytics.setAnalyticsCollectionEnabled(applicationPreference.isAnalyticsEnabled)
 
         if (BuildConfig.DEBUG) {
-            // StrictMode.enableDefaults()
             Firebase.analytics.setAnalyticsCollectionEnabled(false)
             Firebase.crashlytics.setCrashlyticsCollectionEnabled(false)
         }
@@ -45,6 +44,11 @@ class MainApplication : Application(), Configuration.Provider {
         setupNotifications()
     }
 
+    /**
+     * Возвращает конфигурацию WorkManager для приложения.
+     *
+     * @return Конфигурация WorkManager с фабрикой воркеров и уровнем логирования
+     */
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .apply {
@@ -55,6 +59,9 @@ class MainApplication : Application(), Configuration.Provider {
             .setWorkerFactory(workerFactory)
             .build()
 
+    /**
+     * Обновляет режим темной темы приложения на основе пользовательских настроек.
+     */
     private fun updateDarkMode() {
         val mode = when (applicationPreference.currentDarkMode()) {
             DarkMode.Default -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
@@ -69,11 +76,10 @@ class MainApplication : Application(), Configuration.Provider {
 
     /**
      * Устанавливает настройки уведомлений для приложения.
+     * Создает каналы уведомлений для Android 8.0+.
      */
     private fun setupNotifications() {
-        // android 8.0+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // общего назначения
             val channelCommon = NotificationChannel(
                 NotificationUtils.CHANNEL_COMMON,
                 getString(R.string.notification_common),
@@ -84,7 +90,6 @@ class MainApplication : Application(), Configuration.Provider {
             channelCommon.enableVibration(true)
             channelCommon.enableLights(true)
 
-            // модульного журнала
             val channelModuleJournal = NotificationChannel(
                 NotificationUtils.CHANNEL_MODULE_JOURNAL,
                 getString(R.string.notification_mj),

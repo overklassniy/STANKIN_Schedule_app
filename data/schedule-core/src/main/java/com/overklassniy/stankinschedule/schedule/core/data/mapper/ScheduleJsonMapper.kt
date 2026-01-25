@@ -1,7 +1,16 @@
 package com.overklassniy.stankinschedule.schedule.core.data.mapper
 
 import com.overklassniy.stankinschedule.schedule.core.data.api.PairJson
-import com.overklassniy.stankinschedule.schedule.core.domain.model.*
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateItem
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateModel
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateRange
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateSingle
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Frequency
+import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
+import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Time
+import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 
 fun PairJson.toPairModel(): PairModel {
     return PairModel(

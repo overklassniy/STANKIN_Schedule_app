@@ -25,6 +25,10 @@ import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import javax.inject.Inject
 
+/**
+ * ViewModel для главного экрана приложения.
+ * Управляет отображением избранного расписания, новостей и навигацией.
+ */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val scheduleUseCase: ScheduleUseCase,

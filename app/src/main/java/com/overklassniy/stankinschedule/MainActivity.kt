@@ -20,6 +20,10 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
+/**
+ * Главная Activity приложения.
+ * Инициализирует UI и выполняет миграцию данных при первом запуске.
+ */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +36,12 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var loggerAnalytics: LoggerAnalytics
 
+    /**
+     * Инициализирует Activity, устанавливает splash screen и настраивает Compose UI.
+     * Выполняет миграцию данных версии 2.0 при первом запуске.
+     *
+     * @param savedInstanceState Сохраненное состояние Activity
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()

@@ -3,7 +3,6 @@
 
     <string name="repository_title">Репозиторий ЭОС</string>
 
-    <string name="repository_title_category">Категория расписания</string>
     <string name="repository_title_degree">Академическая степень</string>
     <string name="repository_title_course">Номер курса</string>
     <string name="repository_bachelor">Бакалавриат</string>
@@ -15,9 +14,6 @@
     <string name="repository_no_schedules_found">Не найдено подходящих расписаний</string>
     <string name="repository_retry">Повторить</string>
 
-    <string name="repository_schedule_loaded">Расписание загружено</string>
-    <string name="repository_refresh">Обновить</string>
-    <string name="repository_loading_failure">Сбой загрузки расписания</string>
     <string name="repository_start_download">Загрузка расписания: %1$s</string>
     <string name="repository_download_failed">Не удалось загрузить расписание</string>
     <string name="repository_schedule_exist">Расписание уже существует</string>

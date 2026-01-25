@@ -16,7 +16,11 @@ class ScheduleDeviceUseCase @Inject constructor(
 
     /**
      * Сохраняет расписание на устройство.
-     * Возвращает Flow для корректной композиции в UI (catch/collect).
+     *
+     * @param scheduleId ID расписания для сохранения
+     * @param path Путь для сохранения файла
+     * @return Flow с true при успешном сохранении
+     * @throws RuntimeException если расписание не найдено
      */
     fun saveToDevice(scheduleId: Long, path: String): Flow<Boolean> = flow {
         val schedule = storage.scheduleModel(scheduleId).first()
@@ -25,6 +29,12 @@ class ScheduleDeviceUseCase @Inject constructor(
         emit(true)
     }.flowOn(Dispatchers.IO)
 
+    /**
+     * Загружает расписание с устройства и сохраняет его в хранилище.
+     *
+     * @param path Путь к файлу расписания
+     * @return Flow с названием загруженного расписания
+     */
     fun loadFromDevice(path: String): Flow<String> = flow {
         val schedule = device.loadFromDevice(path)
         storage.saveSchedule(schedule)

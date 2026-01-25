@@ -4,7 +4,7 @@ import org.joda.time.DateTime
 import org.joda.time.Hours
 import org.joda.time.LocalDate
 import org.joda.time.Minutes
-import java.util.*
+import java.util.Locale
 
 infix fun DateTime.subMinutes(other: DateTime): Int {
     return Minutes.minutesBetween(this, other).minutes

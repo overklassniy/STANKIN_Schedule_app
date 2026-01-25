@@ -19,9 +19,13 @@ object NewsNavEntry : BottomNavEntry(
     hierarchy = listOf("news")
 )
 
+/**
+ * Настраивает навигацию для модуля новостей.
+ *
+ * @param navController Контроллер навигации (не используется, но требуется для единообразия)
+ */
 @Suppress("UNUSED_PARAMETER")
 fun NavGraphBuilder.news(navController: NavController) {
-    // Новости
     composable(route = NewsNavEntry.route) {
         val context = LocalContext.current
 

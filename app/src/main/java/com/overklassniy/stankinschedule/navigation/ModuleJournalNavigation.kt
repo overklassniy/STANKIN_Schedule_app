@@ -28,14 +28,17 @@ object JournalNavEntry : BottomNavEntry(
     hierarchy = listOf("journal", JournalLoginNavEntry.route)
 )
 
+/**
+ * Настраивает навигацию для модуля журнала.
+ *
+ * @param navController Контроллер навигации
+ */
 fun NavGraphBuilder.moduleJournal(navController: NavController) {
-    // Авторизация
     composable(route = JournalLoginNavEntry.route) {
         JournalLoginScreen(
             viewModel = hiltViewModel(),
             navigateToJournal = {
                 navController.navigate(JournalNavEntry.route) {
-                    // Убрать экран с логином
                     popUpTo(navController.graph.findStartDestination().id) {
                         inclusive = true
                     }
@@ -44,7 +47,6 @@ fun NavGraphBuilder.moduleJournal(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
     }
-    // Просмотр журнала
     composable(JournalNavEntry.route) {
         val context = LocalContext.current
 

@@ -15,6 +15,13 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.overklassniy.stankinschedule.navigation.entry.BottomNavEntry
 
+/**
+ * Нижняя панель навигации приложения.
+ *
+ * @param navBackStackEntry Текущая запись в стеке навигации
+ * @param navController Контроллер навигации
+ * @param screens Список экранов для отображения в панели навигации
+ */
 @Composable
 fun AppNavigationBar(
     navBackStackEntry: NavBackStackEntry?,

@@ -3,8 +3,8 @@ package com.overklassniy.stankinschedule.journal.core.data.repository
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Log
 import android.util.Base64
+import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -28,7 +28,6 @@ class JournalSecureRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : JournalSecureRepository {
 
-    // Кэш данных для учетной записи
     private var cachedCredentials: StudentCredentials? = null
 
     private fun getOrCreateSecretKey(): SecretKey {

@@ -6,10 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 /**
- * TODO("Fix бд")
- * warning: Schema export directory is not provided to the annotation processor so
- * we cannot export the schema. You can either provide `room.schemaLocation`
- * annotation processor argument OR set exportSchema to false.
+ * База данных Room для хранения репозиториев расписаний.
+ * Примечание: для экспорта схемы необходимо указать room.schemaLocation в build.gradle.kts
+ * или установить exportSchema = false.
  */
 @Database(
     entities = [
@@ -21,15 +20,23 @@ import androidx.room.RoomDatabase
 
 abstract class RepositoryDatabase : RoomDatabase() {
 
+    /**
+     * Возвращает DAO для работы с репозиториями.
+     *
+     * @return DAO интерфейс
+     */
     abstract fun repository(): RepositoryDao
 
     companion object {
-        /**
-         * Singleton БД.
-         */
         @Volatile
         private var instance: RepositoryDatabase? = null
 
+        /**
+         * Возвращает singleton экземпляр базы данных.
+         *
+         * @param context Контекст приложения
+         * @return Экземпляр базы данных
+         */
         fun database(context: Context): RepositoryDatabase {
             val currentInstance = instance
             if (currentInstance != null) {

@@ -16,6 +16,9 @@ import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import kotlin.math.abs
 
+/**
+ * Класс для извлечения пар из текста ячеек PDF расписания.
+ */
 class PairExtractor {
 
     private val pairRegex = Regex(pattern = ParserPatterns.Common)
@@ -27,7 +30,13 @@ class PairExtractor {
     var dateYear = LocalDate.now().year
     private val dateFormatter = DateTimeFormat.forPattern("dd.MM.yyyy")
 
-
+    /**
+     * Извлекает все пары из текста ячейки PDF.
+     *
+     * @param cell Ячейка с текстом из PDF
+     * @param timeCells Список границ временных ячеек
+     * @return Список результатов извлечения пар (успешные, ошибки, пропущенные)
+     */
     fun extractAllPairsFromCell(
         cell: CellBound,
         timeCells: List<TimeCellBound>
@@ -60,6 +69,14 @@ class PairExtractor {
         }
     }
 
+    /**
+     * Определяет время пары на основе позиции ячейки и временных ячеек.
+     *
+     * @param start Начальная X координата ячейки
+     * @param end Конечная X координата ячейки
+     * @param timeCells Список границ временных ячеек
+     * @return Время пары (начало и конец)
+     */
     private fun detectTimeFromCell(
         start: Float,
         end: Float,
@@ -86,6 +103,14 @@ class PairExtractor {
         return Time(startTime, endTime)
     }
 
+    /**
+     * Извлекает модель пары из строки данных с использованием регулярных выражений.
+     *
+     * @param data Строка с данными пары
+     * @param time Время пары
+     * @return Модель пары
+     * @throws IllegalArgumentException если данные не соответствуют ожидаемому формату
+     */
     private fun extractPairFromCell(data: String, time: Time): PairModel {
         val pairMatch = pairRegex.matchEntire(data)
             ?: throw IllegalArgumentException("Pair not found: '$data'")
@@ -101,10 +126,22 @@ class PairExtractor {
         )
     }
 
+    /**
+     * Извлекает и очищает название дисциплины.
+     *
+     * @param title Сырое название из парсера
+     * @return Очищенное название
+     */
     private fun extractTitle(title: String): String {
         return title.dropLast(1).trim()
     }
 
+    /**
+     * Извлекает и форматирует имя преподавателя.
+     *
+     * @param lecturer Сырое имя преподавателя из парсера
+     * @return Отформатированное имя преподавателя (с точкой в конце)
+     */
     private fun extractLecturer(lecturer: String): String {
         if (lecturer.isEmpty()) return ""
         val trimmed = lecturer.trim()
@@ -115,11 +152,24 @@ class PairExtractor {
         }
     }
 
+    /**
+     * Извлекает и очищает номер аудитории.
+     *
+     * @param classroom Сырой номер аудитории из парсера
+     * @return Очищенный номер аудитории
+     */
     private fun extractClassroom(classroom: String): String {
         if (classroom.isEmpty()) return ""
         return classroom.dropLast(1).trim()
     }
 
+    /**
+     * Извлекает тип пары из строки.
+     *
+     * @param type Сырой тип из парсера
+     * @return Тип пары (лекция, семинар, лабораторная)
+     * @throws IllegalArgumentException если тип неизвестен
+     */
     private fun extractType(type: String): Type {
         return when (type.dropLast(1).trim().lowercase()) {
             "семинар" -> Type.SEMINAR
@@ -130,6 +180,13 @@ class PairExtractor {
         }
     }
 
+    /**
+     * Извлекает подгруппу из строки.
+     *
+     * @param subgroup Сырая подгруппа из парсера
+     * @return Подгруппа (A, B или общая)
+     * @throws IllegalArgumentException если подгруппа неизвестна
+     */
     private fun extractSubgroup(subgroup: String): Subgroup {
         if (subgroup.isEmpty()) {
             return Subgroup.COMMON
@@ -142,6 +199,13 @@ class PairExtractor {
         }
     }
 
+    /**
+     * Извлекает модель дат из строки с датами.
+     *
+     * @param dateString Строка с датами в формате [даты]
+     * @return Модель дат с диапазонами и отдельными датами
+     * @throws IllegalArgumentException если формат даты неизвестен
+     */
     private fun extractDate(dateString: String): DateModel {
         val date = DateModel()
         val textDates = dateString
@@ -189,6 +253,12 @@ class PairExtractor {
         return date
     }
 
+    /**
+     * Конвертирует строку даты в LocalDate с учетом года и корректировкой на воскресенье.
+     *
+     * @param date Строка даты в формате "dd.MM"
+     * @return LocalDate с правильным годом
+     */
     private fun dateConvertor(date: String): LocalDate {
         val parsedDate = dateFormatter.parseLocalDate("$date.$dateYear")
         val now = LocalDate.now()
@@ -208,10 +278,20 @@ class PairExtractor {
         return parsedDate
     }
 
+    /**
+     * Вычисляет количество дней между двумя датами.
+     *
+     * @param d1 Первая дата
+     * @param d2 Вторая дата
+     * @return Количество дней между датами
+     */
     private fun daysBetween(d1: LocalDate, d2: LocalDate): Int {
         return org.joda.time.Days.daysBetween(if (d1 < d2) d1 else d2, if (d1 < d2) d2 else d1).days
     }
 
+    /**
+     * Объект с регулярными выражениями для парсинга расписания.
+     */
     object ParserPatterns {
 
         const val Title = "([а-яА-ЯёЁa-zA-Z0-9\\.\\s\\,\\-\\(\\)\\/\\:]+?\\.)"

@@ -41,6 +41,10 @@ import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана просмотра расписания.
+ * Управляет отображением расписания, экспортом, переименованием и удалением.
+ */
 @HiltViewModel
 class ScheduleViewerViewModel @Inject constructor(
     private val viewerUseCase: ScheduleViewerUseCase,

@@ -3,15 +3,19 @@ package com.overklassniy.stankinschedule.navigation
 import android.content.Intent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material.navigation.bottomSheet
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.*
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import androidx.compose.material.navigation.bottomSheet
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.overklassniy.stankinschedule.R
 import com.overklassniy.stankinschedule.navigation.entry.BottomNavEntry
-
 import com.overklassniy.stankinschedule.navigation.entry.DestinationNavEntry
 import com.overklassniy.stankinschedule.schedule.creator.ui.ScheduleCreatorSheet
 import com.overklassniy.stankinschedule.schedule.editor.ui.PairEditorActivity
@@ -46,12 +50,17 @@ object ScheduleCreatorNavEntry : DestinationNavEntry(
     route = "schedule/creator",
 )
 
+/**
+ * Настраивает навигацию для модуля расписания.
+ *
+ * @param navController Контроллер навигации
+ * @param showSnackBarState Функция для отображения snackbar сообщений
+ */
 @OptIn(androidx.compose.material.ExperimentalMaterialApi::class)
 fun NavGraphBuilder.schedule(
     navController: NavController,
     showSnackBarState: (message: String) -> Unit
 ) {
-    // Мои расписания
     composable(route = ScheduleNavEntry.route) {
         ScheduleScreen(
             onScheduleCreate = {
@@ -64,7 +73,6 @@ fun NavGraphBuilder.schedule(
             modifier = Modifier.fillMaxSize()
         )
     }
-    // Просмотр расписания
     composable(
         route = ScheduleViewerNavEntry.route,
         arguments = ScheduleViewerNavEntry.arguments,
@@ -91,7 +99,6 @@ fun NavGraphBuilder.schedule(
             modifier = Modifier.fillMaxSize()
         )
     }
-    // Создание расписания
     bottomSheet(route = ScheduleCreatorNavEntry.route) {
         val context = LocalContext.current
 

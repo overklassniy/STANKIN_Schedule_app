@@ -9,12 +9,22 @@ import com.overklassniy.stankinschedule.schedule.parser.domain.model.TimeCellBou
 import com.overklassniy.stankinschedule.schedule.parser.domain.repository.PDFRepository
 import javax.inject.Inject
 
+/**
+ * Use case для парсинга PDF файлов с расписанием.
+ */
 class ParserUseCase @Inject constructor(
     private val parser: PDFRepository
 ) {
 
     private val extractor = PairExtractor()
 
+    /**
+     * Парсит PDF файл с расписанием и извлекает пары.
+     *
+     * @param path Путь к PDF файлу
+     * @param settings Настройки парсера
+     * @return Список результатов парсинга (успешные пары, ошибки, пропущенные)
+     */
     suspend fun parsePDF(
         path: String,
         settings: ParserSettings
@@ -30,10 +40,23 @@ class ParserUseCase @Inject constructor(
         return result
     }
 
+    /**
+     * Рендерит первую страницу PDF файла в изображение для предпросмотра.
+     *
+     * @param path Путь к PDF файлу
+     * @return Bitmap изображение первой страницы
+     */
     suspend fun renderPreview(path: String): Bitmap {
         return parser.renderPDF(path)
     }
 
+    /**
+     * Определяет позиции временных ячеек в PDF на основе текста с временем.
+     *
+     * @param cells Список ячеек из PDF
+     * @return Список границ временных ячеек
+     * @throws IllegalArgumentException если время не найдено в ячейках
+     */
     private fun detectTimeCells(cells: List<CellBound>): List<TimeCellBound> {
         var middleFirst = -1f
         var middleSecond = -1f

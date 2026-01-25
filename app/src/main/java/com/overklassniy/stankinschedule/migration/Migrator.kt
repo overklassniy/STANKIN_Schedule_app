@@ -16,14 +16,21 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
 
+/**
+ * Класс для миграции данных между версиями приложения.
+ * Выполняет перенос расписаний и настроек из старой версии в новую.
+ */
 class Migrator @Inject constructor(
     @ApplicationContext private val context: Context,
     private val scheduleStorage: ScheduleStorage,
     private val schedulePreference: SchedulePreference
 ) {
 
+    /**
+     * Выполняет миграцию данных с версии 1.0 на версию 2.0.
+     * Переносит расписания из файлов в базу данных и мигрирует настройки цветов.
+     */
     suspend fun migrate_2_0_0() {
-        // Расписания
         val favorite = SchedulePreference_1_0.favorite(context)
         val scheduleNames = SchedulePreference_1_0.schedules(context)
         val gson = GsonBuilder().create()

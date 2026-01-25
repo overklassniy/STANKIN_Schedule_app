@@ -2,7 +2,11 @@ package com.overklassniy.stankinschedule.news.review.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.*
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
 import com.overklassniy.stankinschedule.news.core.domain.usecase.NewsReviewUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

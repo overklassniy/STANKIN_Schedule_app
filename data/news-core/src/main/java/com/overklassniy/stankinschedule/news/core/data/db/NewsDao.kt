@@ -1,7 +1,10 @@
 package com.overklassniy.stankinschedule.news.core.data.db
 
 import androidx.paging.PagingSource
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
 import kotlinx.coroutines.flow.Flow
 

@@ -31,7 +31,6 @@ object AppPreference_1_0 {
     const val SCHEDULE_VIEW_VERTICAL = "pref_vertical"
     const val SCHEDULE_VIEW_HORIZONTAL = "pref_horizontal"
 
-    // private const val FIRST_RUN = "first_run_v2"
     private const val FIREBASE_ANALYTICS = "firebase_analytics"
     private const val FIREBASE_CRASHLYTICS = "firebase_crashlytics"
 
@@ -42,7 +41,10 @@ object AppPreference_1_0 {
     private const val MANUAL_MODE = "manual_mode"
 
     /**
-     * Возвращает текущие сохранённое значение режима темной темы.
+     * Возвращает текущее сохраненное значение режима темной темы.
+     *
+     * @param context Контекст приложения
+     * @return Режим темной темы или значение по умолчанию
      */
     @JvmStatic
     fun currentDarkMode(context: Context): String? {
@@ -52,6 +54,9 @@ object AppPreference_1_0 {
 
     /**
      * Устанавливает значение режима темной темы.
+     *
+     * @param context Контекст приложения
+     * @param darkMode Режим темной темы для установки
      */
     @JvmStatic
     fun setDarkMode(context: Context, darkMode: String) {
@@ -62,7 +67,10 @@ object AppPreference_1_0 {
     }
 
     /**
-     * Возвращает текущие значение ручного переключателя темной темы.
+     * Возвращает текущее значение ручного переключателя темной темы.
+     *
+     * @param context Контекст приложения
+     * @return true, если ручной режим включен, иначе false
      */
     @JvmStatic
     fun currentManualMode(context: Context): Boolean {
@@ -72,6 +80,9 @@ object AppPreference_1_0 {
 
     /**
      * Устанавливает значение ручного переключателя темной темы.
+     *
+     * @param context Контекст приложения
+     * @param isDarkModeEnabled true для включения ручного режима, false для выключения
      */
     @JvmStatic
     fun setManualMode(context: Context, isDarkModeEnabled: Boolean) {
@@ -83,6 +94,9 @@ object AppPreference_1_0 {
 
     /**
      * Возвращает значение, должен ли использоваться встроенный браузер.
+     *
+     * @param context Контекст приложения
+     * @return true, если должен использоваться встроенный браузер, иначе false
      */
     @JvmStatic
     fun useAppBrowser(context: Context): Boolean {
@@ -92,6 +106,9 @@ object AppPreference_1_0 {
 
     /**
      * Возвращает значение, как должно отображаться расписание.
+     *
+     * @param context Контекст приложения
+     * @return Метод отображения расписания (вертикальный или горизонтальный)
      */
     @JvmStatic
     fun scheduleViewMethod(context: Context): String? {
@@ -101,6 +118,9 @@ object AppPreference_1_0 {
 
     /**
      * Возвращает значение, должно ли ограничиваться расписание.
+     *
+     * @param context Контекст приложения
+     * @return true, если расписание должно быть ограничено, иначе false
      */
     @JvmStatic
     fun scheduleLimit(context: Context): Boolean {
@@ -110,6 +130,9 @@ object AppPreference_1_0 {
 
     /**
      * Возвращает true, если необходимо отображать подгруппу на главной.
+     *
+     * @param context Контекст приложения
+     * @return true, если нужно отображать подгруппу, иначе false
      */
     @JvmStatic
     fun displaySubgroup(context: Context): Boolean {
@@ -119,6 +142,9 @@ object AppPreference_1_0 {
 
     /**
      * Устанавливает, нужно ли отображать подгруппу на главной.
+     *
+     * @param context Контекст приложения
+     * @param display true для отображения подгруппы, false для скрытия
      */
     @JvmStatic
     fun setDisplaySubgroup(context: Context, display: Boolean) {
@@ -128,39 +154,12 @@ object AppPreference_1_0 {
             .apply()
     }
 
-    /*
-    /**
-     * Возвращает подгруппу.
-     */
-    @JvmStatic
-    fun subgroup(context: Context): Subgroup {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-        return of(preferences.getString(SCHEDULE_SUBGROUP, Subgroup.COMMON.tag)!!)
-    }
-
-    /**
-     * Устанавливает подгруппу.
-     */
-    @JvmStatic
-    fun setSubgroup(context: Context, subgroup: Subgroup) {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-        preferences.edit()
-            .putString(SCHEDULE_SUBGROUP, subgroup.tag)
-            .apply()
-    }
-
-    /**
-     * Вычисляет цвет для пары.
-     */
-    @JvmStatic
-    fun pairColor(context: Context, preferenceName: String): Int {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-        return preferences.getInt(preferenceName, defaultColor(context, preferenceName))
-    }
-    */
-
     /**
      * Возвращает список цветов для расписания.
+     *
+     * @param context Контекст приложения
+     * @param colorNames Имена цветовых настроек для получения
+     * @return Список цветов в формате Int
      */
     @JvmStatic
     fun colors(context: Context, vararg colorNames: String): List<Int> {
@@ -177,6 +176,9 @@ object AppPreference_1_0 {
     /**
      * Возвращает время, когда последний раз проверялось доступность обновлений.
      * Возвращается null, если никогда не проверялось.
+     *
+     * @param context Контекст приложения
+     * @return Время последней проверки обновлений или null
      */
     @JvmStatic
     fun updateAppTime(context: Context): DateTime? {
@@ -185,25 +187,11 @@ object AppPreference_1_0 {
         return DateTime.parse(dateTime)
     }
 
-    /*
-    /**
-     * Возвращает настройки отображения расписания на главной странице.
-     */
-    @JvmStatic
-    fun homeScheduleSettings(context: Context): HomeScheduleSettings {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-        return HomeScheduleSettings(
-            preferences.getInt(HOME_SCHEDULE_DELTA, 2),
-            preferences.getBoolean(DISPLAY_SUBGROUP, true),
-            of(preferences.getString(SCHEDULE_SUBGROUP, Subgroup.COMMON.tag)!!),
-            SchedulePreference.favorite(context)
-            // TODO("07/11/20 переместить реализация избранного в настройки приложения")
-        )
-    }
-     */
-
     /**
      * Устанавливает время последней проверки обновления приложения.
+     *
+     * @param context Контекст приложения
+     * @param dateTime Время проверки обновлений
      */
     @JvmStatic
     fun setUpdateAppTime(context: Context, dateTime: DateTime) {
@@ -213,29 +201,12 @@ object AppPreference_1_0 {
             .apply()
     }
 
-    /*
     /**
-     * Возвращает цвет по умолчанию для расписания.
-     */
-    @JvmStatic
-    fun defaultColor(context: Context, colorName: String) = ContextCompat.getColor(
-        context, when (colorName) {
-            LECTURE_COLOR -> R.color.colorCardLecture
-            SEMINAR_COLOR -> R.color.colorCardSeminar
-            LABORATORY_COLOR -> R.color.colorCardLaboratory
-            SUBGROUP_A_COLOR -> R.color.colorCardSubgroupA
-            SUBGROUP_B_COLOR -> R.color.colorCardSubgroupB
-            else -> {
-                throw IllegalArgumentException("Unknown color name $colorName")
-            }
-        }
-    )
-
-     */
-
-    /**
-     * Возвращает true если можно ли использовать Firebase аналитику для
+     * Возвращает true, если можно использовать Firebase аналитику для
      * сбора данных об использовании приложения. Иначе false.
+     *
+     * @param context Контекст приложения
+     * @return true, если аналитика разрешена, иначе false
      */
     @JvmStatic
     fun firebaseAnalytics(context: Context): Boolean {
@@ -244,8 +215,11 @@ object AppPreference_1_0 {
     }
 
     /**
-     * Возвращает true если можно ли использовать Firebase crashlytics для
+     * Возвращает true, если можно использовать Firebase crashlytics для
      * сбора ошибок об использовании приложения. Иначе false.
+     *
+     * @param context Контекст приложения
+     * @return true, если crashlytics разрешен, иначе false
      */
     @JvmStatic
     fun firebaseCrashlytics(context: Context): Boolean {

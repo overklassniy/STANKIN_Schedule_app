@@ -51,12 +51,10 @@
     <string name="version">Версия: </string>
     <string name="changelog">История изменений</string>
 
-    <string name="support_title">Техподдержка</string>
     <string name="support_email_title">E-mail</string>
     <string name="support_email_summary">s.kiani@stankin.ru</string>
     <string name="support_github_title">GitHub Issues</string>
     <string name="support_github_summary">Сообщить о проблеме на GitHub</string>
     <string name="support_email">s.kiani@stankin.ru</string>
-    <string name="support_github_issues">GitHub Issues</string>
 
 </resources>

@@ -34,15 +34,12 @@ class NewsStorageRepositoryImpl @Inject constructor(
 
     override suspend fun saveNews(newsSubdivision: Int, posts: List<NewsPost>, force: Boolean) {
         db.withTransaction {
-            // если обновляем список
             if (force) {
                 dao.clear(newsSubdivision)
             }
 
-            // индекс по порядку
             val start = dao.nextIndexInResponse(newsSubdivision)
 
-            // добавление индекса и номера отдела
             val news = posts.mapIndexed { index, news ->
                 news.toEntity(start + index, newsSubdivision)
             }
