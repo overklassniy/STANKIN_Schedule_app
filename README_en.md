@@ -1,40 +1,133 @@
+<div align="center">
+
 # STANKIN Schedule
 
-[🇷🇺 Русский](README.md)
+**Unofficial application for MSTU "STANKIN" students**
 
-<div align="center">
-    <img src=".info/screenshots/logo.png" width="200">
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
+\
+<img src=".info/icons/224x224.png" width="224" alt="STANKIN Schedule">
+
+[🇷🇺 Русский](README.md) • [🇺🇸 English](README_en.md)
+
 </div>
-
-## About
-
-Unofficial application for MSTU "STANKIN" students.
-Allows you to view the schedule, module journal, and university news.
-
-This project is a fork of [ProjectPepega](https://github.com/Nikololoshka/ProjectPepega) (the original application, which is no longer supported by the author).
-
-## Download
-
-*   [RuStore](https://www.rustore.ru/catalog/app/com.overklassniy.stankinschedule)
-*   [GitHub Release](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
-
-## Features
-
-*   **Schedule:** View class schedules.
-*   **Journal:** Access to the module journal (ratings).
-*   **News:** Fresh university news.
-*   **Widget:** Convenient schedule widget for the desktop.
-
-## Screenshots
-
-| Main | Schedule | Journal |
-|:---:|:---:|:---:|
-| <img src=".info/screenshots/main.png" width="300"> | <img src=".info/screenshots/schedule_day.png" width="300"> | <img src=".info/screenshots/modules.png" width="300"> |
-
-| Schedule List | Widget |
-|:---:|:---:|
-| <img src=".info/screenshots/schedules.png" width="300"> | <img src=".info/screenshots/widget.png" width="300"> |
 
 ---
 
-Additional information can be found in the [.info](.info) folder.
+## About
+
+**STANKIN Schedule** is an unofficial mobile application for MSTU "STANKIN" students that provides convenient access to class schedules, module journal, and university news directly from your smartphone.
+
+This project is a fork of [ProjectPepega](https://github.com/Nikololoshka/ProjectPepega) – the original application that is no longer maintained by the author. The project has been revived and continues to evolve with improvements and new features.
+
+### Key Features
+
+- **Class Schedule** – view schedules with convenient day navigation
+- **Module Journal** – access to grades and ratings
+- **University News** – fresh news directly in the app
+- **Home Screen Widget** – quick access to schedule without opening the app
+- **Dark Theme** – comfortable use at any time of day
+- **Schedule Import** – support for importing from various sources, including MSTU STANKIN EES
+
+---
+
+## Download
+
+<div align="center">
+
+[<img src="https://img.shields.io/badge/RuStore-Download-red?style=for-the-badge&logo=android" height="60">](https://www.rustore.ru/catalog/app/com.overklassniy.stankinschedule)
+[<img src="https://img.shields.io/badge/GitHub-Release-blue?style=for-the-badge&logo=github" height="60">](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+
+</div>
+
+---
+
+## Screenshots
+
+<div align="center">
+
+| Main | Schedule | Journal |
+|:---:|:---:|:---:|
+| <img src=".info/screenshots/main.png" width="300" alt="Main"> | <img src=".info/screenshots/schedule_day.png" width="300" alt="Schedule"> | <img src=".info/screenshots/modules.png" width="300" alt="Journal"> |
+
+| Schedule List | Widget |
+|:---:|:---:|
+| <img src=".info/screenshots/schedules.png" width="300" alt="Schedule List"> | <img src=".info/screenshots/widget.png" width="300" alt="Widget"> |
+
+</div>
+
+---
+
+## Technologies
+
+The application is built on modern Android development technologies:
+
+- **Kotlin 2.3.0** – modern programming language
+- **Jetpack Compose** – declarative UI framework
+- **Material Design 3** – modern design language
+- **Hilt** – dependency injection
+- **Room** – local database
+- **Retrofit** – network requests
+- **Firebase** – analytics and crash reporting
+- **Coroutines** – asynchronous programming
+
+---
+
+## Development
+
+### Requirements
+
+- Android Studio Otter or newer
+- JDK 21
+- Android SDK 36
+- Minimum Android version: 8.0 (API 26)
+- Target Android version: 15 (API 35)
+
+### Building the Project
+
+```bash
+# Clone the repository
+git clone https://github.com/overklassniy/STANKIN_Schedule_app.git
+cd STANKIN_Schedule_app
+
+# Build the project
+./gradlew assembleDebug
+
+# Or open in Android Studio
+```
+
+---
+
+## Changelog
+
+Full changelog is available in [CHANGELOG.md](changelog_en.md).
+
+### Recent Updates
+
+**Version 3.0.0** (25.01.26)
+- Fixed schedule import functionality
+- Added import from MSTU STANKIN Electronic Educational Environment (EES) repository
+- Resumed functionality after discontinuation of the main application
+
+---
+
+## Authors
+
+- **Original Project** – [Nikololoshka](https://github.com/Nikololoshka) (ProjectPepega)
+- **Current Fork** – [overklassniy](https://github.com/overklassniy)
+
+---
+
+## Disclaimer
+
+This is an unofficial application. The application is provided "as is" without any warranties.
+
+---
+
+<div align="center">
+
+**Made by students – for STANKIN students**
+
+</div>
