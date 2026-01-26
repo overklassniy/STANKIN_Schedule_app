@@ -1,25 +1,34 @@
-# Stankin Schedule
+# СТАНКИН Расписание
 
 <div align="center">
-    <img src="./screenshots/logo.png" >
+    <img src=".info/screenshots/logo.png" width="200">
 </div>
 
 ## О проекте
-Неофициальное приложение с расписанием, модульным журналом и новостями для студентов МГТУ "СТАНКИН".
 
-**Работа в процессе**
+Неофициальное приложение для студентов МГТУ "СТАНКИН".
+Позволяет просматривать расписание, модульный журнал и новости университета.
 
-Это форк оригинального проекта, который был заброшен автором. В данный момент идет восстановление его работоспособности и улучшение стабильности.
+Этот проект является форком [ProjectPepega](https://github.com/Nikololoshka/ProjectPepega) (оригинальное приложение, которое больше не поддерживается автором).
+
+## Скачать
+
+*   [RuStore](https://www.rustore.ru/catalog/app/com.overklassniy.stankinschedule)
+*   [GitHub](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+
+## Функциональность
+
+*   Просмотр расписания занятий.
+*   Доступ к модульному журналу.
+*   Свежие новости университета.
+*   Виджет расписания на рабочий стол.
 
 ## Скриншоты
 
-| Главная страница                     | Просмотр расписания                  | Модульный журнал                     |
-|--------------------------------------|--------------------------------------|--------------------------------------|
-| ![Screenshot 1](./screenshots/1.png) | ![Screenshot 2](./screenshots/2.png) | ![Screenshot 3](./screenshots/3.png) |
+| Главная | Расписание | Журнал |
+|:---:|:---:|:---:|
+| <img src=".info/screenshots/main.png" width="300"> | <img src=".info/screenshots/schedule_day.png" width="300"> | <img src=".info/screenshots/modules.png" width="300"> |
 
-| Редактирование пары                  | Менеджер расписаний                  | Виджет с расписанием                 |
-|--------------------------------------|--------------------------------------|--------------------------------------|
-| ![Screenshot 4](./screenshots/4.png) | ![Screenshot 5](./screenshots/5.png) | ![Screenshot 6](./screenshots/6.png) |
-
----
-README будет обновлен после завершения основных работ.
+| Списки расписаний | Виджет |
+|:---:|:---:|
+| <img src=".info/screenshots/schedules.png" width="300"> | <img src=".info/screenshots/widget.png" width="300"> |
