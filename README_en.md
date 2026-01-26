@@ -29,7 +29,7 @@ This project is a fork of [ProjectPepega](https://github.com/Nikololoshka/Projec
 - **University News** – fresh news directly in the app
 - **Home Screen Widget** – quick access to schedule without opening the app
 - **Dark Theme** – comfortable use at any time of day
-- **Schedule Import** – support for importing from various sources, including MSTU STANKIN EES
+- **Schedule Import** – support for importing from various sources, including MSTU "STANKIN" Moodle
 
 ---
 
