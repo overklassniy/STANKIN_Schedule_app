@@ -63,7 +63,18 @@ class ScheduleViewerViewModel @Inject constructor(
 
     private val clearPager = Channel<Unit>(Channel.CONFLATED)
 
-    val currentDay: LocalDate get() = handle.get<LocalDate>(CURRENT_PAGER_DATE) ?: LocalDate.now()
+    val currentDay: LocalDate get() {
+        val dateString = handle.get<String>(CURRENT_PAGER_DATE)
+        return if (dateString != null) {
+            try {
+                LocalDate.parse(dateString)
+            } catch (e: Exception) {
+                LocalDate.now()
+            }
+        } else {
+            LocalDate.now()
+        }
+    }
     private val _scheduleStartDay = MutableStateFlow(currentDay)
 
     private var _scheduleId: Long = -1
@@ -104,8 +115,13 @@ class ScheduleViewerViewModel @Inject constructor(
     }
 
     fun loadSchedule(scheduleId: Long, startDate: LocalDate?) {
-        // Расписание с таким ID уже загружено
-        if (_scheduleId == scheduleId) return
+        // Если расписание уже загружено, но есть новая дата - применяем её
+        if (_scheduleId == scheduleId) {
+            if (startDate != null) {
+                selectDate(startDate)
+            }
+            return
+        }
 
         if (startDate != null) updatePagingDate(startDate)
 
@@ -161,7 +177,7 @@ class ScheduleViewerViewModel @Inject constructor(
      * ее последующего отображения, если расписание обновится.
      */
     fun updatePagingDate(currentPagingDate: LocalDate?) {
-        handle[CURRENT_PAGER_DATE] = currentPagingDate
+        handle[CURRENT_PAGER_DATE] = currentPagingDate?.toString()
     }
 
     fun onRenameEvent(event: RenameEvent) {

@@ -2,7 +2,9 @@ package com.overklassniy.stankinschedule.news.core.data.repository
 
 import android.util.Log
 import com.overklassniy.stankinschedule.news.core.data.api.StankinNews2024API
+import com.overklassniy.stankinschedule.news.core.data.api.StankinDeanNewsAPI
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
+import com.overklassniy.stankinschedule.news.core.domain.model.NewsSubdivision
 import com.overklassniy.stankinschedule.news.core.domain.repository.NewsRemoteRepository
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
@@ -16,6 +18,7 @@ import javax.inject.Inject
 
 class NewsRemoteRepository2024Impl @Inject constructor(
     private val newsAPI: StankinNews2024API,
+    private val oldNewsAPI: StankinDeanNewsAPI,
 ) : NewsRemoteRepository {
 
     override suspend fun loadPage(
@@ -23,8 +26,17 @@ class NewsRemoteRepository2024Impl @Inject constructor(
         page: Int,
         count: Int
     ): List<NewsPost> {
-        val text = newsAPI.getNewsPage(page).await()
+        return when (newsSubdivision) {
+            NewsSubdivision.Deanery.id -> loadDeaneryNews(page, count)
+            else -> loadUniversityNews(page)
+        }
+    }
 
+    /**
+     * Загружает новости университета с stankin.ru/news
+     */
+    private suspend fun loadUniversityNews(page: Int): List<NewsPost> {
+        val text = newsAPI.getNewsPage(page).await()
 
         val newsBlock = Regex(
             """<a.{0,200}class="(newsItem|importantNewsItem)".*?>.+?</a>""",
@@ -58,10 +70,40 @@ class NewsRemoteRepository2024Impl @Inject constructor(
                 )
             }
             .catch {
-                Log.e("NewsRemoteRepository2024Impl", "Load page $page error", it)
+                Log.e("NewsRemoteRepository2024Impl", "Load university news page $page error", it)
             }
             .toList()
-            .also { Log.d("NewsRemoteRepository2024Impl", "loadPage: $it") }
+            .also { Log.d("NewsRemoteRepository2024Impl", "loadUniversityNews: $it") }
+    }
+
+    /**
+     * Загружает новости деканата с old.stankin.ru
+     */
+    private suspend fun loadDeaneryNews(page: Int, count: Int): List<NewsPost> {
+        return try {
+            val response = StankinDeanNewsAPI.getNews(oldNewsAPI, page, count).await()
+            
+            if (!response.success) {
+                Log.e("NewsRemoteRepository2024Impl", "Deanery API error: ${response.error}")
+                return emptyList()
+            }
+
+            response.data.news.map { item ->
+                NewsPost(
+                    id = item.id,
+                    title = item.title,
+                    previewImageUrl = item.logo?.let { logo ->
+                        if (logo.startsWith("http")) logo
+                        else StankinDeanNewsAPI.BASE_URL + logo
+                    },
+                    date = processDeaneryDate(item.date),
+                    relativeUrl = "${StankinDeanNewsAPI.BASE_URL}/news/item_${item.id}"
+                )
+            }.also { Log.d("NewsRemoteRepository2024Impl", "loadDeaneryNews: $it") }
+        } catch (e: Exception) {
+            Log.e("NewsRemoteRepository2024Impl", "Load deanery news page $page error", e)
+            emptyList()
+        }
     }
 
     private fun processDate(text: String): String {
@@ -75,6 +117,26 @@ class NewsRemoteRepository2024Impl @Inject constructor(
                         .parseDateTime(it)
                         .toString(ISODateTimeFormat.date())
                 }
+        } catch (ignored: Throwable) {
+            DateTime.now()
+                .toString(ISODateTimeFormat.date())
+        }
+    }
+
+    private fun processDeaneryDate(date: String): String {
+        return try {
+            // Формат даты от old.stankin.ru: "20.01.2025 17:22:52" или "2025-01-20"
+            val cleanDate = date.split(" ").first()
+            
+            if (cleanDate.contains("-")) {
+                // Уже в ISO формате
+                cleanDate
+            } else {
+                // Формат dd.MM.yyyy
+                DateTimeFormat.forPattern("dd.MM.yyyy")
+                    .parseDateTime(cleanDate)
+                    .toString(ISODateTimeFormat.date())
+            }
         } catch (ignored: Throwable) {
             DateTime.now()
                 .toString(ISODateTimeFormat.date())

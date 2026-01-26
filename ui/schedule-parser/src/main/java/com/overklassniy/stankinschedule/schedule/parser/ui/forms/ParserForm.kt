@@ -26,8 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.Stateful
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
@@ -35,6 +37,7 @@ import com.overklassniy.stankinschedule.schedule.core.ui.components.PairFormatte
 import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParsedFile
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
+import com.overklassniy.stankinschedule.schedule.parser.ui.util.ParserErrorMapper
 import com.overklassniy.stankinschedule.schedule.table.domain.model.TableConfig
 import com.overklassniy.stankinschedule.schedule.table.ui.components.TableView
 
@@ -44,6 +47,8 @@ fun ParserForm(
     state: ParserState.ParserResult,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    
     Stateful(
         state = state.state,
         onSuccess = { parsedFile ->
@@ -57,11 +62,14 @@ fun ParserForm(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
         },
-        onFailed = {
+        onFailed = { throwable ->
             Box(modifier = modifier) {
                 Text(
-                    text = it.toString(),
-                    modifier = Modifier.align(Alignment.Center)
+                    text = ParserErrorMapper.getErrorMessage(context, throwable),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(Dimen.ContentPadding)
                 )
             }
         }

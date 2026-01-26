@@ -73,7 +73,7 @@ fun ScheduleRepositoryScreen(
         val workInfoLiveData = workManager.getWorkInfosForUniqueWorkLiveData(workerName)
         val workInfos by workInfoLiveData.observeAsState(initial = emptyList())
         
-        LaunchedEffect(workInfos) {
+        LaunchedEffect(workInfos, workerName) {
             val workInfo = workInfos.firstOrNull()
             when (workInfo?.state) {
                 WorkInfo.State.SUCCEEDED -> {
@@ -81,19 +81,17 @@ fun ScheduleRepositoryScreen(
                     val scheduleName = workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_SCHEDULE_NAME)
                     
                     if (filePath != null && scheduleName != null) {
+                        currentWorkerName = null
                         val intent = ScheduleParserActivity.createIntent(context, filePath, scheduleName)
                         context.startActivity(intent)
-                        @Suppress("UNUSED_VALUE")
-                        currentWorkerName = null
                     }
                 }
                 WorkInfo.State.FAILED -> {
+                    currentWorkerName = null
                     scaffoldState.snackbarHostState.showSnackbar(
                         message = downloadFailedMessage,
                         duration = SnackbarDuration.Short
                     )
-                    @Suppress("UNUSED_VALUE")
-                    currentWorkerName = null
                 }
                 else -> {}
             }

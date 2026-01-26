@@ -4,7 +4,7 @@
 
 **Неофициальное приложение для студентов МГТУ «СТАНКИН»**
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -30,8 +30,6 @@
 - **Виджет на рабочем столе** – быстрый доступ к расписанию без открытия приложения
 - **Темная тема** – комфортная работа в любое время суток
 - **Импорт расписаний** – поддержка импорта из различных источников, включая Электронную Образовательную Среду (ЭОС) МГТУ «СТАНКИН»
-
----
 
 ## Скачать
 
@@ -73,8 +71,6 @@
 - **Firebase** – аналитика и crash reporting
 - **Coroutines** – асинхронное программирование
 
----
-
 ## Разработка
 
 ### Требования
@@ -104,21 +100,18 @@ cd STANKIN_Schedule_app
 
 Полный список изменений доступен в [CHANGELOG.md](changelog.md).
 
-### Последние обновления
+### Последнее обновление
 
-**Version 3.0.0** (25.01.26)
-- Исправлен функционал импорта расписаний
-- Добавлен импорт из репозитория Электронной Образовательной Среды (ЭОС) МГТУ «СТАНКИН»
-- Возобновлен функционал после прекращения поддержки основного приложения
-
----
+**Version 3.1.0** (26.01.26)
+- Исправлен вылет при долгом нажатии на расписание;
+- Добавлены вкладки новостей на главном экране (Университет и Деканат);
+- Добавлена загрузка новостей деканата с API old.stankin.ru;
+- Исправлен URL для новостей деканата.
 
 ## Авторы
 
 - **Оригинальный проект** – [Nikololoshka](https://github.com/Nikololoshka) (ProjectPepega)
 - **Текущий форк** – [overklassniy](https://github.com/overklassniy)
-
----
 
 ## Отказ от ответственности
 

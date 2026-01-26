@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -41,9 +42,8 @@ import com.overklassniy.stankinschedule.schedule.list.ui.components.ScheduleActi
 import com.overklassniy.stankinschedule.schedule.list.ui.components.ScheduleItem
 import com.overklassniy.stankinschedule.schedule.list.ui.components.ScheduleRemoveDialog
 import com.overklassniy.stankinschedule.schedule.list.ui.components.ScheduleToolBar
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -66,11 +66,10 @@ fun ScheduleScreen(
         viewModel.setEditable(false)
     }
 
-    val reorderState = rememberReorderableLazyListState(
-        onMove = { from, to ->
-            viewModel.schedulesMove(from.index, to.index)
-        },
-    )
+    val lazyListState = rememberLazyListState()
+    val reorderState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        viewModel.schedulesMove(from.index, to.index)
+    }
     val schedules by viewModel.schedules.collectAsState()
     val favorite by viewModel.favorite.collectAsState()
 
@@ -125,7 +124,7 @@ fun ScheduleScreen(
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = !reorderState.listState.isScrollInProgress && !editableMode,
+                visible = !lazyListState.isScrollInProgress && !editableMode,
                 enter = scaleIn(),
                 exit = scaleOut()
             ) {
@@ -149,12 +148,10 @@ fun ScheduleScreen(
                 .padding(innerPadding)
         ) {
             LazyColumn(
-                state = reorderState.listState,
+                state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(2.dp),
                 contentPadding = PaddingValues(bottom = 72.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .reorderable(reorderState)
+                modifier = Modifier.fillMaxSize()
             ) {
                 schedules?.let { data ->
                     // Если нет расписаний
@@ -174,7 +171,7 @@ fun ScheduleScreen(
                     items(data, key = { it.id }) { schedule ->
                         if (editableMode) {
                             ReorderableItem(
-                                reorderableState = reorderState,
+                                state = reorderState,
                                 key = schedule.id
                             ) {
                                 ScheduleActionItem(
@@ -183,7 +180,7 @@ fun ScheduleScreen(
                                     onClicked = {
                                         viewModel.selectSchedule(schedule.id)
                                     },
-                                    reorderedState = reorderState,
+                                    draggableModifier = Modifier.draggableHandle(),
                                     modifier = Modifier.fillParentMaxWidth()
                                 )
                             }

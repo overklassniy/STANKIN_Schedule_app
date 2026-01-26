@@ -162,8 +162,9 @@ class ScheduleDownloadWorker @AssistedInject constructor(
         ): String {
             val manager = WorkManager.getInstance(context)
 
-            // уникальное имя worker'а
-            val workerName = "ScheduleWorker-${item.name}-${item.category}"
+            // уникальное имя worker'а с timestamp для избежания конфликтов при повторных загрузках
+            val timestamp = System.currentTimeMillis()
+            val workerName = "ScheduleWorker-${item.name}-${item.category}-$timestamp"
 
             val worker = OneTimeWorkRequest.Builder(ScheduleDownloadWorker::class.java)
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -180,11 +181,10 @@ class ScheduleDownloadWorker @AssistedInject constructor(
                         .putBoolean(SCHEDULE_DOWNLOAD_ONLY, downloadOnly)
                         .build()
                 )
-                .keepResultsForAtLeast(24, TimeUnit.HOURS)
                 .addTag(WORKER_TAG)
                 .build()
 
-            manager.enqueueUniqueWork(workerName, ExistingWorkPolicy.KEEP, worker)
+            manager.enqueueUniqueWork(workerName, ExistingWorkPolicy.REPLACE, worker)
             
             return workerName
         }

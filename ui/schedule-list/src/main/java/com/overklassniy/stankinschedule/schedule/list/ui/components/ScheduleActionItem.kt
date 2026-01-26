@@ -22,15 +22,13 @@ import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
 import com.overklassniy.stankinschedule.schedule.list.ui.R
-import org.burnoutcrew.reorderable.ReorderableLazyListState
-import org.burnoutcrew.reorderable.detectReorder
 
 @Composable
 fun ScheduleActionItem(
     schedule: ScheduleInfo,
     isSelected: Boolean,
     onClicked: () -> Unit,
-    reorderedState: ReorderableLazyListState,
+    draggableModifier: Modifier,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -71,7 +69,7 @@ fun ScheduleActionItem(
         IconButton(
             onClick = {},
             enabled = true,
-            modifier = Modifier.detectReorder(reorderedState)
+            modifier = draggableModifier
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_drag_handle),

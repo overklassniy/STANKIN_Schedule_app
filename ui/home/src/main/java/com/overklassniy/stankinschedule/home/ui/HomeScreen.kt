@@ -3,9 +3,11 @@ package com.overklassniy.stankinschedule.home.ui
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -14,7 +16,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -24,7 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -116,7 +123,10 @@ fun HomeScreen(
         val pairColorGroup by viewModel.pairColorGroup.collectAsStateWithLifecycle(PairColorGroup.default())
         val pairColors by remember(pairColorGroup) { derivedStateOf { pairColorGroup.toColor() } }
 
-        val news by viewModel.news.collectAsStateWithLifecycle(emptyList())
+        val universityNews by viewModel.universityNews.collectAsStateWithLifecycle(emptyList())
+        val deaneryNews by viewModel.deaneryNews.collectAsStateWithLifecycle(emptyList())
+        var selectedNewsTab by rememberSaveable { mutableIntStateOf(0) }
+        val currentNews = if (selectedNewsTab == 0) universityNews else deaneryNews
 
         LazyColumn(
             state = columnState,
@@ -185,22 +195,44 @@ fun HomeScreen(
                 )
             }
 
-            item(key = "news_title") {
-                HomeText(
-                    text = stringResource(R.string.section_news),
-                    modifier = Modifier
-                        .fillParentMaxWidth()
-                        .clickable(onClick = navigateToNews)
-                        .padding(Dimen.ContentPadding * 2)
-                )
+            item(key = "news_tabs") {
+                Column(
+                    modifier = Modifier.fillParentMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.section_news),
+                        style = TextStyle(fontSize = 18.sp),
+                        modifier = Modifier.padding(
+                            start = Dimen.ContentPadding * 2,
+                            top = Dimen.ContentPadding * 2,
+                            end = Dimen.ContentPadding * 2,
+                            bottom = Dimen.ContentPadding
+                        )
+                    )
+                    PrimaryTabRow(
+                        selectedTabIndex = selectedNewsTab,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Tab(
+                            selected = selectedNewsTab == 0,
+                            onClick = { selectedNewsTab = 0 },
+                            text = { Text(stringResource(R.string.news_university)) }
+                        )
+                        Tab(
+                            selected = selectedNewsTab == 1,
+                            onClick = { selectedNewsTab = 1 },
+                            text = { Text(stringResource(R.string.news_deanery)) }
+                        )
+                    }
+                }
             }
 
             items(
                 count = HomeViewModel.NEWS_COUNT,
-                key = { it }
+                key = { "news_$selectedNewsTab$it" }
             ) { index ->
                 NewsPost(
-                    post = news.getOrNull(index),
+                    post = currentNews.getOrNull(index),
                     imageLoader = imageLoader,
                     onClick = {
                         navigateToNewsPost(it)

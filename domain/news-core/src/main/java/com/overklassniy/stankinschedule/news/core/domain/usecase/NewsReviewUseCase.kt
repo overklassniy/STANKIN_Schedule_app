@@ -31,6 +31,9 @@ class NewsReviewUseCase @Inject constructor(
 
     fun lastNews(newsCount: Int): Flow<List<NewsPost>> = storageRepository.lastNews(newsCount)
 
+    fun lastNews(newsSubdivision: Int, newsCount: Int): Flow<List<NewsPost>> =
+        storageRepository.lastNews(newsSubdivision, newsCount)
+
     suspend fun refreshAllNews(force: Boolean = false) {
         // for (subdivision in NewsSubdivision.values()) {
         //    refreshNews(subdivision.id, force)

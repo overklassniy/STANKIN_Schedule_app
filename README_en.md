@@ -4,7 +4,7 @@
 
 **Unofficial application for MSTU "STANKIN" students**
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -30,8 +30,6 @@ This project is a fork of [ProjectPepega](https://github.com/Nikololoshka/Projec
 - **Home Screen Widget** – quick access to schedule without opening the app
 - **Dark Theme** – comfortable use at any time of day
 - **Schedule Import** – support for importing from various sources, including MSTU "STANKIN" Moodle
-
----
 
 ## Download
 
@@ -73,8 +71,6 @@ The application is built on modern Android development technologies:
 - **Firebase** – analytics and crash reporting
 - **Coroutines** – asynchronous programming
 
----
-
 ## Development
 
 ### Requirements
@@ -106,19 +102,16 @@ Full changelog is available in [CHANGELOG.md](changelog_en.md).
 
 ### Recent Updates
 
-**Version 3.0.0** (25.01.26)
-- Fixed schedule import functionality
-- Added import from MSTU STANKIN Electronic Educational Environment (EES) repository
-- Resumed functionality after discontinuation of the main application
-
----
+**Version 3.1.0** (26.01.26)
+- Fixed crash when long-pressing on schedule;
+- Added news tabs on home screen (University and Dean office);
+- Added dean's office news loading from old.stankin.ru API;
+- Fixed URL for dean's office news.
 
 ## Authors
 
 - **Original Project** – [Nikololoshka](https://github.com/Nikololoshka) (ProjectPepega)
 - **Current Fork** – [overklassniy](https://github.com/overklassniy)
-
----
 
 ## Disclaimer
 

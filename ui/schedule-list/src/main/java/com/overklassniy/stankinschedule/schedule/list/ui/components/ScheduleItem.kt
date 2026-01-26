@@ -4,8 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -24,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,7 +32,7 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
 import com.overklassniy.stankinschedule.schedule.list.ui.R
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ScheduleItem(
     schedule: ScheduleInfo,
@@ -47,10 +47,12 @@ fun ScheduleItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimen.ContentPadding),
         modifier = modifier
-            .combinedClickable(
-                onLongClick = onLongClicked,
-                onClick = onClicked
-            )
+            .pointerInput(schedule.id) {
+                detectTapGestures(
+                    onTap = { onClicked() },
+                    onLongPress = { onLongClicked() }
+                )
+            }
             .padding(
                 start = Dimen.ContentPadding * 2f,
                 end = Dimen.ContentPadding * 0.5f,

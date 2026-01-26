@@ -200,7 +200,20 @@ class ScheduleParserViewModel @Inject constructor(
     fun back() {
         when (_parserState.value) {
             is ParserState.Settings -> {
-                _selectedFile?.let { currentSelectedFile -> selectFile(currentSelectedFile.path) }
+                val selectedFile = _selectedFile
+                if (selectedFile != null) {
+                    viewModelScope.launch {
+                        try {
+                            val preview = parserUseCase.renderPreview(selectedFile.path.toString())
+                            _parserState.value = ParserState.SelectFile(selectedFile, preview)
+                        } catch (e: Exception) {
+                            // Если не удалось загрузить превью, возвращаемся без него
+                            _parserState.value = ParserState.SelectFile(selectedFile, null)
+                        }
+                    }
+                } else {
+                    _parserState.value = ParserState.SelectFile()
+                }
             }
 
             is ParserState.ParserResult -> {
@@ -214,6 +227,10 @@ class ScheduleParserViewModel @Inject constructor(
                 } else {
                     _parserState.value = ParserState.SelectFile()
                 }
+            }
+
+            else -> {
+                // SelectFile и ImportFinish - ничего не делаем, обрабатывается Activity
             }
         }
     }

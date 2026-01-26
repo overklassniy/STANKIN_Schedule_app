@@ -40,4 +40,12 @@
 
     <string name="successfully_imported">Расписание успешно импортировано</string>
 
+    <string name="error_file_not_found">Не удалось открыть файл</string>
+    <string name="error_invalid_pdf">Файл не является корректным PDF-документом или повреждён</string>
+    <string name="error_pdf_password_protected">PDF-файл защищён паролем</string>
+    <string name="error_pdf_read_failed">Ошибка при чтении PDF-файла</string>
+    <string name="error_not_schedule_pdf">Файл не является расписанием СТАНКИН. Убедитесь, что вы выбрали правильный PDF-файл с расписанием занятий.</string>
+    <string name="error_schedule_format">Не удалось распознать формат расписания. Структура файла не соответствует ожидаемому формату расписания СТАНКИН.</string>
+    <string name="error_unknown">Произошла неизвестная ошибка</string>
+
 </resources>

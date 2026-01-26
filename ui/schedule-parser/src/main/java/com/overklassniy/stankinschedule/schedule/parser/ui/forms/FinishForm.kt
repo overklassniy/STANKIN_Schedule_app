@@ -11,19 +11,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.Stateful
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
+import com.overklassniy.stankinschedule.schedule.parser.ui.util.ParserErrorMapper
 
 @Composable
 fun FinishForm(
     state: ParserState.ImportFinish,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -48,10 +53,11 @@ fun FinishForm(
             onLoading = {
                 CircularProgressIndicator()
             },
-            onFailed = {
+            onFailed = { throwable ->
                 Text(
-                    text = it.toString(),
-                    style = MaterialTheme.typography.titleMedium
+                    text = ParserErrorMapper.getErrorMessage(context, throwable),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
                 )
             }
         )

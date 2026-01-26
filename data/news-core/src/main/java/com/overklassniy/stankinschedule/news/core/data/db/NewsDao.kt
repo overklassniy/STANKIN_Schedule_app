@@ -45,6 +45,14 @@ interface NewsDao {
     fun latest(max: Int = 3): Flow<List<NewsEntity>>
 
     /**
+     * Возвращает список из последних нескольких элементов для конкретного раздела.
+     * @param newsSubdivision номер отдела новостей.
+     * @param max максимальное количество элементов.
+     */
+    @Query("SELECT * FROM news_posts WHERE news_subdivision = :newsSubdivision ORDER BY date DESC, id DESC LIMIT :max")
+    fun latestBySubdivision(newsSubdivision: Int, max: Int = 3): Flow<List<NewsEntity>>
+
+    /**
      * Очищает закэшированные новости.
      * @param newsSubdivision номер отдела новостей.
      */

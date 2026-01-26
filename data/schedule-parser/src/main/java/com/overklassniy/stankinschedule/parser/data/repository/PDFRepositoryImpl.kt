@@ -3,11 +3,13 @@ package com.overklassniy.stankinschedule.parser.data.repository
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.net.toUri
+import com.overklassniy.stankinschedule.schedule.parser.domain.exceptions.PDFParseException
 import com.overklassniy.stankinschedule.schedule.parser.domain.model.CellBound
 import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParseDetail
 import com.overklassniy.stankinschedule.schedule.parser.domain.repository.PDFRepository
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
 import com.tom_roush.pdfbox.rendering.PDFRenderer
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
@@ -15,6 +17,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStreamWriter
 import javax.inject.Inject
@@ -34,7 +37,7 @@ class PDFRepositoryImpl @Inject constructor(
      * @param path Путь к PDF файлу
      * @param multilineTextThreshold Порог для объединения многострочного текста
      * @return Детали парсинга с ячейками
-     * @throws IllegalAccessException если не удалось открыть файл
+     * @throws PDFParseException если не удалось открыть или распарсить файл
      */
     override suspend fun parsePDF(
         path: String,
@@ -43,11 +46,21 @@ class PDFRepositoryImpl @Inject constructor(
         PDFBoxResourceLoader.init(context)
 
         return openInputStream(path).use { stream ->
-            if (stream == null) throw IllegalAccessException("Failed to get file descriptor")
-            ParseDetail(
-                scheduleName = "",
-                cells = import(stream, multilineTextThreshold)
-            )
+            if (stream == null) throw PDFParseException.fileNotFound(path)
+            try {
+                ParseDetail(
+                    scheduleName = "",
+                    cells = import(stream, multilineTextThreshold)
+                )
+            } catch (e: InvalidPasswordException) {
+                throw PDFParseException.passwordProtected()
+            } catch (e: IOException) {
+                throw PDFParseException.invalidPDF(e)
+            } catch (e: IllegalStateException) {
+                throw PDFParseException.invalidPDF(e)
+            } catch (e: Exception) {
+                throw PDFParseException.parsingError(e)
+            }
         }
     }
 
@@ -56,14 +69,24 @@ class PDFRepositoryImpl @Inject constructor(
      *
      * @param path Путь к PDF файлу
      * @return Bitmap изображение первой страницы
-     * @throws IllegalAccessException если не удалось открыть файл
+     * @throws PDFParseException если не удалось открыть или рендерить файл
      */
     override suspend fun renderPDF(path: String): Bitmap {
         PDFBoxResourceLoader.init(context)
 
         return openInputStream(path).use { stream ->
-            if (stream == null) throw IllegalAccessException("Failed to get file descriptor")
-            render(stream)
+            if (stream == null) throw PDFParseException.fileNotFound(path)
+            try {
+                render(stream)
+            } catch (e: InvalidPasswordException) {
+                throw PDFParseException.passwordProtected()
+            } catch (e: IOException) {
+                throw PDFParseException.invalidPDF(e)
+            } catch (e: IllegalStateException) {
+                throw PDFParseException.invalidPDF(e)
+            } catch (e: Exception) {
+                throw PDFParseException.parsingError(e)
+            }
         }
     }
 

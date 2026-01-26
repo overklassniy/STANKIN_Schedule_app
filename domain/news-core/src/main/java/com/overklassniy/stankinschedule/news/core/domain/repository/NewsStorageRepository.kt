@@ -10,6 +10,8 @@ interface NewsStorageRepository {
 
     fun lastNews(newsCount: Int = 3): Flow<List<NewsPost>>
 
+    fun lastNews(newsSubdivision: Int, newsCount: Int = 3): Flow<List<NewsPost>>
+
     suspend fun saveNews(newsSubdivision: Int, posts: List<NewsPost>, force: Boolean = false)
 
     suspend fun clearNews(newsSubdivision: Int)

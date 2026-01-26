@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
 import com.overklassniy.stankinschedule.core.ui.components.UIState
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
+import com.overklassniy.stankinschedule.news.core.domain.model.NewsSubdivision
 import com.overklassniy.stankinschedule.news.core.domain.usecase.NewsReviewUseCase
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
@@ -46,8 +47,11 @@ class HomeViewModel @Inject constructor(
     private val _days = MutableStateFlow<UIState<List<ScheduleViewDay>>>(UIState.loading())
     val days = _days.asStateFlow()
 
-    private val _news = MutableStateFlow<List<NewsPost>>(emptyList())
-    val news = _news.asStateFlow()
+    private val _universityNews = MutableStateFlow<List<NewsPost>>(emptyList())
+    val universityNews = _universityNews.asStateFlow()
+
+    private val _deaneryNews = MutableStateFlow<List<NewsPost>>(emptyList())
+    val deaneryNews = _deaneryNews.asStateFlow()
 
     private data class DaysKey(
         val scheduleId: Long,
@@ -68,15 +72,30 @@ class HomeViewModel @Inject constructor(
             }
         }
 
+        // Загрузка новостей университета
         viewModelScope.launch {
-            newsUseCase.lastNews(newsCount = NEWS_COUNT).collectLatest {
-                _news.value = it
+            newsUseCase.lastNews(
+                newsSubdivision = NewsSubdivision.University.id,
+                newsCount = NEWS_COUNT
+            ).collectLatest {
+                _universityNews.value = it
+            }
+        }
+
+        // Загрузка новостей деканата
+        viewModelScope.launch {
+            newsUseCase.lastNews(
+                newsSubdivision = NewsSubdivision.Deanery.id,
+                newsCount = NEWS_COUNT
+            ).collectLatest {
+                _deaneryNews.value = it
             }
         }
 
         viewModelScope.launch {
             try {
-                newsUseCase.refreshAllNews(force = false)
+                newsUseCase.refreshNews(NewsSubdivision.University.id, force = false)
+                newsUseCase.refreshNews(NewsSubdivision.Deanery.id, force = false)
             } catch (ignored: Exception) {
 
             }

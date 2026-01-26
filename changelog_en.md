@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 3.1.0 (26.01.26)
+- Fixed crash when long-pressing on schedule;
+- Added news tabs on home screen (University and Dean office);
+- Added dean's office news loading from old.stankin.ru API;
+- Fixed URL for dean's office news.
+
 ## Version 3.0.0 (25.01.26)
 - Fixed schedule import functionality;
 - Added import from MGTU STANKIN Electronic Educational Environment repository;

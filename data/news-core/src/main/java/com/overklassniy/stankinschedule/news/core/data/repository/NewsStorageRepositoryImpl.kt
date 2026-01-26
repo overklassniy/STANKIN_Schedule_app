@@ -32,6 +32,10 @@ class NewsStorageRepositoryImpl @Inject constructor(
         return dao.latest(newsCount).map { last -> last.map { it.toPost() } }
     }
 
+    override fun lastNews(newsSubdivision: Int, newsCount: Int): Flow<List<NewsPost>> {
+        return dao.latestBySubdivision(newsSubdivision, newsCount).map { last -> last.map { it.toPost() } }
+    }
+
     override suspend fun saveNews(newsSubdivision: Int, posts: List<NewsPost>, force: Boolean) {
         db.withTransaction {
             if (force) {

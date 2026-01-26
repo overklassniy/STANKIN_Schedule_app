@@ -22,6 +22,7 @@
 *.ap_
 *.aab
 *.dex
+**/release/
 bin/
 gen/
 captures/

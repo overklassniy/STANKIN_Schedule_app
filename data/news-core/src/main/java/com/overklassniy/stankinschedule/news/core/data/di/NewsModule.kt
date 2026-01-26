@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import com.overklassniy.stankinschedule.news.core.data.api.PostResponse
 import com.overklassniy.stankinschedule.news.core.data.api.StankinNews2024API
 import com.overklassniy.stankinschedule.news.core.data.api.StankinNewsAPI
+import com.overklassniy.stankinschedule.news.core.data.api.StankinDeanNewsAPI
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsMediatorRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsPostRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsPreferenceRepositoryImpl
@@ -58,6 +59,17 @@ object NewsNetworkModule {
             .client(client)
             .build()
             .create(StankinNews2024API::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOldNewsService(client: OkHttpClient): StankinDeanNewsAPI {
+        return Retrofit.Builder()
+            .baseUrl(StankinDeanNewsAPI.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
+            .build()
+            .create(StankinDeanNewsAPI::class.java)
     }
 }
 
