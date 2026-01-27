@@ -12,6 +12,11 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Time
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 
+/**
+ * Преобразует [PairJson] (модель из API) в доменную модель [PairModel].
+ *
+ * @return Доменная модель пары.
+ */
 fun PairJson.toPairModel(): PairModel {
     return PairModel(
         title = title,
@@ -24,6 +29,11 @@ fun PairJson.toPairModel(): PairModel {
     )
 }
 
+/**
+ * Преобразует [PairJson.DateJson] (модель даты из API) в доменную модель [DateItem].
+ *
+ * @return Доменная модель элемента даты.
+ */
 fun PairJson.DateJson.toDateItem(): DateItem {
     val f = Frequency.of(frequency)
     if (f == Frequency.ONCE) {
@@ -32,12 +42,22 @@ fun PairJson.DateJson.toDateItem(): DateItem {
     return DateRange(date, f)
 }
 
+/**
+ * Преобразует доменную модель [DateModel] в список [PairJson.DateJson] для отправки в API.
+ *
+ * @return Список моделей дат для API.
+ */
 fun DateModel.toJson(): List<PairJson.DateJson> {
     return this.map { date ->
         PairJson.DateJson(date.frequency().tag, date.toString())
     }
 }
 
+/**
+ * Преобразует доменную модель [PairModel] в [PairJson] для отправки в API.
+ *
+ * @return Модель пары для API.
+ */
 fun PairModel.toJson() : PairJson {
     return PairJson(
         title = title,
@@ -50,6 +70,11 @@ fun PairModel.toJson() : PairJson {
     )
 }
 
+/**
+ * Преобразует доменную модель [ScheduleModel] в список [PairJson] для отправки в API.
+ *
+ * @return Список пар для API.
+ */
 fun ScheduleModel.toJson() : List<PairJson> {
     return this.map { pair -> pair.toJson() }
 }

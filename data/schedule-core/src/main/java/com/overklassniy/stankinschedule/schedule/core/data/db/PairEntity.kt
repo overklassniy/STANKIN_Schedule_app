@@ -6,7 +6,17 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 /**
- * Пара в расписании для хранения в БД.
+ * Сущность пары (занятия) для хранения в базе данных Room.
+ * Связана с [ScheduleEntity] через внешний ключ [scheduleId].
+ *
+ * @property scheduleId ID расписания, к которому относится эта пара.
+ * @property title Название предмета.
+ * @property lecturer Имя преподавателя.
+ * @property classroom Аудитория.
+ * @property type Тип занятия (лекция, семинар, лабораторная и т.д.).
+ * @property subgroup Подгруппа (например, "A", "B" или пустая строка).
+ * @property time Время проведения занятия (строковое представление JSON объекта TimeJson).
+ * @property date Информация о датах проведения (строковое представление JSON массива DateJson).
  */
 @Entity(
     tableName = "schedule_pair_entities",
@@ -40,7 +50,7 @@ data class PairEntity(
 ) {
 
     /**
-     * ID пары.
+     * Уникальный идентификатор пары в базе данных (автогенерация).
      */
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0

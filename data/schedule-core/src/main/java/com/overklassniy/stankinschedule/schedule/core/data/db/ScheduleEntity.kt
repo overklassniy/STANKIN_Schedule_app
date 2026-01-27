@@ -9,8 +9,10 @@ import com.overklassniy.stankinschedule.schedule.core.data.mapper.DateTimeConver
 import org.joda.time.DateTime
 
 /**
- * Сущность расписания в БД.
- * @param scheduleName название расписания.
+ * Сущность расписания для хранения в базе данных Room.
+ * Представляет собой заголовок расписания (например, группу).
+ *
+ * @property scheduleName Имя расписания (уникальное поле, например "ИДБ-20-01").
  */
 @Entity(
     tableName = "schedule_entities",
@@ -23,31 +25,42 @@ class ScheduleEntity(
     @ColumnInfo(name = "schedule_name")
     var scheduleName: String,
 ) {
+
     /**
-     * ID расписания.
+     * Уникальный идентификатор расписания в БД (автогенерация).
      */
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
 
     /**
-     * Последнее обновление расписания.
-     * Используется для функции синхронизации.
+     * Дата и время последнего обновления расписания.
      */
     @ColumnInfo(name = "last_update")
     var lastUpdate: DateTime? = null
 
     /**
-     * Будет ли расписание синхронизироваться с репозиторием.
+     * Флаг синхронизации с сервером.
+     * true, если расписание успешно синхронизировано.
      */
     @ColumnInfo(name = "synced")
     var synced: Boolean = false
 
     /**
-     * Порядковый номер в списке.
+     * Позиция расписания в списке (для пользовательской сортировки).
      */
     @ColumnInfo(name = "position")
     var position: Int = 0
 
+    /**
+     * Создает копию объекта с возможностью изменения отдельных полей.
+     *
+     * @param scheduleName Новое имя расписания.
+     * @param id Новый ID.
+     * @param lastUpdate Новое время обновления.
+     * @param synced Новый статус синхронизации.
+     * @param position Новая позиция.
+     * @return Новый объект [ScheduleEntity].
+     */
     fun copy(
         scheduleName: String = this.scheduleName,
         id: Long = this.id,

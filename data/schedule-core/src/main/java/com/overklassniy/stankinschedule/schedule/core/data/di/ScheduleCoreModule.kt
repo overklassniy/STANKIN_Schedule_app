@@ -8,12 +8,18 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
 
+@Suppress("unused")
 @Module
 @InstallIn(ViewModelComponent::class)
 interface ScheduleCoreModule {
 
+    /**
+     * Предоставляет реализацию репозитория для работы с расписанием на устройстве.
+     *
+     * @param repositoryImpl Реализация [ScheduleDeviceRepositoryImpl].
+     * @return Интерфейс [ScheduleDeviceRepository].
+     */
     @Binds
     @ViewModelScoped
     fun provideDeviceRepository(repositoryImpl: ScheduleDeviceRepositoryImpl): ScheduleDeviceRepository
-
 }

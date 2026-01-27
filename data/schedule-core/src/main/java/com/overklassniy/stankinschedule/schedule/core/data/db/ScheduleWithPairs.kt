@@ -4,9 +4,11 @@ import androidx.room.Embedded
 import androidx.room.Relation
 
 /**
- * Сущность расписания со связанными парами в БД.
- * @param schedule элемент расписания В БД.
- * @param pairs список пар расписания в БД.
+ * Класс, представляющий отношение "один ко многим" между расписанием и его парами.
+ * Используется Room для автоматической загрузки пар вместе с расписанием.
+ *
+ * @property schedule Сущность расписания.
+ * @property pairs Список пар, связанных с этим расписанием.
  */
 class ScheduleWithPairs(
     @Embedded

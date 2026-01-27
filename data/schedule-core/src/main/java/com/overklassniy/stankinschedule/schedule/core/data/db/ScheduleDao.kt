@@ -1,7 +1,6 @@
 package com.overklassniy.stankinschedule.schedule.core.data.db
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -10,138 +9,136 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Интерфейс для работы с БД расписаний.
+ * DAO (Data Access Object) для работы с таблицей расписаний и пар.
+ * Предоставляет методы для чтения, вставки, обновления и удаления данных.
  */
 @Dao
 interface ScheduleDao {
 
     /**
-     * Возвращает flow списка всех расписаний.
+     * Получает список всех расписаний, отсортированных по позиции.
+     *
+     * @return Flow со списком [ScheduleEntity].
      */
     @Query("SELECT * FROM schedule_entities ORDER BY position ASC")
     fun getAllSchedules(): Flow<List<ScheduleEntity>>
 
     /**
-     * Возвращает flow списка всех пар расписания.
-     */
-    @Query("SELECT * FROM schedule_pair_entities WHERE schedule_id = :scheduleId")
-    fun getAllPairs(scheduleId: Long): Flow<List<PairEntity>>
-
-    /**
-     * Возвращает flow расписания с парами по названию.
-     */
-    @Transaction
-    @Query("SELECT * FROM schedule_entities WHERE schedule_name = :scheduleName LIMIT 1")
-    fun getScheduleWithPairs(scheduleName: String): Flow<ScheduleWithPairs?>
-
-    /**
-     * Возвращает flow расписания с парами по ID.
+     * Получает расписание вместе с его парами по ID.
+     *
+     * @param id ID расписания.
+     * @return Flow с объектом [ScheduleWithPairs] или null, если не найдено.
      */
     @Transaction
     @Query("SELECT * FROM schedule_entities WHERE id == :id LIMIT 1")
     fun getScheduleWithPairs(id: Long): Flow<ScheduleWithPairs?>
 
     /**
-     * Возвращает элемент расписания по названию.
+     * Получает сущность расписания по имени (suspend функция).
+     *
+     * @param scheduleName Имя расписания.
+     * @return Объект [ScheduleEntity] или null.
      */
     @Query("SELECT * FROM schedule_entities WHERE schedule_name = :scheduleName LIMIT 1")
     suspend fun getScheduleEntity(scheduleName: String): ScheduleEntity?
 
     /**
-     * Возвращает flow элемента расписания.
+     * Получает сущность расписания по ID.
+     *
+     * @param id ID расписания.
+     * @return Flow с объектом [ScheduleEntity] или null.
      */
     @Query("SELECT * FROM schedule_entities WHERE id = :id LIMIT 1")
     fun getScheduleEntity(id: Long): Flow<ScheduleEntity?>
 
     /**
-     * Возвращает количество расписаний в БД.
+     * Возвращает общее количество сохраненных расписаний.
+     *
+     * @return Количество расписаний.
      */
     @Query("SELECT COUNT(*) FROM schedule_entities")
     suspend fun getScheduleCount(): Int
 
     /**
-     * Возвращает flow списка с синхронизованными расписаниями.
-     */
-    @Query("SELECT * FROM schedule_entities WHERE synced = :synced")
-    fun getScheduleSyncList(synced: Boolean = true): Flow<List<ScheduleEntity>>
-
-    /**
-     * Проверяет, если расписания с данным названием в БД.
+     * Проверяет, существует ли расписание с заданным именем.
+     *
+     * @param scheduleName Имя расписания.
+     * @return true, если существует, иначе false.
      */
     @Query("SELECT EXISTS(SELECT * FROM schedule_entities WHERE schedule_name = :scheduleName)")
     suspend fun isScheduleExist(scheduleName: String): Boolean
 
     /**
-     * Возвращает flow пары расписания.
+     * Получает пару по её ID.
+     *
+     * @param id ID пары.
+     * @return Flow с объектом [PairEntity] или null.
      */
     @Query("SELECT * FROM schedule_pair_entities WHERE id == :id LIMIT 1")
     fun getPairEntity(id: Long): Flow<PairEntity?>
 
     /**
-     * Добавляет ScheduleItem в БД.
+     * Вставляет новое расписание.
+     *
+     * @param schedule Сущность расписания.
+     * @return ID вставленной записи.
      */
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertScheduleEntity(schedule: ScheduleEntity): Long
 
     /**
-     * Обновляет ScheduleItem в БД.
+     * Обновляет данные одного расписания.
+     *
+     * @param schedule Обновленная сущность расписания.
      */
     @Update
     suspend fun updateScheduleItem(schedule: ScheduleEntity)
 
     /**
-     * Обновляет список с ScheduleItem в БД.
+     * Обновляет список расписаний.
+     *
+     * @param scheduleEntities Список обновленных сущностей.
      */
     @Update
-    suspend fun updateScheduleItems(schedule_entities: List<ScheduleEntity>)
+    suspend fun updateScheduleItems(scheduleEntities: List<ScheduleEntity>)
 
     /**
-     * Добавляет список пар расписания в БД.
+     * Вставляет список пар.
+     *
+     * @param pairs Список пар для вставки.
      */
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertPairs(pairs: List<PairEntity>)
 
     /**
-     * Обновляет пару в расписании. Если ее не было раньше (новая пара), то добавляет ее.
-     */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPairEntity(pair: PairEntity)
-
-    /**
-     * Удаляет пару расписания по ID.
+     * Удаляет пару по ID.
+     *
+     * @param pairId ID пары.
      */
     @Query("DELETE FROM schedule_pair_entities WHERE id = :pairId")
     suspend fun deletePairEntity(pairId: Long)
 
     /**
-     * Удаляет все пары расписания по ID.
+     * Удаляет все пары, относящиеся к определенному расписанию.
+     *
+     * @param scheduleId ID расписания.
      */
     @Query("DELETE FROM schedule_pair_entities WHERE schedule_id = :scheduleId")
     suspend fun deleteSchedulePairs(scheduleId: Long)
 
     /**
-     * Удаляет расписание из БД по названию.
-     */
-    @Transaction
-    @Query("DELETE FROM schedule_entities WHERE schedule_name = :scheduleName")
-    suspend fun deleteSchedule(scheduleName: String)
-
-    /**
-     * Удаляет расписание из БД по названию.
+     * Удаляет расписание по ID.
+     *
+     * @param scheduleId ID расписания.
      */
     @Transaction
     @Query("DELETE FROM schedule_entities WHERE id = :scheduleId")
     suspend fun deleteSchedule(scheduleId: Long)
 
     /**
-     * Удаляет расписание из БД по ScheduleItem.
-     */
-    @Transaction
-    @Delete
-    suspend fun deleteSchedule(schedule: ScheduleEntity)
-
-    /**
-     * Удаляет несколько расписаний по списку ID за один запрос.
+     * Удаляет список расписаний по их ID.
+     *
+     * @param scheduleIds Список ID расписаний для удаления.
      */
     @Query("DELETE FROM schedule_entities WHERE id IN (:scheduleIds)")
     suspend fun deleteSchedulesByIds(scheduleIds: List<Long>)

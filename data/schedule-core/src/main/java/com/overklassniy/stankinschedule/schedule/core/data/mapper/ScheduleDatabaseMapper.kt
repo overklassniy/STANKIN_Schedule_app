@@ -13,6 +13,11 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Time
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 
+/**
+ * Преобразует [ScheduleWithPairs] (расписание с парами из БД) в доменную модель [ScheduleModel].
+ *
+ * @return Доменная модель расписания.
+ */
 fun ScheduleWithPairs.toScheduleModel(): ScheduleModel {
     val info = ScheduleInfo(
         id = schedule.id,
@@ -30,6 +35,11 @@ fun ScheduleWithPairs.toScheduleModel(): ScheduleModel {
     return model
 }
 
+/**
+ * Преобразует [ScheduleEntity] в информацию о расписании [ScheduleInfo].
+ *
+ * @return Информация о расписании.
+ */
 fun ScheduleEntity.toInfo(): ScheduleInfo {
     return ScheduleInfo(
         id = id,
@@ -40,6 +50,11 @@ fun ScheduleEntity.toInfo(): ScheduleInfo {
     )
 }
 
+/**
+ * Преобразует информацию о расписании [ScheduleInfo] в сущность БД [ScheduleEntity].
+ *
+ * @return Сущность расписания для БД.
+ */
 fun ScheduleInfo.toEntity(): ScheduleEntity {
     return ScheduleEntity(scheduleName = scheduleName).apply {
         this.id = this@toEntity.id
@@ -49,6 +64,11 @@ fun ScheduleInfo.toEntity(): ScheduleEntity {
     }
 }
 
+/**
+ * Преобразует [PairEntity] в доменную модель пары [PairModel].
+ *
+ * @return Доменная модель пары.
+ */
 fun PairEntity.toPairModel(): PairModel {
     return PairModel(
         title = title,
@@ -67,6 +87,12 @@ fun PairEntity.toPairModel(): PairModel {
     )
 }
 
+/**
+ * Преобразует доменную модель расписания [ScheduleModel] в сущность БД [ScheduleEntity].
+ *
+ * @param position Позиция расписания в списке (опционально). Если null, берется из info.
+ * @return Сущность расписания для БД.
+ */
 fun ScheduleModel.toEntity(position: Int? = null): ScheduleEntity {
     return ScheduleEntity(info.scheduleName).apply {
         this.id = info.id
@@ -76,6 +102,12 @@ fun ScheduleModel.toEntity(position: Int? = null): ScheduleEntity {
     }
 }
 
+/**
+ * Преобразует доменную модель пары [PairModel] в сущность БД [PairEntity].
+ *
+ * @param scheduleId Идентификатор расписания, к которому относится пара.
+ * @return Сущность пары для БД.
+ */
 fun PairModel.toEntity(scheduleId: Long): PairEntity {
     return PairEntity(
         scheduleId = scheduleId,

@@ -9,8 +9,17 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.DateRange
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateSingle
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Frequency
 
+/**
+ * Утилиты для работы с JSON представлением расписания.
+ */
 object ScheduleJsonUtils {
 
+    /**
+     * Преобразует [DateModel] в [JsonElement].
+     *
+     * @param date Модель даты.
+     * @return JSON элемент, представляющий дату.
+     */
     fun toJson(date: DateModel): JsonElement {
         val jsonDate = JsonArray()
         for (item in date) {
@@ -48,6 +57,12 @@ object ScheduleJsonUtils {
         return jsonDate
     }
 
+    /**
+     * Преобразует [JsonElement] в [DateModel].
+     *
+     * @param jsonElement JSON элемент с данными о дате.
+     * @return Доменная модель даты.
+     */
     fun dateFromJson(jsonElement: JsonElement): DateModel {
         val date = DateModel()
         val dateArray = jsonElement.asJsonArray

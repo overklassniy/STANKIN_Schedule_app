@@ -5,6 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
+/**
+ * База данных Room для хранения расписаний и пар.
+ *
+ * Содержит таблицы:
+ * - [ScheduleEntity] (расписания)
+ * - [PairEntity] (пары)
+ */
 @Database(
     entities = [
         ScheduleEntity::class,
@@ -15,15 +22,27 @@ import androidx.room.RoomDatabase
 )
 abstract class ScheduleDatabase : RoomDatabase() {
 
+    /**
+     * Возвращает DAO для работы с таблицами расписания.
+     *
+     * @return Объект [ScheduleDao].
+     */
     abstract fun schedule(): ScheduleDao
 
     companion object {
         /**
-         * Singleton БД.
+         * Singleton экземпляр базы данных.
          */
         @Volatile
         private var instance: ScheduleDatabase? = null
 
+        /**
+         * Получает или создает экземпляр базы данных.
+         * Использует паттерн Singleton с двойной проверкой блокировки.
+         *
+         * @param context Контекст приложения.
+         * @return Экземпляр [ScheduleDatabase].
+         */
         fun database(context: Context): ScheduleDatabase {
             val currentInstance = instance
             if (currentInstance != null) {
