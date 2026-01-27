@@ -6,6 +6,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withAnnotation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.overklassniy.stankinschedule.core.domain.settings.AppLanguage
 import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
 import com.overklassniy.stankinschedule.core.ui.utils.BrowserUtils
 import com.overklassniy.stankinschedule.settings.ui.components.DialogPreference
@@ -63,6 +65,7 @@ fun RootSettingsScreen(
         val context = LocalContext.current
 
         val nightMode by viewModel.nightMode.collectAsState()
+        val appLanguage by viewModel.appLanguage.collectAsState()
 
         LaunchedEffect(nightMode) {
             val mode = when (nightMode) {
@@ -74,6 +77,15 @@ fun RootSettingsScreen(
             if (mode != AppCompatDelegate.getDefaultNightMode()) {
                 AppCompatDelegate.setDefaultNightMode(mode)
             }
+        }
+
+        LaunchedEffect(appLanguage) {
+            val localeList = if (appLanguage.localeCode.isEmpty()) {
+                LocaleListCompat.getEmptyLocaleList()
+            } else {
+                LocaleListCompat.forLanguageTags(appLanguage.localeCode)
+            }
+            AppCompatDelegate.setApplicationLocales(localeList)
         }
 
         DialogPreference(
@@ -90,6 +102,22 @@ fun RootSettingsScreen(
             },
             onItemChanged = { viewModel.setNightMode(it) },
             icon = R.drawable.ic_pref_dark_mode
+        )
+
+        DialogPreference(
+            title = stringResource(R.string.pref_language),
+            items = AppLanguage.values().asList(),
+            selected = appLanguage,
+            label = {
+                @StringRes val id = when (it) {
+                    AppLanguage.System -> R.string.language_system
+                    AppLanguage.Russian -> R.string.language_russian
+                    AppLanguage.English -> R.string.language_english
+                }
+                stringResource(id)
+            },
+            onItemChanged = { viewModel.setAppLanguage(it) },
+            icon = R.drawable.ic_pref_language
         )
 
         PreferenceDivider()
@@ -123,16 +151,22 @@ fun RootSettingsScreen(
 
         PreferenceDivider()
 
-        val currentLanguage = remember {
-            val config = context.resources.configuration
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                config.locales.get(0)?.language ?: "en"
-            } else {
-                @Suppress("DEPRECATION")
-                config.locale?.language ?: "en"
+        val isRussian = remember(appLanguage) {
+            when (appLanguage) {
+                AppLanguage.Russian -> true
+                AppLanguage.English -> false
+                AppLanguage.System -> {
+                    val config = context.resources.configuration
+                    val systemLanguage = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        config.locales.get(0)?.language ?: "en"
+                    } else {
+                        @Suppress("DEPRECATION")
+                        config.locale?.language ?: "en"
+                    }
+                    systemLanguage == "ru"
+                }
             }
         }
-        val isRussian = currentLanguage == "ru"
 
         val termsTitle = stringResource(R.string.terms_and_conditions)
         val privacyTitle = stringResource(R.string.privacy_policy)

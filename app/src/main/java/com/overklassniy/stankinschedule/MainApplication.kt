@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.firebase.Firebase
@@ -41,6 +42,7 @@ class MainApplication : Application(), Configuration.Provider {
         }
 
         updateDarkMode()
+        updateAppLanguage()
         setupNotifications()
     }
 
@@ -72,6 +74,19 @@ class MainApplication : Application(), Configuration.Provider {
         if (mode != AppCompatDelegate.getDefaultNightMode()) {
             AppCompatDelegate.setDefaultNightMode(mode)
         }
+    }
+
+    /**
+     * Обновляет язык приложения на основе пользовательских настроек.
+     */
+    private fun updateAppLanguage() {
+        val language = applicationPreference.currentAppLanguage()
+        val localeList = if (language.localeCode.isEmpty()) {
+            LocaleListCompat.getEmptyLocaleList()
+        } else {
+            LocaleListCompat.forLanguageTags(language.localeCode)
+        }
+        AppCompatDelegate.setApplicationLocales(localeList)
     }
 
     /**

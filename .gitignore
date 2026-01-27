@@ -17,6 +17,8 @@
 # Gradle Wrapper
 !/gradle/wrapper/gradle-wrapper.jar
 
+.kotlin
+
 # Android
 *.apk
 *.ap_
@@ -54,3 +56,4 @@ pepk*
 
 # Краш-логи JVM
 hs_err_pid*
+*stacktrace*

@@ -7,6 +7,11 @@
     <string name="dark_mode_dark">Включена</string>
     <string name="dark_mode_light">Выключена</string>
 
+    <string name="pref_language">Язык</string>
+    <string name="language_system">Системный по умолчанию</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_english">English</string>
+
     <string name="pref_schedule">Расписание</string>
     <string name="pref_schedule_summary">Изменение настроек расписания</string>
 

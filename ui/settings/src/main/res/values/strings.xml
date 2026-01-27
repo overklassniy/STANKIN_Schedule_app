@@ -6,6 +6,11 @@
     <string name="dark_mode_dark">On</string>
     <string name="dark_mode_light">Off</string>
 
+    <string name="pref_language">Language</string>
+    <string name="language_system">System default</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_english">English</string>
+
     <string name="pref_schedule">Schedule</string>
     <string name="pref_schedule_summary">Customize the schedule</string>
 

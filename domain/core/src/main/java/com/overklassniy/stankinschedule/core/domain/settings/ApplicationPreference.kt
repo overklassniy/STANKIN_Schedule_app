@@ -31,10 +31,29 @@ class ApplicationPreference @Inject constructor(
         manager.saveString(DARK_MODE, mode.tag)
     }
 
+    /**
+     * Возвращает текущий выбранный язык приложения.
+     *
+     * @return Текущий язык или System по умолчанию
+     */
+    fun currentAppLanguage(): AppLanguage {
+        return AppLanguage.from(manager.getString(APP_LANGUAGE)) ?: AppLanguage.System
+    }
+
+    /**
+     * Устанавливает язык приложения.
+     *
+     * @param language Выбранный язык
+     */
+    fun setAppLanguage(language: AppLanguage) {
+        manager.saveString(APP_LANGUAGE, language.tag)
+    }
+
     companion object {
         private const val FIREBASE_ANALYTICS = "firebase_analytics"
         private const val DARK_MODE = "dark_mode_v2"
         private const val MIGRATE_2_0 = "migrate_2_0"
         private const val LAST_IN_APP_UPDATE = "last_in_app_update"
+        private const val APP_LANGUAGE = "app_language"
     }
 }

@@ -4,7 +4,7 @@
 
 **Неофициальное приложение для студентов МГТУ «СТАНКИН»**
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.1.1-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -102,11 +102,8 @@ cd STANKIN_Schedule_app
 
 ### Последнее обновление
 
-**Version 3.1.0** (26.01.26)
-- Исправлен вылет при долгом нажатии на расписание;
-- Добавлены вкладки новостей на главном экране (Университет и Деканат);
-- Добавлена загрузка новостей деканата с API old.stankin.ru;
-- Исправлен URL для новостей деканата.
+**Version 3.1.1 (27.01.26)**
+- Исправлен вылет на некоторых устройствах при попытке импорта расписания из ЭОС.
 
 ## Авторы
 

@@ -37,7 +37,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme.Splash"
 
-        tools:targetApi="s">
+        android:localeConfig="@xml/locale_config"
+        tools:targetApi="tiramisu">
 
 
         <!-- If you want to disable android.startup completely. -->

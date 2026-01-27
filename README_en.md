@@ -4,7 +4,7 @@
 
 **Unofficial application for MSTU "STANKIN" students**
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.1.1-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -102,11 +102,8 @@ Full changelog is available in [CHANGELOG.md](changelog_en.md).
 
 ### Recent Updates
 
-**Version 3.1.0** (26.01.26)
-- Fixed crash when long-pressing on schedule;
-- Added news tabs on home screen (University and Dean office);
-- Added dean's office news loading from old.stankin.ru API;
-- Fixed URL for dean's office news.
+**Version 3.1.1 (27.01.26)**
+- Fixed a crash on some devices when attempting to import the schedule from Moodle.
 
 ## Authors
 

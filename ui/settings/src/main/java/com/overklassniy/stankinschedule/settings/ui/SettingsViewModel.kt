@@ -2,6 +2,7 @@ package com.overklassniy.stankinschedule.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.overklassniy.stankinschedule.core.domain.settings.AppLanguage
 import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
 import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
@@ -36,6 +37,14 @@ class SettingsViewModel @Inject constructor(
         _nightMode.value = mode
     }
 
+    private val _appLanguage = MutableStateFlow(value = applicationPreference.currentAppLanguage())
+    val appLanguage: StateFlow<AppLanguage> = _appLanguage.asStateFlow()
+
+    fun setAppLanguage(language: AppLanguage) {
+        applicationPreference.setAppLanguage(language)
+        _appLanguage.value = language
+    }
+
     /**
      * Schedule settings
      */
@@ -60,10 +69,6 @@ class SettingsViewModel @Inject constructor(
             _colorChanged.emit(type)
         }
     }
-
-    /**
-     * More settings
-     */
 
     private val _isAnalyticsEnabled = MutableStateFlow(applicationPreference.isAnalyticsEnabled)
     val isAnalyticsEnabled = _isAnalyticsEnabled.asStateFlow()

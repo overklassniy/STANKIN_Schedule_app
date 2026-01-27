@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 3.1.1 (27.01.26)
+- Fixed a crash on some devices when attempting to import the schedule from Moodle;
+- Manual app language switching has been added.
+
 ## Version 3.1.0 (26.01.26)
 - Fixed crash when long-pressing on schedule;
 - Added news tabs on home screen (University and Dean office);
