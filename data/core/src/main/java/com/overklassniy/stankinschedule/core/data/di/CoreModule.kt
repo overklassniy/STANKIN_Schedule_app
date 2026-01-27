@@ -1,7 +1,7 @@
 package com.overklassniy.stankinschedule.core.data.di
 
 import android.content.Context
-import com.overklassniy.stankinschedule.core.data.BuildConfig
+import android.content.pm.ApplicationInfo
 import com.overklassniy.stankinschedule.core.data.preference.PreferenceManager
 import com.overklassniy.stankinschedule.core.domain.settings.PreferenceRepository
 import dagger.Module
@@ -13,38 +13,55 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.io.File
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
+/**
+ * Dagger модуль для предоставления основных зависимостей слоя данных (Core Data Layer).
+ * Этот модуль устанавливается в [SingletonComponent] и живет в течение всего времени работы приложения.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
+@Suppress("unused")
 object CoreModule {
 
-    private const val CACHE_SIZE = 10L * 1024 * 1024 // 10 MB
+    // Размер кэша для HTTP запросов (10 МБ)
+    private const val CACHE_SIZE = 10L * 1024 * 1024
+
+    // Тайм-аут для сетевых соединений в секундах
     private const val TIMEOUT_SECONDS = 30L
 
-    private val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-        override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-    })
-
-    private val sslContext = SSLContext.getInstance("TLS").apply {
-        init(null, trustAllCerts, SecureRandom())
-    }
-
+    /**
+     * Предоставляет реализацию репозитория настроек.
+     * Связывает интерфейс [PreferenceRepository] с реализацией [PreferenceManager].
+     *
+     * @param manager Реализация менеджера настроек [PreferenceManager]
+     * @return Интерфейс для работы с настройками [PreferenceRepository]
+     */
     @Provides
     @Singleton
     fun providePreferenceManager(manager: PreferenceManager): PreferenceRepository = manager
 
+    /**
+     * Предоставляет сконфигурированный HTTP-клиент [OkHttpClient].
+     * Клиент настроен с кэшированием, тайм-аутами и логированием (в debug режиме).
+     *
+     * Алгоритм:
+     * 1. Определяет режим отладки приложения.
+     * 2. Создает директорию для кэша HTTP запросов.
+     * 3. Настраивает тайм-ауты соединения, чтения и записи.
+     * 4. В режиме отладки добавляет интерцептор логирования тела запросов.
+     *
+     * @param context Контекст приложения для доступа к кэш-директории и информации о сборке
+     * @return Сконфигурированный экземпляр HTTP-клиента [OkHttpClient]
+     */
     @Provides
     @Singleton
     fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
+        // Проверяем, запущено ли приложение в режиме отладки
+        val isDebug = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
+        // Настройка кэша
         val cacheDir = File(context.cacheDir, "http_cache")
         val cache = Cache(cacheDir, CACHE_SIZE)
 
@@ -53,10 +70,9 @@ object CoreModule {
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
-            .hostnameVerifier { _, _ -> true }
             .apply {
-                if (BuildConfig.DEBUG) {
+                // Добавляем логирование только для debug сборок
+                if (isDebug) {
                     addInterceptor(
                         HttpLoggingInterceptor().apply {
                             level = HttpLoggingInterceptor.Level.BODY

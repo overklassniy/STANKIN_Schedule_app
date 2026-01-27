@@ -9,13 +9,19 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 
 /**
- * Интерфейс для HttpApi2 модульного журнала.
- *
- * Справка по запросам:
- * https://github.com/stankin/mj/blob/master/src/main/java/ru/stankin/mj/http/HttpApi2.java
+ * Интерфейс API модульного журнала.
+ * Используется для взаимодействия с веб-сервисом университета (получение семестров и оценок).
+ * Все запросы выполняются методом POST с передачей учетных данных.
  */
 interface ModuleJournalAPI {
 
+    /**
+     * Получает список доступных семестров для студента.
+     *
+     * @param login Логин студента (обычно номер зачетной книжки или студенческого билета)
+     * @param password Пароль от личного кабинета
+     * @return Объект Call, содержащий ответ сервера со списком семестров [SemestersResponse]
+     */
     @POST("/webapi/api2/semesters/")
     @Headers("Content-Type: application/x-www-form-urlencoded; charset=UTF-8")
     @FormUrlEncoded
@@ -24,6 +30,14 @@ interface ModuleJournalAPI {
         @Field("password") password: String,
     ): Call<SemestersResponse>
 
+    /**
+     * Получает оценки (баллы) студента за определенный семестр.
+     *
+     * @param login Логин студента
+     * @param password Пароль от личного кабинета
+     * @param semester Идентификатор семестра, за который нужно получить оценки
+     * @return Объект Call, содержащий список оценок [MarkResponse]
+     */
     @POST("/webapi/api2/marks/")
     @Headers("Content-Type: application/x-www-form-urlencoded; charset=UTF-8")
     @FormUrlEncoded

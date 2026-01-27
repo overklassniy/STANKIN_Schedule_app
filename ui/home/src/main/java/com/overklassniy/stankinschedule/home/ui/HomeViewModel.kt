@@ -50,8 +50,8 @@ class HomeViewModel @Inject constructor(
     private val _universityNews = MutableStateFlow<List<NewsPost>>(emptyList())
     val universityNews = _universityNews.asStateFlow()
 
-    private val _deaneryNews = MutableStateFlow<List<NewsPost>>(emptyList())
-    val deaneryNews = _deaneryNews.asStateFlow()
+    private val _deanNews = MutableStateFlow<List<NewsPost>>(emptyList())
+    val deanNews = _deanNews.asStateFlow()
 
     private data class DaysKey(
         val scheduleId: Long,
@@ -85,17 +85,17 @@ class HomeViewModel @Inject constructor(
         // Загрузка новостей деканата
         viewModelScope.launch {
             newsUseCase.lastNews(
-                newsSubdivision = NewsSubdivision.Deanery.id,
+                newsSubdivision = NewsSubdivision.Dean.id,
                 newsCount = NEWS_COUNT
             ).collectLatest {
-                _deaneryNews.value = it
+                _deanNews.value = it
             }
         }
 
         viewModelScope.launch {
             try {
                 newsUseCase.refreshNews(NewsSubdivision.University.id, force = false)
-                newsUseCase.refreshNews(NewsSubdivision.Deanery.id, force = false)
+                newsUseCase.refreshNews(NewsSubdivision.Dean.id, force = false)
             } catch (ignored: Exception) {
 
             }

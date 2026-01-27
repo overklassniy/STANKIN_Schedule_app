@@ -24,12 +24,24 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+/**
+ * Dagger модуль для настройки и предоставления зависимостей модуля "Журнал".
+ * Этот модуль устанавливается как в [ViewModelComponent], так и в [SingletonComponent],
+ * чтобы зависимости были доступны на разных уровнях жизненного цикла.
+ */
 @Module
 @InstallIn(ViewModelComponent::class, SingletonComponent::class)
+@Suppress("unused")
 object JournalCoreModule {
 
+    /**
+     * Предоставляет настроенный экземпляр API модульного журнала.
+     * Создает Retrofit клиент с базовым URL и конвертером Gson.
+     *
+     * @param client ОкHttp клиент, предоставляемый основным модулем (CoreModule)
+     * @return Интерфейс [ModuleJournalAPI] для выполнения сетевых запросов
+     */
     @Provides
-    // Unscoped
     fun provideModuleJournalService(client: OkHttpClient): ModuleJournalAPI {
         return Retrofit.Builder()
             .baseUrl(Constants.MODULE_JOURNAL_URL)
@@ -39,36 +51,67 @@ object JournalCoreModule {
             .create(ModuleJournalAPI::class.java)
     }
 
+    /**
+     * Предоставляет репозиторий для работы с сетевым сервисом журнала.
+     *
+     * @param repository Реализация репозитория [JournalServiceRepositoryImpl]
+     * @return Интерфейс репозитория [JournalServiceRepository]
+     */
     @Provides
-    // Unscoped
     fun provideServiceRepository(
         repository: JournalServiceRepositoryImpl,
     ): JournalServiceRepository = repository
 
+    /**
+     * Предоставляет репозиторий для работы с локальным хранилищем (БД) журнала.
+     *
+     * @param repository Реализация репозитория [JournalStorageRepositoryImpl]
+     * @return Интерфейс репозитория [JournalStorageRepository]
+     */
     @Provides
-    // Unscoped
     fun provideStorageRepository(
         repository: JournalStorageRepositoryImpl,
     ): JournalStorageRepository = repository
 
+    /**
+     * Предоставляет репозиторий для работы с защищенными данными (шифрование, токены).
+     *
+     * @param repository Реализация репозитория [JournalSecureRepositoryImpl]
+     * @return Интерфейс репозитория [JournalSecureRepository]
+     */
     @Provides
-    // Unscoped
     fun provideSecureRepository(
         repository: JournalSecureRepositoryImpl,
     ): JournalSecureRepository = repository
 
+    /**
+     * Предоставляет основной репозиторий журнала, объединяющий логику работы с данными.
+     *
+     * @param repository Реализация репозитория [JournalRepositoryImpl]
+     * @return Интерфейс репозитория [JournalRepository]
+     */
     @Provides
-    // Unscoped
     fun provideJournalRepository(
         repository: JournalRepositoryImpl,
     ): JournalRepository = repository
 
+    /**
+     * Предоставляет репозиторий для пагинации данных журнала.
+     *
+     * @param repository Реализация репозитория [JournalPagingRepositoryImpl]
+     * @return Интерфейс репозитория [JournalPagingRepository]
+     */
     @Provides
-    // Unscoped
     fun providePagingRepository(
         repository: JournalPagingRepositoryImpl,
     ): JournalPagingRepository = repository
 
+    /**
+     * Предоставляет интерфейс для работы с настройками журнала.
+     *
+     * @param preference Реализация настроек [JournalPreferenceImpl]
+     * @return Интерфейс настроек [JournalPreference]
+     */
     @Provides
     fun provideJournalPreference(
         preference: JournalPreferenceImpl

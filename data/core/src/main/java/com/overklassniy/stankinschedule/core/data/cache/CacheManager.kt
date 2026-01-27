@@ -1,9 +1,9 @@
 package com.overklassniy.stankinschedule.core.data.cache
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.google.gson.GsonBuilder
-import com.overklassniy.stankinschedule.core.data.BuildConfig
 import com.overklassniy.stankinschedule.core.data.mapper.DateTimeTypeConverter
 import com.overklassniy.stankinschedule.core.domain.cache.CacheContainer
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -11,37 +11,45 @@ import org.joda.time.DateTime
 import java.io.File
 import javax.inject.Inject
 
+/**
+ * Менеджер для работы с кэшем приложения.
+ * Позволяет сохранять и загружать данные в JSON формате, используя Gson.
+ *
+ * @param context Контекст приложения
+ */
 class CacheManager @Inject constructor(
     @ApplicationContext context: Context,
 ) {
 
-    /**
-     * Корневая папка кэша приложения.
-     */
+    // Проверка режима отладки для логирования ошибок
+    private val isDebug = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
+    // Директория для кэша
     private val cacheDir: File = context.cacheDir
 
-    /**
-     * Gson для сохранения в JSON файлы.
-     */
+    // Gson instance для сериализации/десериализации
     private var gson = GsonBuilder()
         .registerTypeAdapter(DateTime::class.java, DateTimeTypeConverter())
         .create()
 
-    /**
-     * Начальный путь (корневой). Откуда начинают сохраняться данные в кэш.
-     */
+    // Базовые пути для файлов кэша
     private val startedPaths = arrayListOf<String>()
 
     /**
-     * Добавляет начальный (корневой путь).
-     * @param paths путь, относительно которого в дальнейшем пойдем работа с кэшом.
+     * Добавляет начальные пути к директории кэша.
+     * Эти пути будут использоваться как префикс для всех файлов кэша.
+     *
+     * @param paths Список путей (директорий)
      */
     fun addStartedPath(vararg paths: String) {
         startedPaths.addAll(paths)
     }
 
     /**
-     * Настраивает внутренний Gson парсер.
+     * Настраивает парсер Gson.
+     * Позволяет добавить собственные адаптеры и настройки для Gson.
+     *
+     * @param parserBuilder Функция-расширение для настройки GsonBuilder
      */
     fun configurateParser(parserBuilder: GsonBuilder.() -> GsonBuilder) {
         gson = GsonBuilder()
@@ -52,8 +60,15 @@ class CacheManager @Inject constructor(
 
     /**
      * Сохраняет данные в кэш.
-     * @param data данные для сохранения.
-     * @param paths путь для сохранения.
+     * Данные сохраняются в файл JSON по указанному пути.
+     *
+     * Алгоритм:
+     * 1. Определяет файл по указанным путям.
+     * 2. Создает CacheContainer с данными и текущим временем.
+     * 3. Сериализует контейнер в JSON и записывает в файл.
+     *
+     * @param data Данные для сохранения
+     * @param paths Путь к файлу (директории и имя файла)
      */
     fun saveToCache(data: Any, vararg paths: String) {
         try {
@@ -62,17 +77,26 @@ class CacheManager @Inject constructor(
             }
 
         } catch (ignored: Exception) {
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 Log.e(TAG, "saveToCache: ", ignored)
             }
         }
     }
 
     /**
-     * Загружает данные из кэша. Если не удалось или данные не были найдены,
-     * то возвращается null.
+     * Загружает данные из кэша.
+     * Считывает данные из файла JSON и десериализует их в объект указанного типа.
      *
-     * @param paths путь для загрузки.
+     * Алгоритм:
+     * 1. Определяет файл по указанным путям.
+     * 2. Проверяет существование файла.
+     * 3. Считывает содержимое файла и десериализует в CacheObject.
+     * 4. Если данные корректны, десериализует поле data в целевой тип T.
+     * 5. Возвращает CacheContainer с данными и временем кэширования.
+     *
+     * @param type Класс типа данных, в который нужно десериализовать
+     * @param paths Путь к файлу (директории и имя файла)
+     * @return Контейнер с данными [CacheContainer] или null, если загрузка не удалась
      */
     fun <T : Any> loadFromCache(type: Class<T>, vararg paths: String): CacheContainer<T>? {
         try {
@@ -95,8 +119,8 @@ class CacheManager @Inject constructor(
             }
 
         } catch (ignored: Exception) {
-            if (BuildConfig.DEBUG) {
-                Log.e(TAG, "saveToCache: ", ignored)
+            if (isDebug) {
+                Log.e(TAG, "loadFromCache: ", ignored)
             }
         }
 
@@ -104,18 +128,8 @@ class CacheManager @Inject constructor(
     }
 
     /**
-     * Отчищает папку с кэшом, если в ней больше задаваемого
-     * количества файлов.
-     */
-    fun clearCache(count: Int = 10) {
-        val root = fileFromPaths(emptyArray())
-        if (root.walkBottomUp().count() > count) {
-            root.deleteRecursively()
-        }
-    }
-
-    /**
-     * Отчищает всю папку с кэшом.
+     * Очищает весь кэш.
+     * Удаляет все файлы и директории, созданные менеджером кэша.
      */
     fun clearAll() {
         val root = fileFromPaths(emptyArray())
@@ -123,8 +137,18 @@ class CacheManager @Inject constructor(
     }
 
     /**
-     * Возвращает путь до JSON файла в кэше по путям.
-     * @param paths набор путей до файла.
+     * Формирует объект File на основе списка путей.
+     * Создает необходимые директории, если они не существуют.
+     *
+     * Алгоритм:
+     * 1. Начинает с базовой директории кэша.
+     * 2. Добавляет начальные пути (startedPaths).
+     * 3. Создает директории.
+     * 4. Добавляет пути из аргумента paths.
+     * 5. К последнему элементу добавляет расширение .json.
+     *
+     * @param paths Список путей
+     * @return Объект файла [File], соответствующий указанному пути
      */
     private fun fileFromPaths(paths: Array<out String>): File {
         var file = cacheDir

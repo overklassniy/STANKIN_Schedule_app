@@ -54,8 +54,8 @@ fun NewsReviewScreen(
             subdivisionsId = NewsSubdivision.University.id
         ),
         NewsSubdivisionItem(
-            nameId = R.string.news_deanery,
-            subdivisionsId = NewsSubdivision.Deanery.id
+            nameId = R.string.news_dean,
+            subdivisionsId = NewsSubdivision.Dean.id
         ),
     )
 

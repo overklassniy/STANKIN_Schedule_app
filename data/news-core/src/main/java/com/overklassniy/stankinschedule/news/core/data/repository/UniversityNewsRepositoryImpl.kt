@@ -1,0 +1,193 @@
+package com.overklassniy.stankinschedule.news.core.data.repository
+
+import android.util.Log
+import com.overklassniy.stankinschedule.news.core.data.api.StankinDeanNewsAPI
+import com.overklassniy.stankinschedule.news.core.data.api.StankinUniversityNewsAPI
+import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
+import com.overklassniy.stankinschedule.news.core.domain.model.NewsSubdivision
+import com.overklassniy.stankinschedule.news.core.domain.repository.NewsRemoteRepository
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.ISODateTimeFormat
+import retrofit2.await
+import javax.inject.Inject
+
+/**
+ * Реализация удаленного репозитория для загрузки новостей.
+ * Поддерживает загрузку новостей как с основного сайта университета (парсинг HTML),
+ * так и с сайта деканата (через API).
+ *
+ * @property universityAPI API для работы с сайтом университета (получение HTML).
+ * @property deanAPI API для работы с сайтом деканата (JSON API).
+ */
+class UniversityNewsRepositoryImpl @Inject constructor(
+    private val universityAPI: StankinUniversityNewsAPI,
+    private val deanAPI: StankinDeanNewsAPI,
+) : NewsRemoteRepository {
+
+    /**
+     * Загружает страницу новостей для указанного подразделения.
+     *
+     * @param newsSubdivision ID подразделения (например, университет или деканат).
+     * @param page Номер страницы для загрузки (начиная с 1).
+     * @param count Количество новостей на странице (используется только для API деканата).
+     * @return Список загруженных новостей [NewsPost].
+     */
+    override suspend fun loadPage(
+        newsSubdivision: Int,
+        page: Int,
+        count: Int
+    ): List<NewsPost> {
+        return when (newsSubdivision) {
+            NewsSubdivision.Dean.id -> loadDeanNews(page, count)
+            else -> loadUniversityNews(page)
+        }
+    }
+
+    /**
+     * Загружает и парсит новости университета с сайта stankin.ru/news.
+     * Использует регулярные выражения для извлечения данных из HTML.
+     *
+     * @param page Номер страницы для загрузки.
+     * @return Список новостей университета.
+     */
+    private suspend fun loadUniversityNews(page: Int): List<NewsPost> {
+        val text = universityAPI.getNewsPage(page).await()
+
+        val newsBlock = Regex(
+            """<a.{0,200}class="(newsItem|importantNewsItem)".*?>.+?</a>""",
+            RegexOption.DOT_MATCHES_ALL
+        )
+        val newsTitle = Regex("""class="name".*?>(.+?)<""", RegexOption.DOT_MATCHES_ALL)
+
+        val newsImage = Regex("""class="imgW".*?src="(.+?)"""", RegexOption.DOT_MATCHES_ALL)
+        val importantNewsImage = Regex("""url\((.+?)\)""", RegexOption.DOT_MATCHES_ALL)
+
+        val newsDate =
+            Regex("""<span.*?class="date".*?>(.+?)</span>""", RegexOption.DOT_MATCHES_ALL)
+        val newsLink = Regex("""href="(.+?)"""", RegexOption.DOT_MATCHES_ALL)
+
+        return newsBlock.findAll(text)
+            .asFlow()
+            .map { match -> match.value }
+            .map { block ->
+                NewsPost(
+                    id = 0, // ID для новостей университета генерируется позже (в базе данных)
+                    title = newsTitle.find(block)
+                        .getOrThrow(1),
+                    previewImageUrl = (newsImage.find(block) ?: importantNewsImage.find(block))
+                        ?.let { StankinUniversityNewsAPI.BASE_URL + it.groupValues[1] },
+                    date = processDate(
+                        newsDate.find(block)
+                            .getOrThrow(1)
+                    ),
+                    relativeUrl = newsLink.find(block)
+                        ?.let { StankinUniversityNewsAPI.BASE_URL + it.groupValues[1] }
+                )
+            }
+            .catch {
+                Log.e("UniversityNewsRepo", "Load university news page $page error", it)
+            }
+            .toList()
+            .also { Log.d("UniversityNewsRepo", "loadUniversityNews: $it") }
+    }
+
+    /**
+     * Загружает новости деканата через API old.stankin.ru.
+     *
+     * @param page Номер страницы.
+     * @param count Количество новостей на странице.
+     * @return Список новостей деканата.
+     */
+    private suspend fun loadDeanNews(page: Int, count: Int): List<NewsPost> {
+        return try {
+            val response = StankinDeanNewsAPI.getNews(deanAPI, page, count).await()
+
+            if (!response.success) {
+                Log.e("UniversityNewsRepo", "Dean API error: ${response.error}")
+                return emptyList()
+            }
+
+            response.data.news.map { item ->
+                NewsPost(
+                    id = item.id,
+                    title = item.title,
+                    previewImageUrl = item.logo?.let { logo ->
+                        if (logo.startsWith("http")) logo
+                        else StankinDeanNewsAPI.BASE_URL + logo
+                    },
+                    date = processDeanDate(item.date),
+                    relativeUrl = "${StankinDeanNewsAPI.BASE_URL}/news/item_${item.id}"
+                )
+            }.also { Log.d("UniversityNewsRepo", "loadDeanNews: $it") }
+        } catch (e: Exception) {
+            Log.e("UniversityNewsRepo", "Load Dean news page $page error", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Преобразует строку даты с сайта университета в формат ISO.
+     *
+     * @param text Строка с датой (например, "dd/MM/yyyy" или с HTML-тегами).
+     * @return Дата в формате yyyy-MM-dd или текущая дата в случае ошибки.
+     */
+    private fun processDate(text: String): String {
+        return try {
+            text
+                .replace("<br>", "/")
+                .replace("\"", "")
+                .trim()
+                .let {
+                    DateTimeFormat.forPattern("dd/MM/yyyy")
+                        .parseDateTime(it)
+                        .toString(ISODateTimeFormat.date())
+                }
+        } catch (_: Throwable) {
+            DateTime.now()
+                .toString(ISODateTimeFormat.date())
+        }
+    }
+
+    /**
+     * Преобразует строку даты из API деканата в формат ISO.
+     *
+     * @param date Строка с датой (например, "dd.MM.yyyy HH:mm:ss" или "yyyy-MM-dd").
+     * @return Дата в формате yyyy-MM-dd или текущая дата в случае ошибки.
+     */
+    private fun processDeanDate(date: String): String {
+        return try {
+            // Формат даты от old.stankin.ru: "20.01.2025 17:22:52" или "2025-01-20"
+            val cleanDate = date.split(" ").first()
+
+            if (cleanDate.contains("-")) {
+                // Уже в ISO формате
+                cleanDate
+            } else {
+                // Формат dd.MM.yyyy
+                DateTimeFormat.forPattern("dd.MM.yyyy")
+                    .parseDateTime(cleanDate)
+                    .toString(ISODateTimeFormat.date())
+            }
+        } catch (_: Throwable) {
+            DateTime.now()
+                .toString(ISODateTimeFormat.date())
+        }
+    }
+
+    /**
+     * Расширение для безопасного извлечения группы из результата поиска регулярного выражения.
+     *
+     * @param index Индекс группы для извлечения.
+     * @return Найденная подстрока.
+     * @throws NoSuchElementException Если совпадение не найдено (null).
+     */
+    private fun MatchResult?.getOrThrow(index: Int): String {
+        if (this == null) throw NoSuchElementException("Match is null")
+        return groupValues[index]
+    }
+}

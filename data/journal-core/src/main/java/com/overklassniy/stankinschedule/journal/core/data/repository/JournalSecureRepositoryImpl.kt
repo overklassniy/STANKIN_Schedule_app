@@ -24,12 +24,27 @@ private val Context.journalSecureStore by preferencesDataStore(
     name = "module_journal_secure_preference"
 )
 
+/**
+ * Реализация репозитория для безопасного хранения учетных данных журнала [JournalSecureRepository].
+ * Использует Android Keystore для шифрования и DataStore для сохранения зашифрованных данных.
+ *
+ * @param context Контекст приложения, необходимый для доступа к DataStore.
+ */
 class JournalSecureRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : JournalSecureRepository {
 
     private var cachedCredentials: StudentCredentials? = null
 
+    /**
+     * Получает или создает секретный ключ для шифрования.
+     *
+     * Алгоритм:
+     * 1. Пытается загрузить существующий ключ из Android Keystore.
+     * 2. Если ключ не найден, генерирует новый AES ключ (256 бит, режим GCM) и сохраняет его.
+     *
+     * @return Секретный ключ [SecretKey] для шифрования/дешифрования.
+     */
     private fun getOrCreateSecretKey(): SecretKey {
         val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
         val existing = keyStore.getKey(KEY_ALIAS, null)
@@ -49,6 +64,18 @@ class JournalSecureRepositoryImpl @Inject constructor(
         return generator.generateKey()
     }
 
+    /**
+     * Шифрует строку с использованием AES/GCM.
+     *
+     * Алгоритм:
+     * 1. Инициализирует шифр в режиме шифрования.
+     * 2. Шифрует данные.
+     * 3. Формирует выходной массив: [размер IV (1 байт)] + [IV] + [зашифрованные данные].
+     * 4. Кодирует результат в Base64.
+     *
+     * @param plainText Исходная строка для шифрования.
+     * @return Зашифрованная строка в формате Base64.
+     */
     private fun encrypt(plainText: String): String {
         val cipher = Cipher.getInstance(CIPHER_TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey())
@@ -63,6 +90,18 @@ class JournalSecureRepositoryImpl @Inject constructor(
         return Base64.encodeToString(out, Base64.NO_WRAP)
     }
 
+    /**
+     * Дешифрует строку, зашифрованную методом [encrypt].
+     *
+     * Алгоритм:
+     * 1. Декодирует Base64 строку в байты.
+     * 2. Извлекает IV (вектор инициализации).
+     * 3. Дешифрует данные с использованием ключа и IV.
+     *
+     * @param encoded Зашифрованная строка (Base64).
+     * @return Расшифрованная исходная строка.
+     * @throws IllegalArgumentException Если формат данных неверен.
+     */
     private fun decrypt(encoded: String): String {
         val bytes = Base64.decode(encoded, Base64.NO_WRAP)
         if (bytes.isEmpty()) return ""
@@ -84,12 +123,27 @@ class JournalSecureRepositoryImpl @Inject constructor(
         return cipher.doFinal(cipherText).toString(Charsets.UTF_8)
     }
 
+    /**
+     * Очищает хранилище безопасных данных и кэш.
+     */
     private suspend fun clearSecureStore() {
         context.journalSecureStore.edit { it.clear() }
         cachedCredentials = null
     }
 
 
+    /**
+     * Сохраняет учетные данные студента.
+     *
+     * Алгоритм:
+     * 1. Шифрует логин и пароль.
+     * 2. Сохраняет зашифрованные данные в DataStore.
+     * 3. Обновляет кэш в памяти.
+     * 4. В случае ошибки пытается очистить хранилище и повторить попытку.
+     *
+     * @param credentials Учетные данные студента (логин и пароль).
+     * @throws StudentAuthorizedException Если произошла ошибка авторизации.
+     */
     @kotlin.jvm.Throws(StudentAuthorizedException::class)
     override suspend fun signIn(credentials: StudentCredentials) {
         try {
@@ -111,6 +165,11 @@ class JournalSecureRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Удаляет учетные данные (выход из системы).
+     *
+     * @throws StudentAuthorizedException Если произошла ошибка при очистке.
+     */
     @kotlin.jvm.Throws(StudentAuthorizedException::class)
     override suspend fun signOut() {
         try {
@@ -120,6 +179,18 @@ class JournalSecureRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Получает сохраненные учетные данные.
+     *
+     * Алгоритм:
+     * 1. Проверяет кэш в памяти.
+     * 2. Читает зашифрованные данные из DataStore.
+     * 3. Дешифрует логин и пароль.
+     * 4. При ошибке дешифровки очищает хранилище и выбрасывает исключение.
+     *
+     * @return Объект [StudentCredentials] с расшифрованными данными.
+     * @throws StudentAuthorizedException Если данные отсутствуют или повреждены.
+     */
     @kotlin.jvm.Throws(StudentAuthorizedException::class)
     override suspend fun signCredentials(): StudentCredentials {
         val cache = cachedCredentials
@@ -141,7 +212,11 @@ class JournalSecureRepositoryImpl @Inject constructor(
             cachedCredentials = credentials
             credentials
         } catch (e: Exception) {
-            Log.d("JournalSecureRepositoryImpl", "signCredentials: decrypt failed, clearing store", e)
+            Log.d(
+                "JournalSecureRepositoryImpl",
+                "signCredentials: decrypt failed, clearing store",
+                e
+            )
             clearSecureStore()
             throw StudentAuthorizedException(e)
         }

@@ -124,9 +124,9 @@ fun HomeScreen(
         val pairColors by remember(pairColorGroup) { derivedStateOf { pairColorGroup.toColor() } }
 
         val universityNews by viewModel.universityNews.collectAsStateWithLifecycle(emptyList())
-        val deaneryNews by viewModel.deaneryNews.collectAsStateWithLifecycle(emptyList())
+        val deanNews by viewModel.deanNews.collectAsStateWithLifecycle(emptyList())
         var selectedNewsTab by rememberSaveable { mutableIntStateOf(0) }
-        val currentNews = if (selectedNewsTab == 0) universityNews else deaneryNews
+        val currentNews = if (selectedNewsTab == 0) universityNews else deanNews
 
         LazyColumn(
             state = columnState,
@@ -221,7 +221,7 @@ fun HomeScreen(
                         Tab(
                             selected = selectedNewsTab == 1,
                             onClick = { selectedNewsTab = 1 },
-                            text = { Text(stringResource(R.string.news_deanery)) }
+                            text = { Text(stringResource(R.string.news_dean)) }
                         )
                     }
                 }
