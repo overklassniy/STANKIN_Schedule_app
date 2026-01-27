@@ -16,11 +16,14 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.overklassniy.stankinschedule.navigation.entry.BottomNavEntry
 
 /**
- * Нижняя панель навигации приложения.
+ * Компонент нижней панели навигации (Bottom Navigation Bar).
  *
- * @param navBackStackEntry Текущая запись в стеке навигации
- * @param navController Контроллер навигации
- * @param screens Список экранов для отображения в панели навигации
+ * Отображает список разделов приложения и управляет навигацией между ними.
+ * Подсвечивает активный раздел на основе текущего маршрута.
+ *
+ * @param navBackStackEntry Текущая запись стека навигации. Используется для определения текущего активного экрана.
+ * @param navController Контроллер навигации для осуществления переходов.
+ * @param screens Список элементов навигации ([BottomNavEntry]), которые должны быть отображены в меню.
  */
 @Composable
 fun AppNavigationBar(
@@ -28,10 +31,14 @@ fun AppNavigationBar(
     navController: NavController,
     screens: List<BottomNavEntry>,
 ) = NavigationBar {
+    // Получаем текущий пункт назначения из стека
     val currentDestination = navBackStackEntry?.destination
 
     screens.forEach { screen ->
 
+        // Определяем, выбран ли текущий элемент.
+        // Используется startsWith, чтобы подсвечивать родительский раздел
+        // даже если пользователь находится на вложенном экране (например, schedule/details).
         val isSelected by derivedStateOf {
             currentDestination?.route?.startsWith(screen.route) == true
         }
@@ -40,7 +47,7 @@ fun AppNavigationBar(
             icon = {
                 Icon(
                     painter = painterResource(screen.iconRes),
-                    contentDescription = null
+                    contentDescription = null // Иконка декоративная, текст есть в label
                 )
             },
             label = {
@@ -53,10 +60,19 @@ fun AppNavigationBar(
             selected = isSelected,
             onClick = {
                 navController.navigate(screen.route) {
+                    // Настройка навигации при переключении вкладок
+
+                    // Очищаем стек до стартового экрана графа (обычно "home"),
+                    // чтобы избежать накопления огромного стека при переключении между вкладками
                     popUpTo(navController.graph.findStartDestination().id) {
+                        // Сохраняем состояние экрана, с которого уходим,
+                        // чтобы при возврате восстановить скролл, введенный текст и т.д.
+                        // Логика saveState здесь также учитывает сброс стека при повторном нажатии на активную вкладку.
                         saveState = !isSelected || currentDestination?.route == screen.route
                     }
+                    // Не создаем новую копию экрана, если он уже на вершине стека
                     launchSingleTop = true
+                    // Восстанавливаем сохраненное состояние экрана при возврате на него
                     restoreState = true
                 }
             }

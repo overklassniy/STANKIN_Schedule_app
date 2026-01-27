@@ -4,16 +4,19 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 
 /**
- * Запись навигации для нижней панели навигации.
+ * Базовый класс для элементов навигации, отображаемых в нижнем меню (Bottom Navigation Bar).
  *
- * @param route Маршрут для навигации
- * @param nameRes Ресурс строки с названием
- * @param iconRes Ресурс иконки
- * @param hierarchy Иерархия маршрутов для определения активного экрана
+ * Наследуется от [NavigationEntry] и расширяет его, добавляя ресурсы для визуального отображения
+ * пункта меню (название и иконка).
+ *
+ * @property nameRes ID строкового ресурса для названия пункта меню (например, R.string.nav_home).
+ *                   Должен быть валидным ресурсом строки (@StringRes).
+ * @property iconRes ID ресурса изображения для иконки пункта меню (например, R.drawable.ic_home).
+ *                   Должен быть валидным ресурсом drawable (@DrawableRes).
+ * @param route Уникальный строковый маршрут для навигации. Передается в конструктор родительского класса [NavigationEntry].
  */
 abstract class BottomNavEntry(
     route: String,
     @get:StringRes val nameRes: Int,
-    @get:DrawableRes val iconRes: Int,
-    val hierarchy: List<String> = listOf(route)
+    @get:DrawableRes val iconRes: Int
 ) : NavigationEntry(route)

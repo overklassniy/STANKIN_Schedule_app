@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.compose.compiler)
     id("com.android.library")
-    // id("org.jetbrains.kotlin.android")
 
     id("dagger.hilt.android.plugin")
     alias(libs.plugins.ksp)
@@ -75,7 +74,6 @@ dependencies {
     implementation(libs.ui.material)
 
     implementation(libs.integration.inAppUpdate)
-    implementation(libs.integration.googleServices)
 
     // DI
     implementation(libs.hilt.android)

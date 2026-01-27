@@ -184,8 +184,6 @@ dependencies {
     implementation(libs.androidx.profileinstaller)
     implementation(libs.ui.material)
 
-    implementation(libs.integration.googleServices)
-
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)

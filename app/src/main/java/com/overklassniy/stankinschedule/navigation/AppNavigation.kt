@@ -15,49 +15,76 @@ import com.overklassniy.stankinschedule.home.ui.HomeScreen
 import com.overklassniy.stankinschedule.navigation.entry.BottomNavEntry
 import com.overklassniy.stankinschedule.settings.ui.SettingsActivity
 
+/**
+ * Запись навигации для главного экрана приложения.
+ *
+ * Используется нижней панелью навигации для отображения пункта "Главная".
+ */
 object HomeNavEntry : BottomNavEntry(
-    route = "home",
-    nameRes = R.string.nav_home,
-    iconRes = R.drawable.nav_home
+    route = "home", nameRes = R.string.nav_home, iconRes = R.drawable.nav_home
 )
 
+/**
+ * Базовый URL раздела новостей на официальном сайте МГТУ «СТАНКИН».
+ *
+ * Используется для открытия страницы со списком новостей
+ * и для формирования ссылок на конкретные новости.
+ */
 private const val STANKIN_NEWS = "https://stankin.ru/news/"
 
 /**
- * Настраивает навигацию для главной страницы приложения.
+ * Добавляет в граф навигации главный экран приложения.
  *
- * @param navController Контроллер навигации
+ * Настраивает маршрут [HomeNavEntry.route] и прокидывает в [HomeScreen]
+ * обработчики переходов к экрану расписания, новостей и настроек.
+ *
+ * @receiver [NavGraphBuilder], в который добавляется маршрут главного экрана.
+ * @param navController Контроллер навигации, используемый для переходов
+ * на другие экраны (расписание, журнал и т.д.).
  */
 fun NavGraphBuilder.homePage(navController: NavController) {
     composable(route = HomeNavEntry.route) {
 
+        // Текущий контекст приложения, используется для открытия экранов и браузера
         val context = LocalContext.current
 
         HomeScreen(
+            // ViewModel главного экрана, получаемый через Hilt
             viewModel = hiltViewModel(),
+
+            // Переход к экрану просмотра выбранного расписания
             navigateToSchedule = { scheduleId ->
                 navController.navigate(
                     route = ScheduleViewerNavEntry.routeWithArgs(
                         scheduleId
                     )
                 ) {
+                    // Очищаем стек до стартового экрана, сохраняя состояние
                     popUpTo(navController.graph.findStartDestination().id) {
                         saveState = true
                     }
                 }
             },
+
+            // Открытие страницы со списком новостей в браузере
             navigateToNews = {
                 BrowserUtils.openLink(context, STANKIN_NEWS)
             },
+
+            // Открытие конкретной новости по URL, если он есть, иначе открываем список новостей
             navigateToNewsPost = { post ->
                 val url = post.relativeUrl ?: STANKIN_NEWS
                 BrowserUtils.openLink(context, url)
             },
+
+            // Переход к экрану настроек приложения
             navigateToSettings = {
                 context.startActivity(
                     Intent(context, SettingsActivity::class.java)
                 )
             },
+
+            // Заполняем весь доступный размер экрана
             modifier = Modifier.fillMaxSize()
         )
     }
