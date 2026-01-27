@@ -10,7 +10,13 @@ import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import javax.inject.Inject
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
 
@@ -18,6 +24,19 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
     private val loginUrl = "https://edu.stankin.ru/login/index.php"
     private val TAG = "MoodleRemoteService"
     private val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    private val TIMEOUT_MS = 60_000
+
+    private fun createTrustAllSslSocketFactory(): SSLSocketFactory {
+        val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+        })
+
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, trustAllCerts, SecureRandom())
+        return sslContext.socketFactory
+    }
 
     override suspend fun description(): RepositoryDescription = withContext(Dispatchers.IO) {
         val now = DateTime.now()
@@ -41,6 +60,8 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
             Log.d(TAG, "Connecting to Moodle URL: $moodleUrl")
             val response = Jsoup.connect(moodleUrl)
                 .userAgent(USER_AGENT)
+                .timeout(TIMEOUT_MS)
+                .sslSocketFactory(createTrustAllSslSocketFactory())
                 .execute()
             
             cookies.putAll(response.cookies())
@@ -57,6 +78,7 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
                 Log.d(TAG, "Sending login POST request...")
                 val loginResponse = Jsoup.connect(loginAction)
                     .userAgent(USER_AGENT)
+                    .timeout(TIMEOUT_MS)
                     .data("username", "guest")
                     .data("password", "guest")
                     .apply {
@@ -67,6 +89,7 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
                     .cookies(cookies)
                     .method(Connection.Method.POST)
                     .followRedirects(false)
+                    .sslSocketFactory(createTrustAllSslSocketFactory())
                     .execute()
                 
                 cookies.putAll(loginResponse.cookies())
@@ -79,7 +102,9 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
 
                          val redirectResponse = Jsoup.connect(location)
                             .userAgent(USER_AGENT)
+                            .timeout(TIMEOUT_MS)
                             .cookies(cookies)
+                            .sslSocketFactory(createTrustAllSslSocketFactory())
                             .execute()
                             
                          cookies.putAll(redirectResponse.cookies())
@@ -124,7 +149,9 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
                     Log.d(TAG, "Processing folder: $folderUrl")
                     val folderResponse = Jsoup.connect(folderUrl)
                         .userAgent(USER_AGENT)
+                        .timeout(TIMEOUT_MS)
                         .cookies(cookies)
+                        .sslSocketFactory(createTrustAllSslSocketFactory())
                         .execute()
 
                     cookies.putAll(folderResponse.cookies())

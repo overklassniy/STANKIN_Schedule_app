@@ -1,6 +1,8 @@
 package com.overklassniy.stankinschedule.schedule.repository.domain.model
 
+import com.google.gson.annotations.SerializedName
+
 data class RepositoryDescription(
-    val lastUpdate: String,
-    val categories: List<RepositoryCategory>,
+    @SerializedName("lastUpdate") val lastUpdate: String,
+    @SerializedName("categories") val categories: List<RepositoryCategory>,
 )
