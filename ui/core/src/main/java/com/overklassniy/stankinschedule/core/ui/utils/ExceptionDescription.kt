@@ -5,48 +5,83 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.core.ui.R
+import org.json.JSONException
 import retrofit2.HttpException
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import javax.net.ssl.SSLException
 import javax.net.ssl.HttpsURLConnection
 
-fun Context.exceptionDescription(t: Throwable): String? {
-    val descriptionRes = exceptionDescriptionRes(t) ?: return null
-    return getString(descriptionRes)
+/**
+ * Возвращает человекочитаемое описание исключения для показа пользователю.
+ * Если исключение не распознано, возвращает fallback-сообщение.
+ */
+fun Context.exceptionDescription(t: Throwable): String {
+    val descriptionRes = exceptionDescriptionRes(t)
+    return if (descriptionRes != null) {
+        getString(descriptionRes)
+    } else {
+        getString(R.string.ex_unknown)
+    }
 }
 
+/**
+ * Возвращает человекочитаемое описание исключения для Compose.
+ * Если исключение не распознано, возвращает fallback-сообщение.
+ */
 @Composable
-fun exceptionDescription(t: Throwable): String? {
-    val descriptionRes = exceptionDescriptionRes(t) ?: return null
-    return stringResource(descriptionRes)
+fun exceptionDescription(t: Throwable): String {
+    val descriptionRes = exceptionDescriptionRes(t)
+    return if (descriptionRes != null) {
+        stringResource(descriptionRes)
+    } else {
+        stringResource(R.string.ex_unknown)
+    }
 }
 
-
+/**
+ * Возвращает строковый ресурс для описания исключения,
+ * или null если требуется форматирование с параметрами.
+ */
 @StringRes
 private fun exceptionDescriptionRes(t: Throwable): Int? {
-    when (t) {
-        // время ожидания сокета истекло
-        is SocketTimeoutException -> {
-            return R.string.ex_socket_timeout
-        }
-        // не удалось подключиться к хосту
-        is UnknownHostException -> {
-            return R.string.ex_unknown_host
-        }
+    return when (t) {
+        // Время ожидания сокета истекло
+        is SocketTimeoutException -> R.string.ex_socket_timeout
+        
+        // Не удалось подключиться к хосту
+        is UnknownHostException -> R.string.ex_unknown_host
+        
+        // Соединение отклонено
+        is ConnectException -> R.string.ex_connection_refused
+        
+        // Ошибка SSL/TLS
+        is SSLException -> R.string.ex_ssl_error
+        
+        // Файл не найден
+        is FileNotFoundException -> R.string.ex_file_not_found
+        
+        // Ошибка парсинга JSON
+        is JSONException -> R.string.ex_parse_error
+        
         // HTTP ошибка (retrofit2)
         is HttpException -> {
             when (t.code()) {
-                // ошибка авторизации
-                HttpsURLConnection.HTTP_UNAUTHORIZED -> {
-                    return R.string.ex_failed_unauthorized
-                }
-                // не удалось получить ответ от сервера (время истекло)
-                HttpsURLConnection.HTTP_GATEWAY_TIMEOUT -> {
-                    return R.string.ex_socket_timeout
-                }
+                HttpsURLConnection.HTTP_UNAUTHORIZED -> R.string.ex_failed_unauthorized
+                HttpsURLConnection.HTTP_GATEWAY_TIMEOUT -> R.string.ex_socket_timeout
+                HttpsURLConnection.HTTP_NOT_FOUND -> R.string.ex_not_found
+                HttpsURLConnection.HTTP_FORBIDDEN -> R.string.ex_forbidden
+                in 500..599 -> R.string.ex_unknown // Для серверных ошибок используем общий текст
+                else -> null
             }
         }
+        
+        // Общая ошибка ввода-вывода (после более специфичных)
+        is IOException -> R.string.ex_io_error
+        
+        else -> null
     }
-
-    return null
 }

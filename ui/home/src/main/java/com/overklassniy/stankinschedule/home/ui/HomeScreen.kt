@@ -2,20 +2,30 @@ package com.overklassniy.stankinschedule.home.ui
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -28,10 +38,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -57,10 +65,13 @@ import com.overklassniy.stankinschedule.home.ui.components.schedule.ScheduleHome
 import com.overklassniy.stankinschedule.home.ui.data.UpdateState
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
 import com.overklassniy.stankinschedule.news.review.ui.components.NewsPost
+import com.overklassniy.stankinschedule.news.review.ui.components.AppTabIndicator
+import com.overklassniy.stankinschedule.news.review.ui.components.pagerTabIndicatorOffset
 import com.overklassniy.stankinschedule.schedule.core.ui.toColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -72,6 +83,8 @@ fun HomeScreen(
     imageLoader: ImageLoader = newsImageLoader(LocalContext.current)
 ) {
     TrackCurrentScreen(screen = "HomeScreen")
+
+    val hasAppUpdate by viewModel.hasUpdate.collectAsStateWithLifecycle()
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(
         state = rememberTopAppBarState()
@@ -91,10 +104,20 @@ fun HomeScreen(
                     IconButton(
                         onClick = navigateToSettings
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_settings),
-                            contentDescription = null
-                        )
+                        BadgedBox(
+                            badge = {
+                                if (hasAppUpdate) {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_settings),
+                                contentDescription = null
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -124,9 +147,16 @@ fun HomeScreen(
         val pairColors by remember(pairColorGroup) { derivedStateOf { pairColorGroup.toColor() } }
 
         val universityNews by viewModel.universityNews.collectAsStateWithLifecycle(emptyList())
+        val announcementsNews by viewModel.announcementsNews.collectAsStateWithLifecycle(emptyList())
         val deanNews by viewModel.deanNews.collectAsStateWithLifecycle(emptyList())
-        var selectedNewsTab by rememberSaveable { mutableIntStateOf(0) }
-        val currentNews = if (selectedNewsTab == 0) universityNews else deanNews
+        
+        val pagerState = rememberPagerState(
+            pageCount = { 3 } // Университет, Анонсы, Деканат
+        )
+        val pagerScope = rememberCoroutineScope()
+        val tabRowHeight = 48.dp
+        
+        val newsLists = listOf(universityNews, announcementsNews, deanNews)
 
         LazyColumn(
             state = columnState,
@@ -210,36 +240,81 @@ fun HomeScreen(
                         )
                     )
                     PrimaryTabRow(
-                        selectedTabIndex = selectedNewsTab,
-                        modifier = Modifier.fillMaxWidth()
+                        selectedTabIndex = pagerState.currentPage,
+                        indicator = {
+                            AppTabIndicator(
+                                modifier = pagerTabIndicatorOffset(pagerState)
+                            )
+                        },
+                        divider = {},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = tabRowHeight)
                     ) {
                         Tab(
-                            selected = selectedNewsTab == 0,
-                            onClick = { selectedNewsTab = 0 },
+                            selected = pagerState.currentPage == 0,
+                            onClick = {
+                                pagerScope.launch {
+                                    pagerState.animateScrollToPage(0)
+                                }
+                            },
                             text = { Text(stringResource(R.string.news_university)) }
                         )
                         Tab(
-                            selected = selectedNewsTab == 1,
-                            onClick = { selectedNewsTab = 1 },
+                            selected = pagerState.currentPage == 1,
+                            onClick = {
+                                pagerScope.launch {
+                                    pagerState.animateScrollToPage(1)
+                                }
+                            },
+                            text = { Text(stringResource(R.string.news_announcements)) }
+                        )
+                        Tab(
+                            selected = pagerState.currentPage == 2,
+                            onClick = {
+                                pagerScope.launch {
+                                    pagerState.animateScrollToPage(2)
+                                }
+                            },
                             text = { Text(stringResource(R.string.news_dean)) }
                         )
                     }
-                }
-            }
 
-            items(
-                count = HomeViewModel.NEWS_COUNT,
-                key = { "news_$selectedNewsTab$it" }
-            ) { index ->
-                NewsPost(
-                    post = currentNews.getOrNull(index),
-                    imageLoader = imageLoader,
-                    onClick = {
-                        navigateToNewsPost(it)
-                    },
-                    modifier = Modifier.padding(8.dp)
-                )
-                HorizontalDivider()
+                    // Pager is placed directly under TabRow to avoid layout gaps
+                    HorizontalPager(
+                        state = pagerState,
+                        key = { it },
+                        beyondViewportPageCount = 1,
+                        pageSpacing = 0.dp,
+                        contentPadding = PaddingValues(0.dp),
+                        userScrollEnabled = true,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { page ->
+                        val currentNews = newsLists[page]
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(0.dp)
+                        ) {
+                            repeat(HomeViewModel.NEWS_COUNT) { index ->
+                                val post = currentNews.getOrNull(index)
+                                val itemModifier = if (index == 0) {
+                                    Modifier.padding(start = 8.dp, end = 8.dp, top = 0.dp, bottom = 8.dp)
+                                } else {
+                                    Modifier.padding(8.dp)
+                                }
+                                NewsPost(
+                                    post = post,
+                                    imageLoader = imageLoader,
+                                    onClick = { clicked ->
+                                        navigateToNewsPost(clicked)
+                                    },
+                                    modifier = itemModifier
+                                )
+                                HorizontalDivider()
+                            }
+                        }
+                    }
+                }
             }
 
             item(key = "more_news") {

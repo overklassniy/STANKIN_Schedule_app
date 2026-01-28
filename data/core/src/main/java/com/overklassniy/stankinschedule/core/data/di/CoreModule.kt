@@ -2,7 +2,10 @@ package com.overklassniy.stankinschedule.core.data.di
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import com.overklassniy.stankinschedule.core.data.api.GitHubApi
 import com.overklassniy.stankinschedule.core.data.preference.PreferenceManager
+import com.overklassniy.stankinschedule.core.data.repository.UpdateRepositoryImpl
+import com.overklassniy.stankinschedule.core.domain.repository.UpdateRepository
 import com.overklassniy.stankinschedule.core.domain.settings.PreferenceRepository
 import dagger.Module
 import dagger.Provides
@@ -12,6 +15,8 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -82,4 +87,31 @@ object CoreModule {
             }
             .build()
     }
+
+    /**
+     * Предоставляет API для работы с GitHub Releases.
+     *
+     * @param okHttpClient HTTP-клиент для запросов
+     * @return Реализация [GitHubApi]
+     */
+    @Provides
+    @Singleton
+    fun provideGitHubApi(okHttpClient: OkHttpClient): GitHubApi {
+        return Retrofit.Builder()
+            .baseUrl(GitHubApi.BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(GitHubApi::class.java)
+    }
+
+    /**
+     * Предоставляет репозиторий для проверки обновлений.
+     *
+     * @param impl Реализация репозитория
+     * @return Интерфейс [UpdateRepository]
+     */
+    @Provides
+    @Singleton
+    fun provideUpdateRepository(impl: UpdateRepositoryImpl): UpdateRepository = impl
 }

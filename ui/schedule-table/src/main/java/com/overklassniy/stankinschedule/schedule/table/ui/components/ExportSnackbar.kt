@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.schedule.table.ui.R
 import kotlinx.coroutines.delay
 import com.overklassniy.stankinschedule.core.ui.R as R_core
@@ -55,7 +56,7 @@ fun ExportSnackBar(
             ) {
                 Text(
                     text = when (progress) {
-                        is ExportProgress.Error -> "Error: " + progress.error.toString()
+                        is ExportProgress.Error -> exceptionDescription(progress.error)
                         is ExportProgress.Finished -> stringResource(R.string.exported)
                         else -> stringResource(R.string.export_schedule)
                     },

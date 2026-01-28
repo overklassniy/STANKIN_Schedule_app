@@ -12,13 +12,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -178,7 +181,7 @@ fun RootSettingsScreen(
                 val url = if (isRussian) {
                     "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/Terms%20%26%20Conditions.md"
                 } else {
-                    "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/Terms%20%26%20Conditions_en.md"
+                    "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/.info/docs/Terms%20%26%20Conditions_en.md"
                 }
                 val intent = MarkdownViewerActivity.createIntent(context, termsTitle, url)
                 context.startActivity(intent)
@@ -193,7 +196,7 @@ fun RootSettingsScreen(
                 val url = if (isRussian) {
                     "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/Privacy%20Policy.md"
                 } else {
-                    "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/Privacy%20Policy_en.md"
+                    "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/.info/docs/Privacy%20Policy_en.md"
                 }
                 val intent = MarkdownViewerActivity.createIntent(context, privacyTitle, url)
                 context.startActivity(intent)
@@ -202,6 +205,67 @@ fun RootSettingsScreen(
         )
 
         PreferenceSpacer()
+
+        val availableUpdate by viewModel.availableUpdate.collectAsState()
+        availableUpdate?.let { update ->
+            ElevatedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.update_available_title, update.latestVersion),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    if (update.changelog.isNotEmpty()) {
+                        val cleanChangelog = remember(update.changelog) {
+                            update.changelog
+                                .replace(Regex("^#+\\s*", RegexOption.MULTILINE), "") // Remove headers ##
+                                .replace(Regex("\\*\\*([^*]+)\\*\\*"), "$1") // Remove bold **text**
+                                .replace(Regex("\\*([^*]+)\\*"), "$1") // Remove italic *text*
+                                .replace(Regex("^-\\s*", RegexOption.MULTILINE), "• ") // Replace - with bullet
+                                .replace(Regex("\\[([^]]+)]\\([^)]+\\)"), "$1") // Remove links [text](url)
+                                .replace(Regex("\n{3,}"), "\n\n") // Reduce multiple newlines
+                                .trim()
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = cleanChangelog.take(500) + if (cleanChangelog.length > 500) "..." else "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        TextButton(
+                            onClick = {
+                                BrowserUtils.openLink(context, "https://apps.rustore.ru/app/com.overklassniy.stankinschedule")
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.update_rustore))
+                        }
+                        TextButton(
+                            onClick = {
+                                BrowserUtils.openLink(context, update.downloadUrl)
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.update_github))
+                        }
+                    }
+                }
+            }
+        }
 
         Image(
             painter = painterResource(R.drawable.logo_about),
@@ -229,7 +293,7 @@ fun RootSettingsScreen(
             val changelogUrl = if (isRussian) {
                 "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/changelog.md"
             } else {
-                "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/changelog_en.md"
+                "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/.info/docs/changelog_en.md"
             }
             
             val primaryColor = MaterialTheme.colorScheme.primary
@@ -365,11 +429,20 @@ fun RootSettingsScreen(
             title = stringResource(R.string.support_email_title),
             subtitle = stringResource(R.string.support_email_summary),
             onClick = {
-                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = Uri.parse("mailto:$supportEmail")
-                }
-                if (emailIntent.resolveActivity(context.packageManager) != null) {
+                try {
+                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                        data = Uri.parse("mailto:$supportEmail")
+                    }
                     context.startActivity(emailIntent)
+                } catch (_: Exception) {
+                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val clip = android.content.ClipData.newPlainText("Email", supportEmail)
+                    clipboard.setPrimaryClip(clip)
+                    android.widget.Toast.makeText(
+                        context,
+                        context.getString(R.string.email_copied_to_clipboard),
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
                 }
             },
             icon = R.drawable.ic_pref_more

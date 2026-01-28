@@ -17,6 +17,15 @@
     <string name="ex_unknown_host">Хост недоступен. Попробуйте проверить подключение к сети.</string>
     <string name="ex_failed_unauthorized">Не удалось войти. Убедитесь, что вы правильно ввели логин и пароль.</string>
     <string name="ex_socket_timeout">Хост долго не отвечает. Попробуйте позже.</string>
+    <string name="ex_connection_refused">Соединение отклонено. Сервер может быть временно недоступен.</string>
+    <string name="ex_ssl_error">Ошибка безопасного соединения. Проверьте настройки сети.</string>
+    <string name="ex_io_error">Ошибка чтения/записи данных. Попробуйте ещё раз.</string>
+    <string name="ex_file_not_found">Файл не найден.</string>
+    <string name="ex_parse_error">Ошибка формата данных. Сервер вернул неожиданные данные.</string>
+    <string name="ex_unknown">Произошла непредвиденная ошибка. Попробуйте ещё раз.</string>
+    <string name="ex_server_error">Ошибка сервера (%d). Попробуйте позже.</string>
+    <string name="ex_not_found">Ресурс не найден (404).</string>
+    <string name="ex_forbidden">Доступ запрещён (403).</string>
 
     <string name="permission_write_title">Разрешение на запись</string>
     <string name="permission_write_text">Требуется разрешение на запись для сохранения файла на устройстве</string>

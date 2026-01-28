@@ -54,11 +54,15 @@
     <string name="default_color">Default</string>
     <string name="version">Version: </string>
     <string name="changelog">Changelog</string>
+    <string name="update_available_title">Update available: %s</string>
+    <string name="update_rustore">RuStore</string>
+    <string name="update_github">GitHub</string>
 
     <string name="support_email_title">E-mail</string>
     <string name="support_email_summary">s.kiani@stankin.ru</string>
     <string name="support_github_title">GitHub Issues</string>
     <string name="support_github_summary">Report an issue on GitHub</string>
     <string name="support_email">s.kiani@stankin.ru</string>
+    <string name="email_copied_to_clipboard">Email copied to clipboard</string>
 
 </resources>

@@ -21,6 +21,9 @@ fun LoginError(
     modifier: Modifier = Modifier,
 ) {
     val analytics = LocalAnalytics.current
+    
+    // Записываем исключение в аналитику
+    analytics.recordException(error)
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(Dimen.ContentPadding),
@@ -33,14 +36,7 @@ fun LoginError(
             modifier = Modifier.align(Alignment.CenterVertically)
         )
         Text(
-            text = exceptionDescription(error).let { description ->
-                if (description == null) {
-                    analytics.recordException(error)
-                    error.toString()
-                } else {
-                    description
-                }
-            },
+            text = exceptionDescription(error),
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center,
             modifier = Modifier

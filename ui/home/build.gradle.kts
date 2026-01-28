@@ -10,6 +10,7 @@ android {
     val appCompileSdkVersion: Int by rootProject.extra
     val appMinSdkVersion: Int by rootProject.extra
     val appTargetSdkVersion: Int by rootProject.extra
+    val appVersionName: String by rootProject.extra
 
     compileSdk = appCompileSdkVersion
     namespace = "com.overklassniy.stankinschedule.home.ui"
@@ -17,6 +18,7 @@ android {
     defaultConfig {
         minSdk = appMinSdkVersion
 
+        buildConfigField("String", "APP_VERSION", "\"$appVersionName\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }

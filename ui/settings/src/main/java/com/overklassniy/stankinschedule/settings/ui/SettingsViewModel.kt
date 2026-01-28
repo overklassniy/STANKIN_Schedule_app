@@ -2,6 +2,9 @@ package com.overklassniy.stankinschedule.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.overklassniy.stankinschedule.core.domain.ext.subHours
+import com.overklassniy.stankinschedule.core.domain.model.AppUpdate
+import com.overklassniy.stankinschedule.core.domain.repository.UpdateRepository
 import com.overklassniy.stankinschedule.core.domain.settings.AppLanguage
 import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
 import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
@@ -17,12 +20,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.joda.time.DateTime
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val applicationPreference: ApplicationPreference,
-    private val schedulePreference: SchedulePreference
+    private val schedulePreference: SchedulePreference,
+    private val updateRepository: UpdateRepository
 ) : ViewModel() {
 
     /**
@@ -76,5 +81,59 @@ class SettingsViewModel @Inject constructor(
     fun setAnalyticsEnabled(enable: Boolean) {
         applicationPreference.isAnalyticsEnabled = enable
         _isAnalyticsEnabled.value = enable
+    }
+
+    private val _availableUpdate = MutableStateFlow<AppUpdate?>(null)
+    val availableUpdate: StateFlow<AppUpdate?> = _availableUpdate.asStateFlow()
+
+    init {
+        loadCachedUpdateState()
+        checkForUpdates()
+    }
+
+    private fun loadCachedUpdateState() {
+        val version = applicationPreference.availableUpdateVersion
+        val changelog = applicationPreference.availableUpdateChangelog
+        val url = applicationPreference.availableUpdateUrl
+        
+        if (!version.isNullOrEmpty()) {
+            _availableUpdate.value = AppUpdate(
+                latestVersion = version,
+                changelog = changelog ?: "",
+                downloadUrl = url ?: "",
+                releaseName = "v$version"
+            )
+        }
+    }
+
+    fun checkForUpdates(force: Boolean = false) {
+        viewModelScope.launch {
+            val lastCheck = applicationPreference.lastUpdateCheck
+            val shouldCheck = force || lastCheck == null || (lastCheck subHours DateTime.now()) > 24
+
+            if (shouldCheck) {
+                val currentVersion = BuildConfig.APP_VERSION
+                val update = updateRepository.checkForUpdate(currentVersion)
+                
+                applicationPreference.lastUpdateCheck = DateTime.now()
+                
+                if (update != null) {
+                    applicationPreference.availableUpdateVersion = update.latestVersion
+                    applicationPreference.availableUpdateChangelog = update.changelog
+                    applicationPreference.availableUpdateUrl = update.downloadUrl
+                    _availableUpdate.value = update
+                } else {
+                    applicationPreference.clearUpdate()
+                    _availableUpdate.value = null
+                }
+            }
+        }
+    }
+
+    fun hasUpdate(): Boolean = applicationPreference.hasUpdate()
+
+    fun dismissUpdate() {
+        applicationPreference.clearUpdate()
+        _availableUpdate.value = null
     }
 }

@@ -21,6 +21,9 @@ fun JournalError(
     modifier: Modifier = Modifier,
 ) {
     val analytics = LocalAnalytics.current
+    
+    // Записываем исключение в аналитику
+    analytics.recordException(error)
 
     Column(
         modifier = modifier,
@@ -28,14 +31,7 @@ fun JournalError(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = exceptionDescription(error).let { description ->
-                if (description == null) {
-                    analytics.recordException(error)
-                    error.toString()
-                } else {
-                    description
-                }
-            },
+            text = exceptionDescription(error),
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )

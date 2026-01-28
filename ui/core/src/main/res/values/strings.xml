@@ -17,6 +17,15 @@
     <string name="ex_unknown_host">Host is unavailable. Try to test your network connection.</string>
     <string name="ex_failed_unauthorized">Login failed. Make sure you entered your username and password correctly.</string>
     <string name="ex_socket_timeout">The host does not respond for a long time. Try later.</string>
+    <string name="ex_connection_refused">Connection refused. The server may be temporarily unavailable.</string>
+    <string name="ex_ssl_error">Secure connection error. Check your network settings.</string>
+    <string name="ex_io_error">Data read/write error. Please try again.</string>
+    <string name="ex_file_not_found">File not found.</string>
+    <string name="ex_parse_error">Data format error. The server returned unexpected data.</string>
+    <string name="ex_unknown">An unexpected error occurred. Please try again.</string>
+    <string name="ex_server_error">Server error (%d). Please try again later.</string>
+    <string name="ex_not_found">Resource not found (404).</string>
+    <string name="ex_forbidden">Access denied (403).</string>
 
     <string name="permission_write_title">Write permission</string>
     <string name="permission_write_text">Write permission is required to save the file to the device</string>

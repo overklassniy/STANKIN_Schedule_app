@@ -2,6 +2,8 @@ package com.overklassniy.stankinschedule.home.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.overklassniy.stankinschedule.core.domain.ext.subHours
+import com.overklassniy.stankinschedule.core.domain.repository.UpdateRepository
 import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
 import com.overklassniy.stankinschedule.core.ui.components.UIState
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
@@ -36,10 +38,14 @@ class HomeViewModel @Inject constructor(
     private val scheduleViewerUseCase: ScheduleViewerUseCase,
     private val scheduleSettingsUseCase: ScheduleSettingsUseCase,
     private val newsUseCase: NewsReviewUseCase,
-    private val applicationPreference: ApplicationPreference
+    private val applicationPreference: ApplicationPreference,
+    private val updateRepository: UpdateRepository
 ) : ViewModel() {
 
     val pairColorGroup: Flow<PairColorGroup> = scheduleSettingsUseCase.pairColorGroup()
+
+    private val _hasUpdate = MutableStateFlow(applicationPreference.hasUpdate())
+    val hasUpdate = _hasUpdate.asStateFlow()
 
     private val _favorite = MutableStateFlow<ScheduleInfo?>(null)
     val favorite = _favorite.asStateFlow()
@@ -49,6 +55,9 @@ class HomeViewModel @Inject constructor(
 
     private val _universityNews = MutableStateFlow<List<NewsPost>>(emptyList())
     val universityNews = _universityNews.asStateFlow()
+
+    private val _announcementsNews = MutableStateFlow<List<NewsPost>>(emptyList())
+    val announcementsNews = _announcementsNews.asStateFlow()
 
     private val _deanNews = MutableStateFlow<List<NewsPost>>(emptyList())
     val deanNews = _deanNews.asStateFlow()
@@ -82,6 +91,16 @@ class HomeViewModel @Inject constructor(
             }
         }
 
+        // Загрузка анонсов
+        viewModelScope.launch {
+            newsUseCase.lastNews(
+                newsSubdivision = NewsSubdivision.Announcements.id,
+                newsCount = NEWS_COUNT
+            ).collectLatest {
+                _announcementsNews.value = it
+            }
+        }
+
         // Загрузка новостей деканата
         viewModelScope.launch {
             newsUseCase.lastNews(
@@ -93,11 +112,44 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            kotlinx.coroutines.delay(500)
             try {
                 newsUseCase.refreshNews(NewsSubdivision.University.id, force = false)
+                newsUseCase.refreshNews(NewsSubdivision.Announcements.id, force = false)
                 newsUseCase.refreshNews(NewsSubdivision.Dean.id, force = false)
-            } catch (ignored: Exception) {
+            } catch (_: Exception) {
+                // Silent fail
+            }
+        }
 
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000)
+            checkForUpdates()
+        }
+    }
+
+    private suspend fun checkForUpdates() {
+        val lastCheck = applicationPreference.lastUpdateCheck
+        val shouldCheck = lastCheck == null || (lastCheck subHours DateTime.now()) > 24
+
+        if (shouldCheck) {
+            try {
+                val currentVersion = BuildConfig.APP_VERSION
+                val update = updateRepository.checkForUpdate(currentVersion)
+                
+                applicationPreference.lastUpdateCheck = DateTime.now()
+                
+                if (update != null) {
+                    applicationPreference.availableUpdateVersion = update.latestVersion
+                    applicationPreference.availableUpdateChangelog = update.changelog
+                    applicationPreference.availableUpdateUrl = update.downloadUrl
+                    _hasUpdate.value = true
+                } else {
+                    applicationPreference.clearUpdate()
+                    _hasUpdate.value = false
+                }
+            } catch (_: Exception) {
+                // Don't update state on error, keep cached value
             }
         }
     }

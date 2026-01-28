@@ -20,6 +20,15 @@ interface StankinUniversityNewsAPI {
     @GET("/news")
     fun getNewsPage(@Query("PAGEN_1") page: Int): Call<String>
 
+    /**
+     * Получает HTML-страницу со списком анонсов.
+     *
+     * @param page Номер страницы для пагинации.
+     * @return [Call] с содержимым страницы в виде HTML-строки.
+     */
+    @GET("/ads/")
+    fun getAdsPage(@Query("PAGEN_1") page: Int): Call<String>
+
     companion object {
         /**
          * Базовый URL основного сайта университета.

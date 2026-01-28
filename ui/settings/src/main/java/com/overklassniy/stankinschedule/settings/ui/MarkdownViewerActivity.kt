@@ -67,8 +67,7 @@ class MarkdownViewerActivity : AppCompatActivity() {
                             updateContent(state.data)
                         }
                         is UIState.Failed -> {
-                            val description = exceptionDescription(state.error)
-                            binding.errorTitle.text = description ?: state.error.toString()
+                            binding.errorTitle.text = this@MarkdownViewerActivity.exceptionDescription(state.error)
                         }
                         is UIState.Loading -> {
                             // Loading state

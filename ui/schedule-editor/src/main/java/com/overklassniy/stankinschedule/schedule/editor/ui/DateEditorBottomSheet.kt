@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.OutlinedSelectField
@@ -57,7 +58,8 @@ fun DateEditorBottomSheet(
     onDismissClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val resources = LocalContext.current.resources
+    val context = LocalContext.current
+    val resources = context.resources
 
     var currentMode by rememberSaveable { mutableStateOf(DateEditorMode.SingleMode) }
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
@@ -263,7 +265,7 @@ fun DateEditorBottomSheet(
                         else -> null
                     }
 
-                    errorMessage = if (id != null) resources.getString(id) else e.toString()
+                    errorMessage = if (id != null) resources.getString(id) else context.exceptionDescription(e)
                 }
             },
             enabled = errorMessage == null,

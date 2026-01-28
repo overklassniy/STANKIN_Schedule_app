@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
      * Метод жизненного цикла Activity, вызываемый при создании.
      *
      * Выполняет следующие задачи:
-     * 1. Устанавливает SplashScreen.
+     * 1. Устанавливает SplashScreen с поддержкой анимации.
      * 2. Настраивает отображение контента на весь экран (edge-to-edge).
      * 3. Устанавливает контент Activity с использованием Jetpack Compose.
      * 4. Оборачивает контент в тему приложения [AppTheme].
@@ -42,9 +42,15 @@ class MainActivity : AppCompatActivity() {
      * @param savedInstanceState Сохраненное состояние Activity (если есть).
      */
     override fun onCreate(savedInstanceState: Bundle?) {
+        // ВАЖНО: installSplashScreen() должен быть вызван ДО super.onCreate()
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-        // Установка стандартного SplashScreen Android 12+
-        installSplashScreen()
+
+        // Держим сплеш-экран пока анимация не завершится (600ms + запас)
+        val startTime = System.currentTimeMillis()
+        splashScreen.setKeepOnScreenCondition { 
+            System.currentTimeMillis() - startTime < 800
+        }
 
         // Отключение стандартных отступов системных окон для реализации edge-to-edge интерфейса
         WindowCompat.setDecorFitsSystemWindows(window, false)

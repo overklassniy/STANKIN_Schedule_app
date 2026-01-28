@@ -78,8 +78,7 @@ class NewsViewerActivity : AppCompatActivity() {
                         updateContent(state.data)
                     }
                     if (state is UIState.Failed) {
-                        val description = exceptionDescription(state.error)
-                        binding.errorTitle.text = description ?: state.error.toString()
+                        binding.errorTitle.text = this@NewsViewerActivity.exceptionDescription(state.error)
                     }
 
                     updateVisibleView(state)

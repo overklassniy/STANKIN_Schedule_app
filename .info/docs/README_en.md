@@ -8,9 +8,9 @@
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
-<img src=".info/icons/224x224.png" width="224" alt="STANKIN Schedule">
+<img src="../icons/224x224.png" width="224" alt="STANKIN Schedule">
 
-[🇷🇺 Русский](README.md) • [🇺🇸 English](README_en.md)
+[🇷🇺 Русский](../../README.md) • [🇺🇸 English](README_en.md)
 
 </div>
 

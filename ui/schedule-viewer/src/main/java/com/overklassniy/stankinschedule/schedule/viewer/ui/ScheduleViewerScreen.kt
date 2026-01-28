@@ -58,6 +58,7 @@ import com.overklassniy.stankinschedule.core.ui.components.TrackCurrentScreen
 import com.overklassniy.stankinschedule.core.ui.components.rememberFileSaveState
 import com.overklassniy.stankinschedule.core.ui.ext.Zero
 import com.overklassniy.stankinschedule.core.ui.utils.BrowserUtils
+import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.schedule.core.ui.ScheduleDayCard
 import com.overklassniy.stankinschedule.schedule.core.ui.toColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
@@ -151,7 +152,7 @@ fun ScheduleViewerScreen(
 
             is ExportProgress.Error -> {
                 snackBarHostState.showSnackbar(
-                    message = progress.error.toString(),
+                    message = context.exceptionDescription(progress.error),
                     duration = SnackbarDuration.Short
                 )
                 viewModel.saveFinished()

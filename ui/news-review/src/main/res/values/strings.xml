@@ -4,6 +4,7 @@
     <string name="news_university">University</string>
     <string name="news_dean">Dean</string>
     <string name="news_postgraduate">Postgraduate</string>
+    <string name="news_announcements">Announcements</string>
     <string name="news_preview">News preview</string>
     <string name="news_retry">Retry</string>
 </resources>

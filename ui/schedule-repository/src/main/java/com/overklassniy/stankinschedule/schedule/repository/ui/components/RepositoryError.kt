@@ -23,6 +23,9 @@ fun RepositoryError(
     modifier: Modifier = Modifier,
 ) {
     val analytics = LocalAnalytics.current
+    
+    // Записываем исключение в аналитику
+    analytics.recordException(error)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -30,14 +33,7 @@ fun RepositoryError(
         modifier = modifier
     ) {
         Text(
-            text = exceptionDescription(error).let { description ->
-                if (description == null) {
-                    analytics.recordException(error)
-                    error.toString()
-                } else {
-                    description
-                }
-            },
+            text = exceptionDescription(error),
         )
         OutlinedCard(
             onClick = onRetryClicked

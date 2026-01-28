@@ -23,6 +23,37 @@ class ApplicationPreference @Inject constructor(
             }
         }
 
+    var lastUpdateCheck: DateTime?
+        get() = manager.getDateTime(LAST_UPDATE_CHECK)
+        set(value) {
+            if (value != null) {
+                manager.saveDateTime(LAST_UPDATE_CHECK, value)
+            }
+        }
+
+    var availableUpdateVersion: String?
+        get() = manager.getString(AVAILABLE_UPDATE_VERSION)
+        set(value) = manager.saveString(AVAILABLE_UPDATE_VERSION, value ?: "")
+
+    var availableUpdateChangelog: String?
+        get() = manager.getString(AVAILABLE_UPDATE_CHANGELOG)
+        set(value) = manager.saveString(AVAILABLE_UPDATE_CHANGELOG, value ?: "")
+
+    var availableUpdateUrl: String?
+        get() = manager.getString(AVAILABLE_UPDATE_URL)
+        set(value) = manager.saveString(AVAILABLE_UPDATE_URL, value ?: "")
+
+    fun hasUpdate(): Boolean {
+        val available = availableUpdateVersion
+        return !available.isNullOrEmpty()
+    }
+
+    fun clearUpdate() {
+        availableUpdateVersion = null
+        availableUpdateChangelog = null
+        availableUpdateUrl = null
+    }
+
     fun currentDarkMode(): DarkMode {
         return DarkMode.from(manager.getString(DARK_MODE)) ?: DarkMode.Default
     }
@@ -55,5 +86,9 @@ class ApplicationPreference @Inject constructor(
         private const val MIGRATE_2_0 = "migrate_2_0"
         private const val LAST_IN_APP_UPDATE = "last_in_app_update"
         private const val APP_LANGUAGE = "app_language"
+        private const val LAST_UPDATE_CHECK = "last_update_check"
+        private const val AVAILABLE_UPDATE_VERSION = "available_update_version"
+        private const val AVAILABLE_UPDATE_CHANGELOG = "available_update_changelog"
+        private const val AVAILABLE_UPDATE_URL = "available_update_url"
     }
 }

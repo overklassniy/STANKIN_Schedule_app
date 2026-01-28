@@ -10,7 +10,7 @@
 \
 <img src=".info/icons/224x224.png" width="224" alt="СТАНКИН Расписание">
 
-[🇷🇺 Русский](README.md) • [🇺🇸 English](README_en.md)
+[🇷🇺 Русский](README.md) • [🇺🇸 English](.info/docs/README_en.md)
 
 </div>
 

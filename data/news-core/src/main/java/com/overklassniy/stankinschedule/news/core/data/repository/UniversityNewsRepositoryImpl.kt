@@ -44,6 +44,7 @@ class UniversityNewsRepositoryImpl @Inject constructor(
     ): List<NewsPost> {
         return when (newsSubdivision) {
             NewsSubdivision.Dean.id -> loadDeanNews(page, count)
+            NewsSubdivision.Announcements.id -> loadAnnouncements(page)
             else -> loadUniversityNews(page)
         }
     }
@@ -127,6 +128,96 @@ class UniversityNewsRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e("UniversityNewsRepo", "Load Dean news page $page error", e)
             emptyList()
+        }
+    }
+
+    /**
+     * Загружает анонсы с сайта stankin.ru/ads/.
+     *
+     * @param page Номер страницы.
+     * @return Список анонсов.
+     */
+    private suspend fun loadAnnouncements(page: Int): List<NewsPost> {
+        return try {
+            val text = universityAPI.getAdsPage(page).await()
+
+            // Паттерн для блока анонса: <a href="/ads/..." class="nucAds ">...</a>
+            // Порядок атрибутов: href потом class
+            val adsBlock = Regex(
+                """<a\s+[^>]*?href="(/ads/[^"]+/)"[^>]*?>(.*?)</a>""",
+                setOf(RegexOption.DOT_MATCHES_ALL, RegexOption.IGNORE_CASE)
+            )
+            
+            // Паттерн для изображения
+            val adsImage = Regex("""<img[^>]*src="([^"]+)"[^>]*>""", RegexOption.DOT_MATCHES_ALL)
+            
+            // Паттерн для даты: <span class="date">22/01<br>2026</span>
+            val adsDate = Regex(
+                """<span[^>]*class="date"[^>]*>(\d{1,2}/\d{1,2})<br>(\d{4})</span>""",
+                RegexOption.DOT_MATCHES_ALL
+            )
+            
+            // Паттерн для заголовка: <span class="name">...</span>
+            val adsTitle = Regex(
+                """<span[^>]*class="name"[^>]*>([^<]+)</span>""",
+                RegexOption.DOT_MATCHES_ALL
+            )
+
+            adsBlock.findAll(text)
+                .asFlow()
+                .map { match ->
+                    val link = match.groupValues[1]
+                    val content = match.groupValues[2]
+                    
+                    val imageUrl = adsImage.find(content)?.let { 
+                        StankinUniversityNewsAPI.BASE_URL + it.groupValues[1]
+                    }
+                    
+                    val dateMatch = adsDate.find(content)
+                    val dateStr = if (dateMatch != null) {
+                        processAdsDate(dateMatch.groupValues[1], dateMatch.groupValues[2])
+                    } else {
+                        DateTime.now().toString(ISODateTimeFormat.date())
+                    }
+                    
+                    val title = adsTitle.find(content)?.groupValues?.get(1)
+                        ?.trim()
+                        ?.replace(Regex("\\s+"), " ")
+                        ?: "Анонс"
+                    
+                    NewsPost(
+                        id = 0,
+                        title = title,
+                        previewImageUrl = imageUrl,
+                        date = dateStr,
+                        relativeUrl = StankinUniversityNewsAPI.BASE_URL + link
+                    )
+                }
+                .catch {
+                    Log.e("UniversityNewsRepo", "Load announcements page $page error", it)
+                }
+                .toList()
+                .also { Log.d("UniversityNewsRepo", "loadAnnouncements: count=${it.size}") }
+        } catch (e: Exception) {
+            Log.e("UniversityNewsRepo", "Load announcements page $page error", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Преобразует дату анонса в формат ISO.
+     *
+     * @param dayMonth Строка с днем и месяцем (например, "22/01").
+     * @param year Строка с годом (например, "2026").
+     * @return Дата в формате yyyy-MM-dd.
+     */
+    private fun processAdsDate(dayMonth: String, year: String): String {
+        return try {
+            DateTimeFormat.forPattern("dd/MM/yyyy")
+                .parseDateTime("$dayMonth/$year")
+                .toString(ISODateTimeFormat.date())
+        } catch (_: Throwable) {
+            DateTime.now().toString(ISODateTimeFormat.date())
         }
     }
 
