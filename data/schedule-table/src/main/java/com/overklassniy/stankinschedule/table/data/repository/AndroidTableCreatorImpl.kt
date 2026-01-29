@@ -3,6 +3,7 @@ package com.overklassniy.stankinschedule.table.data.repository
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfDocument
 import androidx.core.graphics.applyCanvas
+import androidx.core.graphics.createBitmap
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
 import com.overklassniy.stankinschedule.schedule.table.domain.model.ScheduleTable
 import com.overklassniy.stankinschedule.schedule.table.domain.model.TableConfig
@@ -14,8 +15,20 @@ import org.joda.time.LocalDate
 import javax.inject.Inject
 import kotlin.math.sqrt
 
+/**
+ * Реализация создателя таблиц расписания для Android.
+ *
+ * Отвечает за генерацию изображений (Bitmap) и PDF-документов с расписанием.
+ */
 class AndroidTableCreatorImpl @Inject constructor() : AndroidTableCreator {
 
+    /**
+     * Создает изображение расписания.
+     *
+     * @param schedule Модель расписания [ScheduleModel].
+     * @param config Конфигурация таблицы [TableConfig] (режим, размеры, цвета).
+     * @return Объект [Bitmap] с отрисованным расписанием.
+     */
     override fun createImage(schedule: ScheduleModel, config: TableConfig): Bitmap {
         val width: Int = config.longScreenSize.toInt()
         val height: Int = (config.longScreenSize / sqrt(2f)).toInt()
@@ -24,6 +37,7 @@ class AndroidTableCreatorImpl @Inject constructor() : AndroidTableCreator {
             TableMode.Full -> ScheduleTable(
                 schedule = schedule
             )
+
             TableMode.Weekly -> ScheduleTable(
                 schedule = schedule,
                 date = LocalDate.now().plusDays(config.page * 7)
@@ -34,7 +48,7 @@ class AndroidTableCreatorImpl @Inject constructor() : AndroidTableCreator {
             tableColor = config.color
         )
 
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
         bitmap.applyCanvas {
             drawScheduleTable(table)
         }
@@ -42,6 +56,16 @@ class AndroidTableCreatorImpl @Inject constructor() : AndroidTableCreator {
         return bitmap
     }
 
+    /**
+     * Создает PDF-документ расписания.
+     *
+     * Генерирует PDF с одной или несколькими страницами в зависимости от режима (Full/Weekly).
+     *
+     * @param schedule Модель расписания [ScheduleModel].
+     * @param config Конфигурация таблицы [TableConfig].
+     * @return Объект [PdfDocument].
+     * @throws NoSuchElementException Если расписание пустое (нет дат начала/конца).
+     */
     override fun createPdf(schedule: ScheduleModel, config: TableConfig): PdfDocument {
         val width = 842
         val height = 595
@@ -66,6 +90,7 @@ class AndroidTableCreatorImpl @Inject constructor() : AndroidTableCreator {
                     )
                 }
             }
+
             TableMode.Weekly -> {
                 var from = startDate.withDayOfWeek(1)
                 val to = endDate.withDayOfWeek(7)

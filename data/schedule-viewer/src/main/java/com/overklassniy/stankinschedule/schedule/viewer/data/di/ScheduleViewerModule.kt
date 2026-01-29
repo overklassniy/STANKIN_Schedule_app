@@ -8,10 +8,22 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
 
+/**
+ * Hilt модуль для предоставления зависимостей модуля просмотра расписания.
+ *
+ * Устанавливается в [ViewModelComponent].
+ */
 @Module
 @InstallIn(ViewModelComponent::class)
+@Suppress("unused")
 interface ScheduleViewerModule {
 
+    /**
+     * Связывает реализацию репозитория [ScheduleViewerRepositoryImpl] с интерфейсом [ScheduleViewerRepository].
+     *
+     * @param repository Реализация репозитория.
+     * @return Интерфейс для работы с просмотром расписания (PagingSource, маппинг).
+     */
     @Binds
     @ViewModelScoped
     fun provideScheduleSource(repository: ScheduleViewerRepositoryImpl): ScheduleViewerRepository

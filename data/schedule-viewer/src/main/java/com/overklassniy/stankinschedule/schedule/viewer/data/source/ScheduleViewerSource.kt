@@ -4,20 +4,36 @@ import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
-import com.overklassniy.stankinschedule.schedule.viewer.data.BuildConfig
 import com.overklassniy.stankinschedule.schedule.viewer.data.mapper.toViewPair
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewDay
 import org.joda.time.LocalDate
 
+/**
+ * Источник данных для пейджинга расписания.
+ *
+ * Загружает данные расписания постранично (по дням) для отображения в списке.
+ *
+ * @property schedule Модель расписания, из которой берутся данные.
+ * @property isDebug Флаг режима отладки для логирования.
+ */
 class ScheduleViewerSource(
     private val schedule: ScheduleModel,
+    private val isDebug: Boolean,
 ) : PagingSource<LocalDate, ScheduleViewDay>() {
 
     private val startDate = schedule.startDate()
     private val endDate = schedule.endDate()
 
+    /**
+     * Получает ключ обновления для текущего состояния пейджинга.
+     *
+     * Используется для восстановления позиции списка после инвалидации данных.
+     *
+     * @param state Текущее состояние пейджинга.
+     * @return Ключ (дата) для перезагрузки данных или null.
+     */
     override fun getRefreshKey(state: PagingState<LocalDate, ScheduleViewDay>): LocalDate? {
-        if (BuildConfig.DEBUG) {
+        if (isDebug) {
             Log.d("ScheduleViewSourceLog", "getRefreshKey: $state")
         }
 
@@ -28,13 +44,20 @@ class ScheduleViewerSource(
         return null
     }
 
+    /**
+     * Загружает страницу данных.
+     *
+     * Определяет диапазон дат для загрузки и извлекает пары из модели расписания.
+     *
+     * @param params Параметры загрузки (ключ, размер страницы).
+     * @return Результат загрузки [LoadResult] (страница с данными или ошибка).
+     */
     override suspend fun load(
         params: LoadParams<LocalDate>
     ): LoadResult<LocalDate, ScheduleViewDay> {
         val date = params.key ?: LocalDate.now()
         val loadSize = params.loadSize
 
-        // нет пар в расписании
         if (startDate == null && endDate == null) {
             return LoadResult.Page(listOf(), null, null)
         }
@@ -42,7 +65,7 @@ class ScheduleViewerSource(
         val nextDay = nextDay(date, loadSize)
         val prevDay = prevDay(date, loadSize)
 
-        if (BuildConfig.DEBUG) {
+        if (isDebug) {
             Log.d(
                 "ScheduleViewSourceLog",
                 "Load view data: " +
@@ -60,13 +83,17 @@ class ScheduleViewerSource(
     }
 
     /**
-     * Загружает необходимое количество дней в расписание.
+     * Загружает список дней с парами в заданном диапазоне.
+     *
+     * @param from Дата начала диапазона.
+     * @param to Дата окончания диапазона.
+     * @return Список дней расписания [ScheduleViewDay].
      */
     private fun loadDays(from: LocalDate, to: LocalDate?): List<ScheduleViewDay> {
         var begin = from
         val end = to ?: endDate!!
 
-        if (BuildConfig.DEBUG) {
+        if (isDebug) {
             Log.d(
                 "ScheduleViewSourceLog",
                 "load: ${begin.toString("dd.MM.yyyy")} " +
@@ -85,7 +112,7 @@ class ScheduleViewerSource(
             begin = begin.plusDays(1)
         }
 
-        if (BuildConfig.DEBUG) {
+        if (isDebug) {
             Log.d("ScheduleViewSourceLog", "loaded = ${result.size}")
         }
 
@@ -93,14 +120,22 @@ class ScheduleViewerSource(
     }
 
     /**
-     * Вычисляет следующий день для загрузки данных.
+     * Вычисляет дату следующей страницы.
+     *
+     * @param currentDate Текущая дата (ключ).
+     * @param pageSize Размер страницы (количество дней).
+     * @return Дата следующей страницы или null.
      */
     private fun nextDay(currentDate: LocalDate, pageSize: Int): LocalDate? {
         return currentDate.plusDays(pageSize)
     }
 
     /**
-     * Вычисляет предыдущий день для загрузки данных.
+     * Вычисляет дату предыдущей страницы.
+     *
+     * @param currentDate Текущая дата (ключ).
+     * @param pageSize Размер страницы (количество дней).
+     * @return Дата предыдущей страницы или null.
      */
     private fun prevDay(currentDate: LocalDate, pageSize: Int): LocalDate? {
         return currentDate.minusDays(pageSize)

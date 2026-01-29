@@ -48,3 +48,7 @@ class DateParseException(
 class DateIntersectException(
     message: String?, val first: DateItem, val second: DateItem, cause: Throwable? = null,
 ) : DateException(message, cause)
+
+class DateEmptyException(
+    message: String? = null, cause: Throwable? = null
+) : DateException(message, cause)

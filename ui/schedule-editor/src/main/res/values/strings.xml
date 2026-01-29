@@ -40,6 +40,7 @@
     <string name="editor_invalid_day_of_week">You cannot create a date with this day of the week.</string>
     <string name="editor_invalid_frequency">The date range is not a multiple of its duration.</string>
     <string name="editor_impossible_added_date">You cannot add a date because there will be a date intersection / no match on day of the week.</string>
+    <string name="editor_empty_date_error">You must add at least one date.</string>
     <string name="editor_conflict_pair">You cannot add a pair. Conflicts with \"%1$s\".</string>
 
     <string name="frequency">Frequency</string>
@@ -47,6 +48,5 @@
     <string name="frequency_throughout_week">Throughout a week</string>
     <string name="frequency_every_week_simple">e.w</string>
     <string name="frequency_throughout_simple">t.w</string>
-
 
 </resources>

@@ -21,21 +21,25 @@ import org.jsoup.Jsoup
 import java.io.File
 import java.io.FileOutputStream
 import java.net.Proxy
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
+/**
+ * Сервис для загрузки расписания из Moodle.
+ *
+ * Отвечает за скачивание PDF-файлов расписания и их парсинг.
+ *
+ * @property context Контекст приложения.
+ * @property parserUseCase UseCase для парсинга PDF-файлов.
+ */
 class MoodleLoaderService @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    @ApplicationContext private val context: Context,
     private val parserUseCase: ParserUseCase
 ) : ScheduleLoaderService {
 
     private val TAG = "MoodleLoaderService"
-    private val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    private val USER_AGENT =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     private val LOGIN_URL = "https://edu.stankin.ru/login/index.php"
 
     private val cookieStore = mutableMapOf<String, MutableList<Cookie>>()
@@ -56,16 +60,6 @@ class MoodleLoaderService @Inject constructor(
         }
     }
 
-    private val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-        override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-    })
-
-    private val sslContext = SSLContext.getInstance("TLS").apply {
-        init(null, trustAllCerts, SecureRandom())
-    }
-
     private val client = OkHttpClient.Builder()
         .cookieJar(cookieJar)
         .proxy(Proxy.NO_PROXY)
@@ -74,8 +68,6 @@ class MoodleLoaderService @Inject constructor(
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
-        .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
-        .hostnameVerifier { _, _ -> true }
         .addNetworkInterceptor { chain ->
             val request = chain.request()
             val response = chain.proceed(request)
@@ -90,30 +82,50 @@ class MoodleLoaderService @Inject constructor(
         }
         .build()
 
-    override suspend fun schedule(category: String, schedule: String): List<PairModel> = withContext(Dispatchers.IO) {
-        val tempFile = downloadFileInternal(schedule, "schedule_import")
+    /**
+     * Загружает и парсит расписание для указанной категории.
+     *
+     * @param category Категория расписания (не используется в текущей реализации, но может быть полезна в будущем).
+     * @param schedule URL или путь к файлу расписания для скачивания.
+     * @return Список пар [PairModel], полученных в результате парсинга.
+     */
+    override suspend fun schedule(category: String, schedule: String): List<PairModel> =
+        withContext(Dispatchers.IO) {
+            val tempFile = downloadFileInternal(schedule, "schedule_import")
 
-        val currentYear = DateTime.now().year
-        val settings = ParserSettings(
-            scheduleYear = currentYear,
-            parserThreshold = 0.5f
-        )
+            val currentYear = DateTime.now().year
+            val settings = ParserSettings(
+                scheduleYear = currentYear,
+                parserThreshold = 0.5f
+            )
 
-        val results = parserUseCase.parsePDF(tempFile.absolutePath, settings)
+            val results = parserUseCase.parsePDF(tempFile.absolutePath, settings)
 
-        val pairs = mutableListOf<PairModel>()
-        for (result in results) {
-            if (result is ParseResult.Success) {
-                pairs.add(result.pair)
+            val pairs = mutableListOf<PairModel>()
+            for (result in results) {
+                if (result is ParseResult.Success) {
+                    pairs.add(result.pair)
+                }
             }
+
+            tempFile.delete()
+
+            return@withContext pairs
         }
 
-        tempFile.delete()
-
-        return@withContext pairs
-    }
-
-    override suspend fun downloadScheduleFile(category: String, schedule: String, fileName: String): String = withContext(Dispatchers.IO) {
+    /**
+     * Скачивает файл расписания и сохраняет его локально.
+     *
+     * @param category Категория расписания.
+     * @param schedule URL файла для скачивания.
+     * @param fileName Имя файла для сохранения (без расширения).
+     * @return Абсолютный путь к сохраненному файлу.
+     */
+    override suspend fun downloadScheduleFile(
+        category: String,
+        schedule: String,
+        fileName: String
+    ): String = withContext(Dispatchers.IO) {
         val file = downloadFileInternal(schedule, fileName)
         return@withContext file.absolutePath
     }
@@ -126,16 +138,16 @@ class MoodleLoaderService @Inject constructor(
                 .url(LOGIN_URL)
                 .header("User-Agent", USER_AGENT)
                 .build()
-            
+
             val loginPageResponse = client.newCall(loginPageRequest).execute()
-            val loginPageHtml = loginPageResponse.body?.string() ?: ""
+            val loginPageHtml = loginPageResponse.body.string()
             loginPageResponse.close()
-            
+
             val doc = Jsoup.parse(loginPageHtml)
             val loginToken = doc.select("input[name=logintoken]").attr("value")
             val loginAction = doc.select("form[action*='login/index.php']").attr("action")
                 .ifEmpty { LOGIN_URL }
-            
+
             Log.d(TAG, "Login token found: ${loginToken.isNotEmpty()}, action: $loginAction")
 
             val formBody = FormBody.Builder()
@@ -154,15 +166,15 @@ class MoodleLoaderService @Inject constructor(
                 .header("Referer", LOGIN_URL)
                 .post(formBody)
                 .build()
-            
+
             val loginResponse = client.newCall(loginRequest).execute()
-            val loginSuccess = loginResponse.isSuccessful || 
-                               loginResponse.code == 303 || 
-                               loginResponse.code == 302
+            val loginSuccess = loginResponse.isSuccessful ||
+                    loginResponse.code == 303 ||
+                    loginResponse.code == 302
             Log.d(TAG, "Login response code: ${loginResponse.code}, success: $loginSuccess")
             Log.d(TAG, "Cookies after login: ${cookieStore.values.flatten().map { it.name }}")
             loginResponse.close()
-            
+
             return loginSuccess
         } catch (e: Exception) {
             Log.e(TAG, "Login failed with exception", e)
@@ -170,71 +182,75 @@ class MoodleLoaderService @Inject constructor(
         }
     }
 
-    private suspend fun downloadFileInternal(url: String, fileName: String): File = withContext(Dispatchers.IO) {
-        cookieStore.clear()
-        Log.d(TAG, "Starting download for: $url")
-
-        val loginSuccess = performGuestLogin()
-        Log.d(TAG, "Guest login result: $loginSuccess")
-
-        val request = Request.Builder()
-            .url(url)
-            .header("User-Agent", USER_AGENT)
-            .header("Referer", "https://edu.stankin.ru/")
-            .build()
-            
-        var response = client.newCall(request).execute()
-        Log.d(TAG, "First download attempt - code: ${response.code}, url: ${response.request.url}")
-
-        val finalUrl = response.request.url.toString()
-        val contentType = response.header("Content-Type") ?: ""
-        
-        if (finalUrl.contains("/login/") || contentType.contains("text/html")) {
-            Log.d(TAG, "Got HTML or login redirect, trying again after fresh login...")
-            response.close()
-
+    private suspend fun downloadFileInternal(url: String, fileName: String): File =
+        withContext(Dispatchers.IO) {
             cookieStore.clear()
-            performGuestLogin()
+            Log.d(TAG, "Starting download for: $url")
 
-            val retryRequest = Request.Builder()
+            val loginSuccess = performGuestLogin()
+            Log.d(TAG, "Guest login result: $loginSuccess")
+
+            val request = Request.Builder()
                 .url(url)
                 .header("User-Agent", USER_AGENT)
                 .header("Referer", "https://edu.stankin.ru/")
                 .build()
-            
-            response = client.newCall(retryRequest).execute()
-            Log.d(TAG, "Retry download - code: ${response.code}, url: ${response.request.url}")
-        }
 
-        if (!response.isSuccessful) {
-            val errorBody = response.body?.string()?.take(500) ?: "No body"
-            Log.e(TAG, "Download failed. Code: ${response.code}, Body preview: $errorBody")
-            response.close()
-            throw Exception("Failed to download schedule. Response code: ${response.code}")
-        }
+            var response = client.newCall(request).execute()
+            Log.d(
+                TAG,
+                "First download attempt - code: ${response.code}, url: ${response.request.url}"
+            )
 
-        val body = response.body ?: throw Exception("Empty body")
+            val finalUrl = response.request.url.toString()
+            val contentType = response.header("Content-Type") ?: ""
 
-        val responseContentType = response.header("Content-Type") ?: ""
-        if (responseContentType.contains("text/html")) {
-            val htmlPreview = body.string().take(500)
-            Log.e(TAG, "Got HTML instead of PDF: $htmlPreview")
-            throw Exception("Server returned HTML instead of PDF file. Login may have failed.")
-        }
+            if (finalUrl.contains("/login/") || contentType.contains("text/html")) {
+                Log.d(TAG, "Got HTML or login redirect, trying again after fresh login...")
+                response.close()
 
-        val downloadsDir = File(context.filesDir, "schedule_downloads")
-        if (!downloadsDir.exists()) {
-            downloadsDir.mkdirs()
-        }
-        
-        val file = File(downloadsDir, "${fileName}.pdf")
-        FileOutputStream(file).use { output ->
-            body.byteStream().use { input ->
-                input.copyTo(output)
+                cookieStore.clear()
+                performGuestLogin()
+
+                val retryRequest = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", USER_AGENT)
+                    .header("Referer", "https://edu.stankin.ru/")
+                    .build()
+
+                response = client.newCall(retryRequest).execute()
+                Log.d(TAG, "Retry download - code: ${response.code}, url: ${response.request.url}")
             }
+
+            if (!response.isSuccessful) {
+                val errorBody = response.body.string().take(500)
+                Log.e(TAG, "Download failed. Code: ${response.code}, Body preview: $errorBody")
+                response.close()
+                throw Exception("Failed to download schedule. Response code: ${response.code}")
+            }
+
+            val body = response.body
+
+            val responseContentType = response.header("Content-Type") ?: ""
+            if (responseContentType.contains("text/html")) {
+                val htmlPreview = body.string().take(500)
+                Log.e(TAG, "Got HTML instead of PDF: $htmlPreview")
+                throw Exception("Server returned HTML instead of PDF file. Login may have failed.")
+            }
+
+            val downloadsDir = File(context.filesDir, "schedule_downloads")
+            if (!downloadsDir.exists()) {
+                downloadsDir.mkdirs()
+            }
+
+            val file = File(downloadsDir, "${fileName}.pdf")
+            FileOutputStream(file).use { output ->
+                body.byteStream().use { input ->
+                    input.copyTo(output)
+                }
+            }
+
+            Log.d(TAG, "File downloaded successfully: ${file.absolutePath}")
+            return@withContext file
         }
-        
-        Log.d(TAG, "File downloaded successfully: ${file.absolutePath}")
-        return@withContext file
-    }
 }

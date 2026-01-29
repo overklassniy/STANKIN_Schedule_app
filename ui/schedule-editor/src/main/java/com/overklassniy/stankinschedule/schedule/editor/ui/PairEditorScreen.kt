@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.OutlinedSelectField
 import com.overklassniy.stankinschedule.core.ui.components.TrackCurrentScreen
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
+import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.DateEmptyException
 import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.PairIntersectException
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateItem
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateModel
@@ -189,7 +190,10 @@ fun PairEditorScreen(
                                 is PairIntersectException -> {
                                     stringResource(R.string.editor_conflict_pair, it.second)
                                 }
-                                else -> it.toString()
+                                is DateEmptyException -> {
+                                    stringResource(R.string.editor_empty_date_error)
+                                }
+                                else -> it.message ?: it.toString()
                             }
                         )
                     },

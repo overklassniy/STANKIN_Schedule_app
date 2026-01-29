@@ -1,7 +1,7 @@
 package com.overklassniy.stankinschedule.ical.data.repository
 
 import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import com.overklassniy.stankinschedule.schedule.ical.domain.model.ICalCalendar
 import com.overklassniy.stankinschedule.schedule.ical.domain.model.ICalEvent
 import com.overklassniy.stankinschedule.schedule.ical.domain.model.ICalFrequency
@@ -40,10 +40,29 @@ import net.fortuna.ical4j.util.RandomUidGenerator
 import javax.inject.Inject
 
 
+/**
+ * Репозиторий для работы с экспортом расписания в формат iCal (.ics).
+ *
+ * @param context Контекст приложения для доступа к ContentResolver
+ */
 class ICalRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ICalExporter {
 
+    /**
+     * Экспортирует календарь в файл iCal по указанному пути.
+     *
+     * Алгоритм:
+     * 1. Создает объект Calendar из библиотеки ical4j.
+     * 2. Заполняет свойства календаря (ProdId, Version, TimeZone и т.д.).
+     * 3. Добавляет VTimeZone.
+     * 4. Генерирует и добавляет события (VEvent) из переданного календаря.
+     * 5. Записывает полученную строку календаря в файл по URI.
+     *
+     * @param calendar Объект календаря с данными расписания
+     * @param path Строковый URI, куда нужно сохранить файл
+     * @throws IllegalAccessException Если не удалось получить дескриптор файла
+     */
     override suspend fun export(calendar: ICalCalendar, path: String) {
         val ical = Calendar().apply {
             properties.apply {
@@ -82,7 +101,7 @@ class ICalRepository @Inject constructor(
             }
         }.toString()
 
-        context.contentResolver.openOutputStream(Uri.parse(path)).use { stream ->
+        context.contentResolver.openOutputStream(path.toUri()).use { stream ->
             if (stream == null) throw IllegalAccessException("Failed to get file descriptor")
 
             stream.bufferedWriter().use { writer ->
@@ -112,6 +131,16 @@ private fun createEvent(uid: Uid, calendar: ICalCalendar, event: ICalEvent): VEv
     }
 }
 
+/**
+ * Создает правило повторения события (RRule).
+ *
+ * Алгоритм:
+ * 1. Формирует строку правила (FREQ, UNTIL, INTERVAL, BYDAY).
+ * 2. Создает объект RRule.
+ *
+ * @param date Дата с параметрами повторения
+ * @return RRule Объект правила повторения ical4j
+ */
 private fun createRRule(date: ICalRecurrenceDate): RRule {
     return RRule(
         Recur(

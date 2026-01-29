@@ -16,15 +16,32 @@ private const val SCHEDULE_PREFERENCE = "schedule_preference"
 private val Context.dataStore by preferencesDataStore(name = SCHEDULE_PREFERENCE)
 
 /**
- * Класс-обертка для доступа к настройкам расписания.
+ * Реализация хранилища настроек расписания на основе DataStore.
+ *
+ * Позволяет сохранять и получать пользовательские настройки, такие как
+ * избранное расписание, режим просмотра и цвета занятий.
+ *
+ * @property context Контекст приложения.
  */
 class ScheduleDataStore @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : SchedulePreference {
 
+    /**
+     * Получает идентификатор избранного расписания.
+     *
+     * @return Flow с ID избранного расписания или -1, если не выбрано.
+     */
     override fun favorite(): Flow<Long> = context.dataStore.data
         .map { preferences -> preferences[FAVORITE_SCHEDULE_ID] ?: -1 }
 
+    /**
+     * Устанавливает или снимает отметку избранного расписания.
+     *
+     * Если переданный ID совпадает с текущим избранным, то отметка снимается (значение становится -1).
+     *
+     * @param id Идентификатор расписания.
+     */
     override suspend fun setFavorite(id: Long) {
         context.dataStore.edit { preferences ->
             val lastId = preferences[FAVORITE_SCHEDULE_ID]
@@ -32,21 +49,42 @@ class ScheduleDataStore @Inject constructor(
         }
     }
 
+    /**
+     * Проверяет, включен ли вертикальный режим просмотра расписания.
+     *
+     * @return Flow с boolean значением (true - вертикальный, false - горизонтальный).
+     */
     override fun isVerticalViewer(): Flow<Boolean> = context.dataStore.data
         .map { preferences -> preferences[VERTICAL_VIEWER] ?: false }
 
+    /**
+     * Устанавливает режим просмотра расписания.
+     *
+     * @param isVertical true для вертикального режима, false для горизонтального.
+     */
     override suspend fun setVerticalViewer(isVertical: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[VERTICAL_VIEWER] = isVertical
         }
     }
 
+    /**
+     * Получает цвет для указанного типа занятия.
+     *
+     * @param type Тип занятия [PairColorType].
+     * @return Flow со строковым представлением цвета (HEX).
+     */
     override fun scheduleColor(type: PairColorType): Flow<String> {
         return context.dataStore.data.map { preferences ->
             preferences[keyForColorType(type)] ?: type.hex
         }
     }
 
+    /**
+     * Получает группу цветов для всех типов занятий.
+     *
+     * @return Flow с объектом [PairColorGroup], содержащим цвета для всех типов пар.
+     */
     override fun scheduleColorGroup(): Flow<PairColorGroup> {
         return context.dataStore.data.map { preferences ->
             PairColorGroup(
@@ -59,6 +97,12 @@ class ScheduleDataStore @Inject constructor(
         }
     }
 
+    /**
+     * Сохраняет цвет для указанного типа занятия.
+     *
+     * @param hex Строковое представление цвета (HEX).
+     * @param type Тип занятия [PairColorType].
+     */
     override suspend fun setScheduleColor(hex: String, type: PairColorType) {
         context.dataStore.edit { preferences -> preferences[keyForColorType(type)] = hex }
     }

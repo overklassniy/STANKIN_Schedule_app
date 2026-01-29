@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateItem
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
+import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.DateEmptyException
 import com.overklassniy.stankinschedule.schedule.core.domain.usecase.PairUseCase
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.DateRequest
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.DateResult
@@ -117,6 +118,10 @@ class PairEditorViewModel @Inject constructor(
     fun applyPair(newPair: PairModel) {
         viewModelScope.launch {
             try {
+                if (newPair.date.isEmpty()) {
+                    throw DateEmptyException()
+                }
+
                 val pair = _pair.value.getOrNull()
 
                 useCase.changePair(scheduleId, pair, newPair)

@@ -10,10 +10,27 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
 
+/**
+ * Реализация провайдера для работы с файлами и URI в Android.
+ *
+ * Используется для создания временных файлов в кэше и получения URI для шаринга,
+ * а также для экспорта файлов (PDF, изображения) по заданному URI.
+ *
+ * @property context Контекст приложения.
+ */
 class AndroidPublicProviderImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : AndroidPublicProvider {
 
+    /**
+     * Создает URI для переданного изображения (Bitmap).
+     *
+     * Сохраняет изображение во временную папку кэша и возвращает Content URI через FileProvider.
+     *
+     * @param name Имя файла (без расширения).
+     * @param bitmap Изображение для сохранения.
+     * @return URI файла, доступный для других приложений.
+     */
     override fun createUri(name: String, bitmap: Bitmap): Uri {
         val folder = getSharedFolder()
 
@@ -25,6 +42,15 @@ class AndroidPublicProviderImpl @Inject constructor(
         return FileProvider.getUriForFile(context, APP_PROVIDER_AUTHOR, file)
     }
 
+    /**
+     * Создает URI для переданного PDF документа.
+     *
+     * Сохраняет документ во временную папку кэша и возвращает Content URI через FileProvider.
+     *
+     * @param name Имя файла (без расширения).
+     * @param pdf PDF документ для сохранения.
+     * @return URI файла, доступный для других приложений.
+     */
     override fun createUri(name: String, pdf: PdfDocument): Uri {
         val folder = getSharedFolder()
 
@@ -36,6 +62,15 @@ class AndroidPublicProviderImpl @Inject constructor(
         return FileProvider.getUriForFile(context, APP_PROVIDER_AUTHOR, file)
     }
 
+    /**
+     * Экспортирует PDF документ по указанному URI.
+     *
+     * Записывает содержимое PDF документа в поток вывода, открытый по URI.
+     *
+     * @param pdf PDF документ для экспорта.
+     * @param uri URI назначения (куда сохранять файл).
+     * @throws IllegalAccessException Если не удалось открыть поток вывода.
+     */
     override fun exportPdf(pdf: PdfDocument, uri: Uri) {
         val contentResolver = context.contentResolver
         contentResolver.openOutputStream(uri).use { stream ->
@@ -44,6 +79,15 @@ class AndroidPublicProviderImpl @Inject constructor(
         }
     }
 
+    /**
+     * Экспортирует изображение (Bitmap) по указанному URI.
+     *
+     * Записывает сжатое изображение (JPEG) в поток вывода, открытый по URI.
+     *
+     * @param bitmap Изображение для экспорта.
+     * @param uri URI назначения.
+     * @throws IllegalAccessException Если не удалось открыть поток вывода.
+     */
     override fun exportBitmap(bitmap: Bitmap, uri: Uri) {
         val contentResolver = context.contentResolver
         contentResolver.openOutputStream(uri).use { stream ->
@@ -52,6 +96,13 @@ class AndroidPublicProviderImpl @Inject constructor(
         }
     }
 
+    /**
+     * Получает папку для временных файлов шаринга.
+     *
+     * Очищает предыдущие файлы в этой папке перед использованием.
+     *
+     * @return Объект [File], указывающий на папку.
+     */
     private fun getSharedFolder(): File {
         val folder = File(context.cacheDir, "shared_data")
         folder.deleteRecursively()

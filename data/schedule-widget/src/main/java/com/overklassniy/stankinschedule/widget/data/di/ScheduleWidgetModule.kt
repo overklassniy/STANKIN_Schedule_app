@@ -8,11 +8,22 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.components.ViewModelComponent
 
+/**
+ * Hilt модуль для предоставления зависимостей виджета расписания.
+ *
+ * Устанавливается в [ViewModelComponent] и [ServiceComponent].
+ */
 @Module
 @InstallIn(ViewModelComponent::class, ServiceComponent::class)
+@Suppress("unused")
 interface ScheduleWidgetModule {
 
+    /**
+     * Связывает реализацию настроек виджета [ScheduleWidgetPreferenceImpl] с интерфейсом [ScheduleWidgetPreference].
+     *
+     * @param pref Реализация настроек.
+     * @return Интерфейс для работы с настройками виджета.
+     */
     @Binds
-    // Unscoped
     fun providePreference(pref: ScheduleWidgetPreferenceImpl): ScheduleWidgetPreference
 }

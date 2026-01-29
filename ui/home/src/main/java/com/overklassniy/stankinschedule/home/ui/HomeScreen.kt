@@ -1,8 +1,8 @@
 package com.overklassniy.stankinschedule.home.ui
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -64,8 +63,8 @@ import com.overklassniy.stankinschedule.home.ui.components.rememberInAppUpdater
 import com.overklassniy.stankinschedule.home.ui.components.schedule.ScheduleHome
 import com.overklassniy.stankinschedule.home.ui.data.UpdateState
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
-import com.overklassniy.stankinschedule.news.review.ui.components.NewsPost
 import com.overklassniy.stankinschedule.news.review.ui.components.AppTabIndicator
+import com.overklassniy.stankinschedule.news.review.ui.components.NewsPost
 import com.overklassniy.stankinschedule.news.review.ui.components.pagerTabIndicatorOffset
 import com.overklassniy.stankinschedule.schedule.core.ui.toColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
@@ -149,13 +148,13 @@ fun HomeScreen(
         val universityNews by viewModel.universityNews.collectAsStateWithLifecycle(emptyList())
         val announcementsNews by viewModel.announcementsNews.collectAsStateWithLifecycle(emptyList())
         val deanNews by viewModel.deanNews.collectAsStateWithLifecycle(emptyList())
-        
+
         val pagerState = rememberPagerState(
             pageCount = { 3 } // Университет, Анонсы, Деканат
         )
         val pagerScope = rememberCoroutineScope()
         val tabRowHeight = 48.dp
-        
+
         val newsLists = listOf(universityNews, announcementsNews, deanNews)
 
         LazyColumn(
@@ -287,6 +286,7 @@ fun HomeScreen(
                         beyondViewportPageCount = 1,
                         pageSpacing = 0.dp,
                         contentPadding = PaddingValues(0.dp),
+                        verticalAlignment = Alignment.Top,
                         userScrollEnabled = true,
                         modifier = Modifier.fillMaxWidth()
                     ) { page ->
@@ -298,7 +298,12 @@ fun HomeScreen(
                             repeat(HomeViewModel.NEWS_COUNT) { index ->
                                 val post = currentNews.getOrNull(index)
                                 val itemModifier = if (index == 0) {
-                                    Modifier.padding(start = 8.dp, end = 8.dp, top = 0.dp, bottom = 8.dp)
+                                    Modifier.padding(
+                                        start = 8.dp,
+                                        end = 8.dp,
+                                        top = 0.dp,
+                                        bottom = 8.dp
+                                    )
                                 } else {
                                     Modifier.padding(8.dp)
                                 }

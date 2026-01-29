@@ -7,6 +7,11 @@ import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleVie
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.TextContent
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ViewContent
 
+/**
+ * Преобразует модель пары [PairModel] в модель отображения [ScheduleViewPair].
+ *
+ * @return Объект [ScheduleViewPair] с отформатированными данными для UI.
+ */
 fun PairModel.toViewPair(): ScheduleViewPair {
     return ScheduleViewPair(
         id = info.id,
@@ -20,6 +25,14 @@ fun PairModel.toViewPair(): ScheduleViewPair {
     )
 }
 
+/**
+ * Обрабатывает строку аудитории и создает соответствующий контент для отображения.
+ *
+ * Если в строке аудитории найдены ссылки, они извлекаются и форматируются.
+ *
+ * @param classroom Строка с названием аудитории или ссылкой.
+ * @return Объект [ViewContent] (либо [TextContent], либо [LinkContent]).
+ */
 private fun classroomViewContent(classroom: String): ViewContent {
 
     var name = classroom
@@ -29,6 +42,7 @@ private fun classroomViewContent(classroom: String): ViewContent {
     while (match.find()) {
 
         val url = match.group()
+        // Используем 3-ю группу захвата (домен) или дефолтное имя, если группа не найдена
         val urlName = match.group(3) ?: "url name"
         val start = name.indexOf(url)
 

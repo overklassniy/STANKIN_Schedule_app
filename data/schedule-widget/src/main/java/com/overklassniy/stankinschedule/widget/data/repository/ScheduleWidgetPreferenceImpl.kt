@@ -9,12 +9,26 @@ import com.overklassniy.stankinschedule.schedule.widget.domain.repository.Schedu
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
+/**
+ * Реализация репозитория настроек виджета расписания.
+ *
+ * Сохраняет и загружает конфигурацию виджетов (ID расписания, подгруппу, отображение)
+ * в SharedPreferences.
+ *
+ * @property context Контекст приложения.
+ */
 class ScheduleWidgetPreferenceImpl @Inject constructor(
     @ApplicationContext context: Context
 ) : ScheduleWidgetPreference {
 
     private val preference = context.getSharedPreferences(SCHEDULE_WIDGET_PREFERENCE, MODE_PRIVATE)
 
+    /**
+     * Загружает данные конфигурации для конкретного виджета.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     * @return Данные виджета [ScheduleWidgetData] или null, если данные не найдены.
+     */
     override fun loadData(appWidgetId: Int): ScheduleWidgetData? {
         val scheduleName = preference.getString(nameKey(appWidgetId), null)
         val scheduleId = preference.getLong(idKey(appWidgetId), -1L)
@@ -33,6 +47,12 @@ class ScheduleWidgetPreferenceImpl @Inject constructor(
         return null
     }
 
+    /**
+     * Сохраняет конфигурацию виджета.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     * @param data Данные конфигурации для сохранения.
+     */
     override fun saveData(appWidgetId: Int, data: ScheduleWidgetData) {
         preference.edit {
             putString(nameKey(appWidgetId), data.scheduleName)
@@ -42,6 +62,13 @@ class ScheduleWidgetPreferenceImpl @Inject constructor(
         }
     }
 
+    /**
+     * Удаляет данные конфигурации виджета.
+     *
+     * Используется при удалении виджета с рабочего стола.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     */
     override fun deleteData(appWidgetId: Int) {
         preference.edit {
             remove(nameKey(appWidgetId))
@@ -51,15 +78,39 @@ class ScheduleWidgetPreferenceImpl @Inject constructor(
         }
     }
 
+    /**
+     * Генерирует ключ для сохранения имени расписания.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     * @return Ключ preferences для имени.
+     */
     private fun nameKey(appWidgetId: Int): String =
         SCHEDULE_WIDGET + appWidgetId + NAME_SUFFIX
 
+    /**
+     * Генерирует ключ для сохранения ID расписания.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     * @return Ключ preferences для ID.
+     */
     private fun idKey(appWidgetId: Int): String =
         SCHEDULE_WIDGET + appWidgetId + ID_SUFFIX
 
+    /**
+     * Генерирует ключ для сохранения тега подгруппы.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     * @return Ключ preferences для подгруппы.
+     */
     private fun subgroupTagKey(appWidgetId: Int): String =
         SCHEDULE_WIDGET + appWidgetId + SUBGROUP_SUFFIX
 
+    /**
+     * Генерирует ключ для сохранения настройки отображения.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     * @return Ключ preferences для флага отображения.
+     */
     private fun displayKey(appWidgetId: Int): String =
         SCHEDULE_WIDGET + appWidgetId + DISPLAY_SUFFIX
 
