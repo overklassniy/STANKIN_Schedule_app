@@ -5,23 +5,23 @@ import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.PairInte
 import org.joda.time.LocalDate
 
 /**
- * День в расписании.
+ * Модель расписания на один день недели.
+ *
+ * Содержит список пар ([PairModel]), проходящих в этот день недели.
  */
 class ScheduleDayModel : Iterable<PairModel> {
-
-    /**
-     * Пары в дне.
-     */
+    /** Список пар в этот день. */
     private val pairs = arrayListOf<PairModel>()
 
-    /**
-     * Кэш диапазона дат (start, end). Инвалидируется при изменении пар.
-     */
+    /** Кэш диапазона дат (начало и конец). */
     @Volatile
     private var dateRangeCache: Pair<LocalDate?, LocalDate?>? = null
 
     /**
-     * Добавляет пару в день.
+     * Добавляет пару в расписание дня.
+     *
+     * @param pair Пара для добавления.
+     * @throws PairIntersectException Если пара пересекается с уже существующими.
      */
     fun add(pair: PairModel) {
         isAddCheck(pair)
@@ -30,7 +30,9 @@ class ScheduleDayModel : Iterable<PairModel> {
     }
 
     /**
-     * Удаляет пару.
+     * Удаляет пару из расписания дня.
+     *
+     * @param pair Пара для удаления.
      */
     fun remove(pair: PairModel) {
         pairs.removeIf7 { it == pair }
@@ -38,14 +40,16 @@ class ScheduleDayModel : Iterable<PairModel> {
     }
 
     /**
-     * Инвалидирует кэш дат.
+     * Сбрасывает кэш диапазона дат.
      */
     private fun invalidateCache() {
         dateRangeCache = null
     }
 
     /**
-     * Вычисляет диапазон дат за один проход.
+     * Вычисляет диапазон дат для всех пар в этот день.
+     *
+     * @return Пара (начало, конец) или (null, null) если пар нет.
      */
     private fun computeDateRange(): Pair<LocalDate?, LocalDate?> {
         dateRangeCache?.let { return it }
@@ -73,20 +77,24 @@ class ScheduleDayModel : Iterable<PairModel> {
     }
 
     /**
-     * Возвращает дату, с которого начинается расписание.
-     * Если расписание пустое, то возвращается null.
+     * Возвращает дату начала самой ранней пары в этом дне.
+     *
+     * @return [LocalDate] или null, если пар нет.
      */
     fun startDate(): LocalDate? = computeDateRange().first
 
     /**
-     * Возвращает дату, на которую заканчивается расписание.
-     * Если расписание пустое, то возвращается null.
+     * Возвращает дату окончания самой поздней пары в этом дне.
+     *
+     * @return [LocalDate] или null, если пар нет.
      */
     fun endDate(): LocalDate? = computeDateRange().second
 
     /**
-     * Проверяет, можно ли добавить пару в расписание.
-     * Использует раннее прерывание при нахождении конфликта.
+     * Проверяет, можно ли добавить пару (нет ли пересечений).
+     *
+     * @param added Добавляемая пара.
+     * @throws PairIntersectException Если есть пересечение.
      */
     @Throws(PairIntersectException::class)
     private fun isAddCheck(added: PairModel) {
@@ -102,7 +110,11 @@ class ScheduleDayModel : Iterable<PairModel> {
     }
 
     /**
-     * Проверяет, можно ли заменить пару в расписании.
+     * Проверяет возможность замены пары на новую без конфликтов.
+     *
+     * @param old Старая пара (для игнорирования при проверке пересечений), может быть null.
+     * @param new Новая пара.
+     * @throws PairIntersectException Если новая пара пересекается с другими.
      */
     @Throws(PairIntersectException::class)
     fun possibleChangePair(old: PairModel?, new: PairModel) {
@@ -118,8 +130,10 @@ class ScheduleDayModel : Iterable<PairModel> {
     }
 
     /**
-     * Возвращает список пар, которые есть в заданный день.
-     * Оптимизировано: фильтрация с использованием asSequence для ленивой обработки.
+     * Возвращает список пар на конкретную дату.
+     *
+     * @param date Дата для фильтрации.
+     * @return Список пар, проходящих в указанную дату.
      */
     fun pairsByDate(date: LocalDate): List<PairModel> {
         return pairs.asSequence()
@@ -129,11 +143,7 @@ class ScheduleDayModel : Iterable<PairModel> {
     }
 
     /**
-     * Возвращает список всех пар по названию дисциплины.
+     * Возвращает итератор по всем парам этого дня недели.
      */
-    fun pairsByDiscipline(discipline: String): List<PairModel> {
-        return pairs.filter { it.title == discipline }
-    }
-
     override fun iterator(): Iterator<PairModel> = pairs.iterator()
 }

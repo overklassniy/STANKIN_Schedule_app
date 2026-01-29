@@ -1,50 +1,61 @@
 package com.overklassniy.stankinschedule.schedule.core.domain.model
 
 /**
- * Подгруппа пары.
+ * Перечисление подгрупп.
+ *
+ * @property tag Строковое представление подгруппы.
  */
 enum class Subgroup(val tag: String) {
 
-    /**
-     * Подгруппа А.
-     */
+    /** Подгруппа А. */
     A("A"),
 
-    /**
-     * Подгруппа Б.
-     */
+    /** Подгруппа Б. */
     B("B"),
 
-    /**
-     * Без подгруппы.
-     */
+    /** Общая для всех (без подгруппы). */
     COMMON("Common");
 
     /**
-     * Определяет, пересекаются ли подгруппы в расписании.
+     * Проверяет пересечение подгрупп.
+     *
+     * Пересечение есть, если подгруппы совпадают или одна из них - COMMON.
+     *
+     * @param subgroup Другая подгруппа.
+     * @return true, если есть пересечение.
      */
     fun isIntersect(subgroup: Subgroup): Boolean {
         return this == subgroup || this == COMMON || subgroup == COMMON
     }
 
     /**
-     * Определяет, должна ли подгруппа отображаться в расписании.
+     * Нужно ли отображать подгруппу в интерфейсе.
+     *
+     * @return true, если подгруппа не COMMON.
      */
     fun isShow(): Boolean {
         return this != COMMON
     }
 
+    /**
+     * Возвращает строковое представление подгруппы.
+     */
     override fun toString(): String {
         return tag
     }
 
     companion object {
+
         /**
-         * Возвращает значение подгруппы соответствующие значению в строке.
+         * Получает подгруппу по строковому значению.
+         *
+         * @param value Строка (например, "A" или "Common").
+         * @return [Subgroup].
+         * @throws IllegalArgumentException Если подгруппа не найдена.
          */
         @JvmStatic
         fun of(value: String): Subgroup {
-            for (subgroup in values()) {
+            for (subgroup in entries) {
                 if (subgroup.tag.equals(value, ignoreCase = true)) {
                     return subgroup
                 }

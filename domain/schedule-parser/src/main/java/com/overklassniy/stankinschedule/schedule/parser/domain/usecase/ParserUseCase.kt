@@ -11,6 +11,9 @@ import javax.inject.Inject
 
 /**
  * Use case для парсинга PDF файлов с расписанием.
+ *
+ * Отвечает за координацию процесса парсинга: получение данных из PDF через репозиторий,
+ * обнаружение временных ячеек и извлечение пар с помощью [PairExtractor].
  */
 class ParserUseCase @Inject constructor(
     private val parser: PDFRepository
@@ -19,11 +22,11 @@ class ParserUseCase @Inject constructor(
     private val extractor = PairExtractor()
 
     /**
-     * Парсит PDF файл с расписанием и извлекает пары.
+     * Парсит PDF файл и извлекает список пар.
      *
-     * @param path Путь к PDF файлу
-     * @param settings Настройки парсера
-     * @return Список результатов парсинга (успешные пары, ошибки, пропущенные)
+     * @param path Путь к файлу расписания.
+     * @param settings Настройки парсера (год, порог чувствительности).
+     * @return Список результатов парсинга ([ParseResult]), который может содержать успешные пары, ошибки или пропущенные данные.
      */
     suspend fun parsePDF(
         path: String,
@@ -41,21 +44,23 @@ class ParserUseCase @Inject constructor(
     }
 
     /**
-     * Рендерит первую страницу PDF файла в изображение для предпросмотра.
+     * Генерирует превью (изображение) первой страницы PDF файла.
      *
-     * @param path Путь к PDF файлу
-     * @return Bitmap изображение первой страницы
+     * @param path Путь к файлу.
+     * @return Bitmap изображения первой страницы.
      */
     suspend fun renderPreview(path: String): Bitmap {
         return parser.renderPDF(path)
     }
 
     /**
-     * Определяет позиции временных ячеек в PDF на основе текста с временем.
+     * Определяет границы временных слотов (столбцов) на основе ключевых меток времени.
      *
-     * @param cells Список ячеек из PDF
-     * @return Список границ временных ячеек
-     * @throws IllegalArgumentException если время не найдено в ячейках
+     * Ищет координаты времени "8:30" и "10:20" для вычисления ширины столбца и начальной позиции.
+     *
+     * @param cells Список всех текстовых ячеек, найденных в PDF.
+     * @return Список границ временных ячеек [TimeCellBound].
+     * @throws IllegalArgumentException Если ключевые метки времени не найдены.
      */
     private fun detectTimeCells(cells: List<CellBound>): List<TimeCellBound> {
         var middleFirst = -1f

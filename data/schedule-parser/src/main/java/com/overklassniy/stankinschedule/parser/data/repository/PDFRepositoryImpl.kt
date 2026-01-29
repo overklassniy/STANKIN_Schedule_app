@@ -49,10 +49,9 @@ class PDFRepositoryImpl @Inject constructor(
             if (stream == null) throw PDFParseException.fileNotFound(path)
             try {
                 ParseDetail(
-                    scheduleName = "",
                     cells = import(stream, multilineTextThreshold)
                 )
-            } catch (e: InvalidPasswordException) {
+            } catch (_: InvalidPasswordException) {
                 throw PDFParseException.passwordProtected()
             } catch (e: IOException) {
                 throw PDFParseException.invalidPDF(e)
@@ -78,7 +77,7 @@ class PDFRepositoryImpl @Inject constructor(
             if (stream == null) throw PDFParseException.fileNotFound(path)
             try {
                 render(stream)
-            } catch (e: InvalidPasswordException) {
+            } catch (_: InvalidPasswordException) {
                 throw PDFParseException.passwordProtected()
             } catch (e: IOException) {
                 throw PDFParseException.invalidPDF(e)

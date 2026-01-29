@@ -4,12 +4,10 @@ import com.google.gson.GsonBuilder
 import com.overklassniy.stankinschedule.news.core.data.api.PostResponse
 import com.overklassniy.stankinschedule.news.core.data.api.StankinDeanNewsAPI
 import com.overklassniy.stankinschedule.news.core.data.api.StankinUniversityNewsAPI
-import com.overklassniy.stankinschedule.news.core.data.repository.NewsMediatorRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsPostRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsPreferenceRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsStorageRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.UniversityNewsRepositoryImpl
-import com.overklassniy.stankinschedule.news.core.domain.repository.NewsMediatorRepository
 import com.overklassniy.stankinschedule.news.core.domain.repository.NewsPostRepository
 import com.overklassniy.stankinschedule.news.core.domain.repository.NewsPreferenceRepository
 import com.overklassniy.stankinschedule.news.core.domain.repository.NewsRemoteRepository
@@ -114,18 +112,6 @@ object NewsModule {
     fun provideNewsRemoteRepository(
         repository: UniversityNewsRepositoryImpl
     ): NewsRemoteRepository = repository
-
-    /**
-     * Предоставляет реализацию репозитория-медиатора (связывает сеть и БД).
-     *
-     * @param repository Реализация [NewsMediatorRepositoryImpl].
-     * @return Интерфейс [NewsMediatorRepository].
-     */
-    @Provides
-    @ViewModelScoped
-    fun provideNewsMediatorRepository(
-        repository: NewsMediatorRepositoryImpl
-    ): NewsMediatorRepository = repository
 
     /**
      * Предоставляет реализацию репозитория для работы с настройками.

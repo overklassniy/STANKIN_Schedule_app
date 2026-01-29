@@ -5,45 +5,26 @@ import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDate
 
 /**
- * Дни недели даты в расписании.
+ * Перечисление дней недели.
+ *
+ * Используется для определения дня недели занятий.
  */
 enum class DayOfWeek {
-    /**
-     * Понедельник.
-     */
     MONDAY,
-
-    /**
-     * Вторник.
-     */
     TUESDAY,
-
-    /**
-     * Среда.
-     */
     WEDNESDAY,
-
-    /**
-     * Четверг.
-     */
     THURSDAY,
-
-    /**
-     * Пятница.
-     */
     FRIDAY,
-
-    /**
-     * Суббота.
-     */
     SATURDAY;
 
     companion object {
+
         /**
-         * Возвращает день недели соответствующей даты.
-         * @param date дата.
-         * @return день недели.
-         * @throws DateDayOfWeekException если не удалось узнать день недели.
+         * Определяет день недели по дате.
+         *
+         * @param date Дата [LocalDate].
+         * @return Соответствующий [DayOfWeek].
+         * @throws DateDayOfWeekException Если день недели не поддерживается (например, воскресенье).
          */
         fun of(date: LocalDate): DayOfWeek {
             return when (date.dayOfWeek) {

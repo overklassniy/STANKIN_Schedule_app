@@ -7,12 +7,31 @@ import com.overklassniy.stankinschedule.schedule.viewer.domain.repository.Schedu
 import org.joda.time.LocalDate
 import javax.inject.Inject
 
+/**
+ * UseCase для получения данных расписания в формате, удобном для Viewer.
+ *
+ * Предоставляет источник пагинации и построение списка дней за интервал.
+ */
 class ScheduleViewerUseCase @Inject constructor(
     private val repository: ScheduleViewerRepository
 ) {
+    /**
+     * Возвращает источник пагинации для отображения расписания по дням.
+     *
+     * @param model Модель расписания.
+     * @return [PagingSource] по датам с элементами [ScheduleViewDay].
+     */
     fun scheduleSource(model: ScheduleModel): PagingSource<LocalDate, ScheduleViewDay> =
         repository.scheduleSource(model)
 
+    /**
+     * Формирует список дней для указанного интервала [from; to).
+     *
+     * @param model Модель расписания.
+     * @param from Начальная дата (включительно).
+     * @param to Конечная дата (не включительно).
+     * @return Список [ScheduleViewDay].
+     */
     fun scheduleViewDays(
         model: ScheduleModel,
         from: LocalDate,

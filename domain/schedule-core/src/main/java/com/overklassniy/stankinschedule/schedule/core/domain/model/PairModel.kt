@@ -1,16 +1,16 @@
 package com.overklassniy.stankinschedule.schedule.core.domain.model
 
-
 /**
- * Пара в расписании.
+ * Модель учебной пары (занятия).
  *
- * @param title название пары.
- * @param lecturer преподаватель.
- * @param classroom аудитория.
- * @param type тип пары.
- * @param subgroup подгруппа пары.
- * @param time время пары.
- * @param date даты проведения пары.
+ * @property title Название дисциплины.
+ * @property lecturer Преподаватель.
+ * @property classroom Аудитория.
+ * @property type Тип занятия (лекция, семинар и т.д.).
+ * @property subgroup Подгруппа.
+ * @property time Время проведения.
+ * @property date Даты проведения.
+ * @property info Служебная информация (ID).
  */
 data class PairModel(
     val title: String,
@@ -24,8 +24,10 @@ data class PairModel(
 ) : Comparable<PairModel> {
 
     /**
-     * Определяет, пересекаются ли пары по времени, дате и подгруппе.
-     * @param other другая пара.
+     * Проверяет, пересекается ли эта пара с другой по времени, дате и подгруппе.
+     *
+     * @param other Другая пара.
+     * @return true, если пары пересекаются.
      */
     fun isIntersect(other: PairModel): Boolean {
         return time.isIntersect(other.time) &&
@@ -34,7 +36,10 @@ data class PairModel(
     }
 
     /**
-     * Возвращает true, если пара может быть у этой подгруппы, иначе false.
+     * Проверяет, относится ли пара к указанной подгруппе.
+     *
+     * @param subgroup Подгруппа для проверки.
+     * @return true, если пара для всех (COMMON) или совпадает с указанной подгруппой.
      */
     fun isCurrently(subgroup: Subgroup): Boolean {
         return this.subgroup == Subgroup.COMMON ||
@@ -42,6 +47,14 @@ data class PairModel(
                 this.subgroup == subgroup
     }
 
+    /**
+     * Сравнивает пары для сортировки.
+     *
+     * Сначала по времени начала, затем по подгруппе.
+     *
+     * @param other Другая пара.
+     * @return Результат сравнения (-1, 0, 1).
+     */
     override fun compareTo(other: PairModel): Int {
         if (time.start == other.time.start) {
             return subgroup.compareTo(other.subgroup)
@@ -49,6 +62,9 @@ data class PairModel(
         return time.start.compareTo(other.time.start)
     }
 
+    /**
+     * Возвращает строковое представление пары.
+     */
     override fun toString(): String {
         return "$title. $lecturer. $classroom. $type. $subgroup. $time. $date"
     }

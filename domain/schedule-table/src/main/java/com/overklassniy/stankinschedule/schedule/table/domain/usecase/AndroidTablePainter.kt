@@ -9,13 +9,21 @@ import com.overklassniy.stankinschedule.schedule.table.domain.model.drawCenterTe
 import com.overklassniy.stankinschedule.schedule.table.domain.model.drawText
 import com.overklassniy.stankinschedule.schedule.table.domain.model.fontSizeForHeight
 
+/**
+ * Отрисовывает таблицу расписания на [Canvas].
+ *
+ * Рисует заголовок, заголовки строк/столбцов и содержимое ячеек на основе
+ * подготовленной модели [DrawScheduleTable]. Подбирает размер шрифта для
+ * заголовков и центрирует текст в ячейках.
+ *
+ * @param drawScheduleTable Модель с предвычисленными размерами, шрифтами и макетами ячеек.
+ */
 fun Canvas.drawScheduleTable(
     drawScheduleTable: DrawScheduleTable,
 ) {
-    var x = drawScheduleTable.pagePadding
+    val x = drawScheduleTable.pagePadding
     var y = drawScheduleTable.pagePadding
 
-    // Schedule title
     val titleHeight = drawText(
         text = drawScheduleTable.scheduleName,
         x = x + drawScheduleTable.drawWidth / 2,
@@ -26,7 +34,6 @@ fun Canvas.drawScheduleTable(
 
     y += titleHeight + drawScheduleTable.titleBottomPadding
 
-    // Schedule headers
     drawRect(
         x,
         y,
@@ -40,24 +47,22 @@ fun Canvas.drawScheduleTable(
         drawScheduleTable.textPaint
     )
 
-    // Rows
     val rowHeight = drawScheduleTable.rowHeight
     val daysOfWeek = listOf("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота")
 
     for (i in 0 until DrawScheduleTable.ROW_COUNT) {
-        val cellX = x
         val cellY = y + drawScheduleTable.headerSize + i * rowHeight
 
         drawRect(
-            cellX,
+            x,
             cellY,
-            cellX + drawScheduleTable.headerSize,
+            x + drawScheduleTable.headerSize,
             cellY + rowHeight,
             drawScheduleTable.linePaint
         )
         drawCenterText(
             text = daysOfWeek[i],
-            x = cellX,
+            x = x,
             y = cellY,
             w = drawScheduleTable.headerSize,
             h = rowHeight,
@@ -67,7 +72,6 @@ fun Canvas.drawScheduleTable(
         )
     }
 
-    // Columns
     val columnWidth = drawScheduleTable.columnWidth
     val times = Time.STARTS.zip(Time.ENDS) { a, b -> "$a - $b" }
 
@@ -95,7 +99,7 @@ fun Canvas.drawScheduleTable(
 
     for ((index, rowCount) in drawScheduleTable.lines.withIndex()) {
 
-        val cells = drawScheduleTable[DayOfWeek.values()[index]]
+        val cells = drawScheduleTable[DayOfWeek.entries[index]]
         val subRowHeight = rowHeight / rowCount
 
         for (cell in cells) {

@@ -17,25 +17,27 @@ import org.joda.time.format.DateTimeFormat
 import kotlin.math.abs
 
 /**
- * Класс для извлечения пар из текста ячеек PDF расписания.
+ * Класс для извлечения информации о парах из текстовых данных.
+ *
+ * Использует регулярные выражения для разбора строк расписания и преобразования их в объекты [PairModel].
  */
 class PairExtractor {
-
-    private val pairRegex = Regex(pattern = ParserPatterns.Common)
-
-    private val dateRangeRegex = Regex(pattern = ParserPatterns.DateRange)
-    private val dateSingleRegex = Regex(pattern = ParserPatterns.DateSingle)
+    private val pairRegex = Regex(pattern = ParserPatterns.COMMON)
+    private val dateRangeRegex = Regex(pattern = ParserPatterns.DATE_RANGE)
+    private val dateSingleRegex = Regex(pattern = ParserPatterns.DATE_SINGLE)
     private val splitRegex = Regex(pattern = ".*?]")
-
     var dateYear = LocalDate.now().year
     private val dateFormatter = DateTimeFormat.forPattern("dd.MM.yyyy")
 
     /**
-     * Извлекает все пары из текста ячейки PDF.
+     * Извлекает все пары из текстовой ячейки.
      *
-     * @param cell Ячейка с текстом из PDF
-     * @param timeCells Список границ временных ячеек
-     * @return Список результатов извлечения пар (успешные, ошибки, пропущенные)
+     * Разбивает текст ячейки на отдельные записи пар, определяет время для каждой пары
+     * и парсит детали (название, преподаватель, аудитория и т.д.).
+     *
+     * @param cell Ячейка с текстом [CellBound].
+     * @param timeCells Список ячеек времени для определения временных интервалов.
+     * @return Список результатов парсинга [ParseResult] (успешные, ошибки, пропущенные).
      */
     fun extractAllPairsFromCell(
         cell: CellBound,
@@ -70,12 +72,14 @@ class PairExtractor {
     }
 
     /**
-     * Определяет время пары на основе позиции ячейки и временных ячеек.
+     * Определяет время начала и окончания пары по координатам ячейки.
      *
-     * @param start Начальная X координата ячейки
-     * @param end Конечная X координата ячейки
-     * @param timeCells Список границ временных ячеек
-     * @return Время пары (начало и конец)
+     * Сопоставляет координаты текстовой ячейки с известными координатами столбцов времени.
+     *
+     * @param start Координата X начала ячейки.
+     * @param end Координата X конца ячейки.
+     * @param timeCells Список границ столбцов времени.
+     * @return Объект [Time] с найденным временем начала и окончания.
      */
     private fun detectTimeFromCell(
         start: Float,
@@ -104,12 +108,12 @@ class PairExtractor {
     }
 
     /**
-     * Извлекает модель пары из строки данных с использованием регулярных выражений.
+     * Извлекает данные пары из строки текста с помощью регулярных выражений.
      *
-     * @param data Строка с данными пары
-     * @param time Время пары
-     * @return Модель пары
-     * @throws IllegalArgumentException если данные не соответствуют ожидаемому формату
+     * @param data Строка с полным описанием пары.
+     * @param time Объект времени пары.
+     * @return Модель пары [PairModel].
+     * @throws IllegalArgumentException Если формат строки не соответствует ожидаемому.
      */
     private fun extractPairFromCell(data: String, time: Time): PairModel {
         val pairMatch = pairRegex.matchEntire(data)
@@ -127,20 +131,15 @@ class PairExtractor {
     }
 
     /**
-     * Извлекает и очищает название дисциплины.
-     *
-     * @param title Сырое название из парсера
-     * @return Очищенное название
+     * Извлекает название предмета из группы захвата regex.
      */
     private fun extractTitle(title: String): String {
         return title.dropLast(1).trim()
     }
 
     /**
-     * Извлекает и форматирует имя преподавателя.
-     *
-     * @param lecturer Сырое имя преподавателя из парсера
-     * @return Отформатированное имя преподавателя (с точкой в конце)
+     * Извлекает имя преподавателя.
+     * Добавляет точку в конце, если она отсутствует.
      */
     private fun extractLecturer(lecturer: String): String {
         if (lecturer.isEmpty()) return ""
@@ -153,10 +152,7 @@ class PairExtractor {
     }
 
     /**
-     * Извлекает и очищает номер аудитории.
-     *
-     * @param classroom Сырой номер аудитории из парсера
-     * @return Очищенный номер аудитории
+     * Извлекает аудиторию.
      */
     private fun extractClassroom(classroom: String): String {
         if (classroom.isEmpty()) return ""
@@ -164,11 +160,7 @@ class PairExtractor {
     }
 
     /**
-     * Извлекает тип пары из строки.
-     *
-     * @param type Сырой тип из парсера
-     * @return Тип пары (лекция, семинар, лабораторная)
-     * @throws IllegalArgumentException если тип неизвестен
+     * Определяет тип занятия (лекция, семинар, лаб. работа).
      */
     private fun extractType(type: String): Type {
         return when (type.dropLast(1).trim().lowercase()) {
@@ -181,11 +173,7 @@ class PairExtractor {
     }
 
     /**
-     * Извлекает подгруппу из строки.
-     *
-     * @param subgroup Сырая подгруппа из парсера
-     * @return Подгруппа (A, B или общая)
-     * @throws IllegalArgumentException если подгруппа неизвестна
+     * Определяет подгруппу (А, Б или общая).
      */
     private fun extractSubgroup(subgroup: String): Subgroup {
         if (subgroup.isEmpty()) {
@@ -200,11 +188,8 @@ class PairExtractor {
     }
 
     /**
-     * Извлекает модель дат из строки с датами.
-     *
-     * @param dateString Строка с датами в формате [даты]
-     * @return Модель дат с диапазонами и отдельными датами
-     * @throws IllegalArgumentException если формат даты неизвестен
+     * Парсит строку с датами проведения занятий.
+     * Поддерживает одиночные даты и диапазоны с периодичностью.
      */
     private fun extractDate(dateString: String): DateModel {
         val date = DateModel()
@@ -216,7 +201,6 @@ class PairExtractor {
             .split(',')
 
         for (textDate in textDates) {
-            // range
             val matchRange = dateRangeRegex.matchEntire(textDate)
             if (matchRange != null) {
                 val frequency = when (val frequencyText = matchRange.groupValues[3]) {
@@ -234,7 +218,6 @@ class PairExtractor {
 
                 continue
             }
-            // single
             val matchSingle = dateSingleRegex.matchEntire(textDate)
             if (matchSingle != null) {
 
@@ -249,15 +232,12 @@ class PairExtractor {
             throw IllegalArgumentException("Unknown date: '$textDate'")
         }
 
-
         return date
     }
 
     /**
-     * Конвертирует строку даты в LocalDate с учетом года и корректировкой на воскресенье.
-     *
-     * @param date Строка даты в формате "dd.MM"
-     * @return LocalDate с правильным годом
+     * Конвертирует строку даты в [LocalDate].
+     * Учитывает переход через год (для осеннего семестра).
      */
     private fun dateConvertor(date: String): LocalDate {
         val parsedDate = dateFormatter.parseLocalDate("$date.$dateYear")
@@ -280,31 +260,23 @@ class PairExtractor {
 
     /**
      * Вычисляет количество дней между двумя датами.
-     *
-     * @param d1 Первая дата
-     * @param d2 Вторая дата
-     * @return Количество дней между датами
      */
     private fun daysBetween(d1: LocalDate, d2: LocalDate): Int {
         return org.joda.time.Days.daysBetween(if (d1 < d2) d1 else d2, if (d1 < d2) d2 else d1).days
     }
 
-    /**
-     * Объект с регулярными выражениями для парсинга расписания.
-     */
     object ParserPatterns {
-
-        const val Title = "([а-яА-ЯёЁa-zA-Z0-9\\.\\s\\,\\-\\(\\)\\/\\:]+?\\.)"
-        const val Lecturer = "([а-яА-ЯёЁae\\s\\_]+\\s([а-яА-я]\\.?){1,2})?"
-        const val Type = "((лабораторные занятия|Лабораторные занятия|Лабораторная|семинар|Семинар|лекции|Лекции|лекция|Лекция)\\.|(?<=\\s)\\.)"
-        const val Subgroup = "(\\([абАБ]\\)\\.)?"
-        const val Classroom = "([^\\[\\]]+?\\.)"
-        const val Date =
+        const val TITLE = "([а-яА-ЯёЁa-zA-Z0-9\\.\\s\\,\\-\\(\\)\\/\\:]+?\\.)"
+        const val LECTURER = "([а-яА-ЯёЁae\\s\\_]+\\s([а-яА-я]\\.?){1,2})?"
+        const val TYPE =
+            "((лабораторные занятия|Лабораторные занятия|Лабораторная|семинар|Семинар|лекции|Лекции|лекция|Лекция)\\.|(?<=\\s)\\.)"
+        const val SUBGROUP = "(\\([абАБ]\\)\\.)?"
+        const val CLASSROOM = "([^\\[\\]]+?\\.)"
+        const val DATE =
             "(\\[((\\,)|(\\s?(\\d{2}\\.\\d{2})\\-(\\d{2}\\.\\d{2})\\s*?([чкЧК]\\.[нН]\\.{1,2})|(\\s?(\\d{2}\\.\\d{2}))))+\\])"
-        const val DateRange = "\\s?(\\d{2}\\.\\d{2})-(\\d{2}\\.\\d{2})\\s*?([чк]\\.[н]\\.)"
-        const val DateSingle = "\\s?(\\d{2}\\.\\d{2})"
-
-        val Common = listOf(Title, Lecturer, Type, Subgroup, Classroom, Date)
+        const val DATE_RANGE = "\\s?(\\d{2}\\.\\d{2})-(\\d{2}\\.\\d{2})\\s*?([чк]\\.[н]\\.)"
+        const val DATE_SINGLE = "\\s?(\\d{2}\\.\\d{2})"
+        val COMMON = listOf(TITLE, LECTURER, TYPE, SUBGROUP, CLASSROOM, DATE)
             .joinToString("\\s?")
     }
 }

@@ -1,5 +1,15 @@
 package com.overklassniy.stankinschedule.news.core.domain.model
 
+/**
+ * Полное содержимое новости.
+ *
+ * @property id Идентификатор новости.
+ * @property date Дата публикации.
+ * @property title Заголовок.
+ * @property previewImageUrl Ссылка на превью изображение.
+ * @property text Текстовое содержимое (может содержать HTML).
+ * @property deltaFormat Содержимое в формате Delta (JSON для Quill редактора).
+ */
 data class NewsContent(
     val id: Int,
     val date: String,
@@ -9,6 +19,14 @@ data class NewsContent(
     val deltaFormat: String,
 ) {
 
+    /**
+     * Генерирует HTML-страницу для отображения новости с использованием Quill JS.
+     *
+     * Создает HTML шаблон, который инициализирует Quill в режиме read-only и рендерит контент из формата Delta.
+     *
+     * @param backgroundColor Цвет фона страницы (CSS значение).
+     * @return Строка, содержащая полный HTML код страницы.
+     */
     fun prepareQuillPage(backgroundColor: String = "inherit"): String = """
         <!DOCTYPE html>
         <html lang="ru">

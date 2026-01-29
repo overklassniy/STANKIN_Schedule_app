@@ -3,7 +3,10 @@ package com.overklassniy.stankinschedule.schedule.viewer.domain.model
 import org.joda.time.LocalDate
 
 /**
- * Класс дня с парами в просмотре расписания.
+ * День для отображения расписания в Viewer.
+ *
+ * @property pairs Список пар для дня.
+ * @property day Дата дня.
  */
 data class ScheduleViewDay(
     val pairs: List<ScheduleViewPair>,

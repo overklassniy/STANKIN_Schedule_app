@@ -1,31 +1,31 @@
 package com.overklassniy.stankinschedule.schedule.core.domain.model
 
-
 /**
- * Тип пары.
+ * Перечисление типов занятий.
+ *
+ * @property tag Строковое представление типа.
  */
 enum class Type(val tag: String) {
-    /**
-     * Лекция.
-     */
+    /** Лекция */
     LECTURE("Lecture"),
 
-    /**
-     * Семинар.
-     */
+    /** Семинар */
     SEMINAR("Seminar"),
 
-    /**
-     * Лабораторное занятие.
-     */
+    /** Лабораторная работа */
     LABORATORY("Laboratory");
 
     companion object {
+
         /**
-         * Возвращает значение типа пары соответствующие значению в строке.
+         * Получает тип занятия по строковому значению.
+         *
+         * @param value Строка типа (например, "Lecture").
+         * @return [Type].
+         * @throws IllegalArgumentException Если тип не найден.
          */
         fun of(value: String): Type {
-            for (type in values()) {
+            for (type in entries) {
                 if (type.tag.equals(value, ignoreCase = true)) {
                     return type
                 }

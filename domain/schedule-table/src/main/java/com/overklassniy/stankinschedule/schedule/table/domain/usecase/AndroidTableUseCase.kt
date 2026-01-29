@@ -1,6 +1,5 @@
 package com.overklassniy.stankinschedule.schedule.table.domain.usecase
 
-import android.graphics.Bitmap
 import android.net.Uri
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
 import com.overklassniy.stankinschedule.schedule.table.domain.model.TableConfig
@@ -12,15 +11,25 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
+/**
+ * UseCase для генерации и экспорта таблицы расписания.
+ *
+ * Предоставляет методы создания и сохранения PDF/изображений, а также
+ * создания URI для последующей отправки.
+ */
 class AndroidTableUseCase @Inject constructor(
     private val provider: AndroidPublicProvider,
     private val creator: AndroidTableCreator
 ) {
 
-    fun createBitmap(schedule: ScheduleModel, config: TableConfig): Bitmap {
-        return creator.createImage(schedule, config)
-    }
-
+    /**
+     * Сохраняет изображение таблицы расписания в указанный [Uri].
+     *
+     * @param schedule Модель расписания.
+     * @param config Конфигурация таблицы.
+     * @param uri Целевой URI для сохранения.
+     * @return Поток, который эмитит итоговый [Uri] после сохранения.
+     */
     fun saveImageTable(
         schedule: ScheduleModel,
         config: TableConfig,
@@ -31,6 +40,14 @@ class AndroidTableUseCase @Inject constructor(
         emit(uri)
     }.flowOn(Dispatchers.IO)
 
+    /**
+     * Сохраняет PDF с таблицей расписания в указанный [Uri].
+     *
+     * @param schedule Модель расписания.
+     * @param config Конфигурация таблицы.
+     * @param uri Целевой URI для сохранения.
+     * @return Поток, который эмитит [Uri] после сохранения.
+     */
     fun savePdfTable(
         schedule: ScheduleModel,
         config: TableConfig,
@@ -41,6 +58,14 @@ class AndroidTableUseCase @Inject constructor(
         emit(uri)
     }.flowOn(Dispatchers.IO)
 
+    /**
+     * Создаёт [Uri] для PDF-документа с таблицей расписания.
+     *
+     * @param name Имя файла.
+     * @param schedule Модель расписания.
+     * @param config Конфигурация таблицы.
+     * @return Поток с созданным [Uri].
+     */
     fun createUriForPdf(
         name: String,
         schedule: ScheduleModel,
@@ -51,6 +76,14 @@ class AndroidTableUseCase @Inject constructor(
         emit(uri)
     }.flowOn(Dispatchers.IO)
 
+    /**
+     * Создаёт [Uri] для изображения (Bitmap) таблицы расписания.
+     *
+     * @param name Имя файла.
+     * @param schedule Модель расписания.
+     * @param config Конфигурация таблицы.
+     * @return Поток с созданным [Uri].
+     */
     fun createUriForImage(
         name: String,
         schedule: ScheduleModel,

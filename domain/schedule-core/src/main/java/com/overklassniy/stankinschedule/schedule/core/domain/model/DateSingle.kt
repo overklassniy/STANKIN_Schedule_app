@@ -6,31 +6,29 @@ import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 
 /**
- * Единственная дата пары.
+ * Класс, представляющий одиночную дату занятия.
+ *
+ * Например, "24.12.2023".
  */
 class DateSingle : DateItem {
 
-    /**
-     * Дата.
-     */
+    /** Дата занятия. */
     val date: LocalDate
 
-    /**
-     * День недели.
-     */
     private val dayOfWeek: DayOfWeek
 
     /**
-     * Конструктор единственной даты пары.
-     * @param text текст с датой.
-     * @param pattern шаблон распознавания.
+     * Конструктор из строки с датой.
+     *
+     * @param text Строка с датой.
+     * @param pattern Формат даты (по умолчанию "yyyy-MM-dd").
+     * @throws DateParseException Если формат даты некорректен.
      */
     constructor(text: String, pattern: String = JSON_DATE_PATTERN_V2) {
         try {
             val parseDate: LocalDate = try {
                 DateTimeFormat.forPattern(pattern).parseLocalDate(text)
-            } catch (e: Exception) {
-                // старый метод
+            } catch (_: Exception) {
                 DateTimeFormat.forPattern(JSON_DATE_PATTERN).parseLocalDate(text)
             }
 
@@ -41,24 +39,36 @@ class DateSingle : DateItem {
             throw e
 
         } catch (e: Exception) {
-            throw DateParseException("Invalid parse date: $text", text, e)
+            throw DateParseException("Invalid parse date: $text", e)
         }
     }
 
     /**
-     * Конструктор единственной даты пары.
-     * @param date дата занятия.
+     * Конструктор из объекта [LocalDate].
+     *
+     * @param date Дата занятия.
      */
     constructor(date: LocalDate) {
         this.date = date
         dayOfWeek = DayOfWeek.of(this.date)
     }
 
-
+    /**
+     * Возвращает день недели даты.
+     */
     override fun dayOfWeek(): DayOfWeek = dayOfWeek
 
+    /**
+     * Возвращает периодичность (всегда ONCE).
+     */
     override fun frequency(): Frequency = Frequency.ONCE
 
+    /**
+     * Проверяет пересечение с другим элементом даты.
+     *
+     * @param item Элемент даты для проверки.
+     * @return true, если даты совпадают или одиночная дата входит в диапазон.
+     */
     override fun intersect(item: DateItem): Boolean {
         if (item is DateSingle) {
             return this.date == item.date
@@ -71,6 +81,12 @@ class DateSingle : DateItem {
         throw IllegalArgumentException("Invalid intersect object: $item")
     }
 
+    /**
+     * Проверяет, находится ли эта дата раньше другой.
+     *
+     * @param item Другой элемент даты.
+     * @return true, если эта дата раньше.
+     */
     override fun isBefore(item: DateItem): Boolean {
         if (item is DateSingle) {
             return date.isBefore(item.date)
@@ -83,10 +99,18 @@ class DateSingle : DateItem {
         throw IllegalArgumentException("Invalid compare object: $item")
     }
 
+    /**
+     * Создает копию текущего объекта.
+     *
+     * @return Новый экземпляр [DateSingle].
+     */
     override fun clone(): DateItem {
         return DateSingle(date)
     }
 
+    /**
+     * Проверяет равенство с другим объектом.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -99,16 +123,28 @@ class DateSingle : DateItem {
         return true
     }
 
+    /**
+     * Возвращает хэш-код объекта.
+     */
     override fun hashCode(): Int {
         var result = date.hashCode()
         result = 31 * result + dayOfWeek.hashCode()
         return result
     }
 
+    /**
+     * Возвращает строковое представление даты.
+     */
     override fun toString(): String {
         return date.toString()
     }
 
+    /**
+     * Возвращает строковое представление даты в заданном формате.
+     *
+     * @param format Формат даты (например, "dd.MM.yyyy").
+     * @return Строка с датой.
+     */
     fun toString(format: String): String {
         return date.toString(format)
     }

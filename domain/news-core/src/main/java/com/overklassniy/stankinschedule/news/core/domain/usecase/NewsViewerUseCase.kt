@@ -8,10 +8,25 @@ import kotlinx.coroutines.flow.flow
 import org.joda.time.DateTime
 import javax.inject.Inject
 
+/**
+ * UseCase для просмотра содержимого новостей.
+ *
+ * Отвечает за загрузку детальной информации о новости с использованием кэширования.
+ */
 class NewsViewerUseCase @Inject constructor(
     private val repository: NewsPostRepository,
 ) {
 
+    /**
+     * Загружает контент новости по её идентификатору.
+     *
+     * Сначала проверяет наличие кэшированной версии. Если кэш существует и актуален (менее 24 часов),
+     * возвращает данные из кэша. Иначе загружает данные с сервера и обновляет кэш.
+     *
+     * @param postId Идентификатор новости.
+     * @param force Принудительная загрузка с сервера (игнорирование кэша).
+     * @return [Flow] с объектом [NewsContent].
+     */
     fun loadNewsContent(postId: Int, force: Boolean = false): Flow<NewsContent> = flow {
 
         val cache = repository.loadNewsContent(postId)

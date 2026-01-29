@@ -4,22 +4,19 @@ import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormat
 
 /**
- * Время пары
+ * Класс, представляющий время проведения пары (начало и конец).
+ *
+ * Также вычисляет продолжительность занятия в академических часах (парах).
  */
 class Time(startTime: String, endTime: String) {
-    /**
-     * Начало пары.
-     */
+
+    /** Время начала пары. */
     val start: LocalTime
 
-    /**
-     * Конец пары.
-     */
+    /** Время окончания пары. */
     val end: LocalTime
 
-    /**
-     * Продолжительность пары.
-     */
+    /** Продолжительность в парах (обычно 1, но может быть больше для сдвоенных занятий). */
     val duration: Int
 
     init {
@@ -35,7 +32,10 @@ class Time(startTime: String, endTime: String) {
     }
 
     /**
-     * Определяет, пересекаются времена пары.
+     * Проверяет пересечение временных интервалов.
+     *
+     * @param other Другое время.
+     * @return true, если интервалы пересекаются.
      */
     fun isIntersect(other: Time): Boolean {
         return (start >= other.start && end <= other.end) ||
@@ -43,18 +43,26 @@ class Time(startTime: String, endTime: String) {
                 (start <= other.end && end >= other.end)
     }
 
+    /**
+     * Возвращает время начала в строковом формате (H:mm).
+     */
     fun startString(): String = start.toString(TIME_PATTERN)
 
+    /**
+     * Возвращает время окончания в строковом формате (H:mm).
+     */
     fun endString(): String = end.toString(TIME_PATTERN)
 
     /**
-     * Номер начала пары по времени.
-     * Например, 8:30 - 1 пара, 14:00 - 4.
+     * Возвращает порядковый номер пары (начиная с 0).
      */
     fun number(): Int {
         return STARTS.indexOf(start.toString(TIME_PATTERN))
     }
 
+    /**
+     * Проверяет равенство с другим временем.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -68,6 +76,9 @@ class Time(startTime: String, endTime: String) {
         return true
     }
 
+    /**
+     * Возвращает хэш-код.
+     */
     override fun hashCode(): Int {
         var result = start.hashCode()
         result = 31 * result + end.hashCode()
@@ -75,6 +86,9 @@ class Time(startTime: String, endTime: String) {
         return result
     }
 
+    /**
+     * Возвращает строку времени в формате H:mm-H:mm.
+     */
     override fun toString(): String {
         return "${start.toString(TIME_PATTERN)}-${end.toString(TIME_PATTERN)}"
     }
@@ -82,14 +96,22 @@ class Time(startTime: String, endTime: String) {
     companion object {
         private const val TIME_PATTERN = "H:mm"
 
+        /**
+         * Создает объект [Time] из строки формата "H:mm-H:mm".
+         *
+         * @param time Строка времени (например, "8:30-10:10").
+         * @return Новый экземпляр [Time].
+         */
         fun fromString(time: String): Time {
             val (start, end) = time.split('-')
             return Time(start, end)
         }
 
+        /** Список допустимых времен начала пар. */
         val STARTS =
             listOf("8:30", "10:20", "12:20", "14:10", "16:00", "18:00", "19:40", "21:20")
 
+        /** Список допустимых времен окончания пар. */
         val ENDS =
             listOf("10:10", "12:00", "14:00", "15:50", "17:40", "19:30", "21:10", "22:50")
     }

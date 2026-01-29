@@ -13,12 +13,26 @@ import org.joda.time.DateTime
 import javax.inject.Inject
 
 
+/**
+ * UseCase для работы с репозиторием расписаний.
+ *
+ * Предоставляет методы для получения описания и элементов расписаний с поддержкой кэширования.
+ */
 class RepositoryUseCase @Inject constructor(
     private val service: ScheduleRemoteService,
     private val repositoryStorage: RepositoryStorage,
     private val scheduleStorage: ScheduleStorage,
 ) {
 
+    /**
+     * Получает описание репозитория с поддержкой кэширования.
+     *
+     * Если кэш валиден, возвращает данные из кэша, иначе загружает с сервера и обновляет кэш.
+     *
+     * @param useCache Использовать ли кэш.
+     * @param expireHours Время жизни кэша в часах.
+     * @return Поток с описанием репозитория [RepositoryDescription].
+     */
     fun repositoryDescription(
         useCache: Boolean = true,
         expireHours: Int = 24
@@ -45,6 +59,13 @@ class RepositoryUseCase @Inject constructor(
         }
     }
 
+    /**
+     * Получает список элементов расписания для категории.
+     *
+     * @param category Название категории.
+     * @param useCache Использовать ли кэш.
+     * @return Поток со списком элементов [RepositoryItem].
+     */
     fun repositoryItems(
         category: String,
         useCache: Boolean = true,
@@ -60,6 +81,12 @@ class RepositoryUseCase @Inject constructor(
         emit(response)
     }
 
+    /**
+     * Проверяет, существует ли расписание с таким именем в локальном хранилище.
+     *
+     * @param scheduleName Название расписания.
+     * @return true, если расписание существует, иначе false.
+     */
     suspend fun isScheduleExist(scheduleName: String): Boolean {
         return scheduleStorage.isScheduleExist(scheduleName)
     }

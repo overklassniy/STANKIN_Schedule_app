@@ -11,6 +11,18 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 
+/**
+ * Модель для отрисовки таблицы расписания на Canvas.
+ *
+ * Содержит предварительно вычисленные размеры, шрифты и макеты ячеек.
+ *
+ * @property scheduleName Название расписания.
+ * @property lines Количество строк на каждый день недели.
+ * @property pageHeight Высота страницы.
+ * @property pageWidth Ширина страницы.
+ * @property tableColor Цвет таблицы (линии и текст).
+ * @property pagePadding Внутренний отступ от границ страницы.
+ */
 class DrawScheduleTable(
     val scheduleName: String,
     val lines: List<Int>,
@@ -18,7 +30,7 @@ class DrawScheduleTable(
     val pageHeight: Float,
     val pageWidth: Float,
     val tableColor: Int = Color.BLACK,
-    val scale: Float = pageWidth / 1920f,
+    scale: Float = pageWidth / 1920f,
     val pagePadding: Float = pageHeight * 0.05f
 ) {
     val textPaint: TextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -51,7 +63,7 @@ class DrawScheduleTable(
         for ((index, lineCount) in lines.withIndex()) {
             val subRowHeight = rowHeight / lineCount
 
-            val day = DayOfWeek.values()[index]
+            val day = DayOfWeek.entries[index]
             val tableDay = tableDays.getOrElse(day) { ScheduleTableDay() }
 
             days[day] = tableDay
@@ -69,6 +81,12 @@ class DrawScheduleTable(
         }
     }
 
+    /**
+     * Возвращает список подготовленных ячеек для указанного дня недели.
+     *
+     * @param day День недели.
+     * @return Список ячеек для отрисовки.
+     */
     operator fun get(day: DayOfWeek): List<DrawScheduleTableCell> {
         return days.getOrElse(day) { emptyList() }
     }
@@ -77,6 +95,12 @@ class DrawScheduleTable(
         const val ROW_COUNT = 6
         const val COLUMN_COUNT = 8
 
+        /**
+         * Формирует человекочитаемую строку для отображения пары в ячейке таблицы.
+         *
+         * @param pair Модель пары.
+         * @return Строка для отображения в ячейке.
+         */
         fun pairForTable(pair: PairModel): String {
             // Title. Lecture. Type. Subgroup. Classroom. [Date1, Date2...]
             return buildString {
@@ -109,6 +133,7 @@ class DrawScheduleTable(
                         is DateSingle -> {
                             date.toString("dd.MM")
                         }
+
                         is DateRange -> {
                             date.toString(
                                 "dd.MM", "-"
@@ -126,6 +151,14 @@ class DrawScheduleTable(
     }
 }
 
+/**
+ * Преобразует логическую модель таблицы расписания [ScheduleTable] в модель для отрисовки [DrawScheduleTable].
+ *
+ * @param pageHeight Высота страницы.
+ * @param pageWidth Ширина страницы.
+ * @param tableColor Цвет таблицы.
+ * @return Модель для отрисовки.
+ */
 fun ScheduleTable.toDraw(
     pageHeight: Float,
     pageWidth: Float,

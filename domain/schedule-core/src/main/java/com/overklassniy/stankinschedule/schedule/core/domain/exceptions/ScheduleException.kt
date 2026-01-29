@@ -1,54 +1,60 @@
 package com.overklassniy.stankinschedule.schedule.core.domain.exceptions
 
-import com.overklassniy.stankinschedule.schedule.core.domain.model.DateItem
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Frequency
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 
-
+/**
+ * Базовый класс исключений, связанных с парами.
+ */
 open class PairException(
     message: String?, cause: Throwable? = null,
 ) : RuntimeException(message, cause)
 
-
+/**
+ * Исключение, возникающее при пересечении пар по времени и месту.
+ */
 class PairIntersectException(
     message: String?, val first: PairModel, val second: PairModel, cause: Throwable? = null,
 ) : PairException(message, cause)
 
 /**
- * Исключение, возникающие во время работы с датами.
+ * Базовый класс исключений, связанных с датами.
  */
 sealed class DateException(
     message: String?, cause: Throwable? = null,
 ) : RuntimeException(message, cause)
 
 /**
- * Неправильная периодичность пары.
+ * Исключение, связанное с некорректной периодичностью дат.
  */
 class DateFrequencyException(
     message: String?, val date: String, val frequency: Frequency, cause: Throwable? = null,
 ) : DateException(message, cause)
 
 /**
- * Неправильный день недели.
+ * Исключение, возникающее при несовпадении дня недели (например, добавление даты вторника в модель для понедельника).
  */
 class DateDayOfWeekException(
     message: String?, cause: Throwable? = null,
 ) : DateException(message, cause)
 
 /**
- * Не удалось считать дату.
+ * Исключение ошибки парсинга даты.
  */
 class DateParseException(
-    message: String?, val parseDate: String, cause: Throwable? = null,
+    message: String?, cause: Throwable? = null,
 ) : DateException(message, cause)
 
 /**
- * Даты пересекаются.
+ * Исключение пересечения дат.
  */
 class DateIntersectException(
-    message: String?, val first: DateItem, val second: DateItem, cause: Throwable? = null,
+    message: String?, cause: Throwable? = null,
 ) : DateException(message, cause)
 
+/**
+ * Исключение пустого списка дат (когда ожидается непустой).
+ */
 class DateEmptyException(
     message: String? = null, cause: Throwable? = null
 ) : DateException(message, cause)

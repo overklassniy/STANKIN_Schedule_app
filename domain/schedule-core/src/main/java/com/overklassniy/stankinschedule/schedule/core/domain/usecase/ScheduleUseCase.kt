@@ -11,7 +11,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
- * Use case для работы с расписаниями.
+ * Основной UseCase для управления расписаниями.
+ *
+ * Содержит бизнес-логику создания, получения, обновления и удаления расписаний.
  */
 class ScheduleUseCase @Inject constructor(
     private val storage: ScheduleStorage,

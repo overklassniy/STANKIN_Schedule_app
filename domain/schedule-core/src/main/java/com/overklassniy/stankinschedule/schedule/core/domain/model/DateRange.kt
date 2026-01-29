@@ -8,37 +8,30 @@ import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 
 /**
- * Диапазон дат в расписании с определенной периодичностью.
+ * Класс, представляющий диапазон дат с определенной периодичностью.
+ *
+ * Например, "с 01.09 по 31.12 каждую неделю".
  */
 class DateRange : DateItem {
 
-    /**
-     * Начало диапазона.
-     */
+    /** Дата начала диапазона. */
     val start: LocalDate
 
-    /**
-     * Конец диапазона.
-     */
+    /** Дата окончания диапазона. */
     val end: LocalDate
 
-    /**
-     * Периодичность.
-     */
     private val frequency: Frequency
 
-    /**
-     * День недели.
-     */
     private lateinit var dayOfWeek: DayOfWeek
 
-
     /**
-     * Конструктор диапазона дат.
-     * @param firstText текст первой даты диапазона.
-     * @param secondText текст второй даты диапазона.
-     * @param frequencyDate периодичность даты.
-     * @param pattern шаблон распознавания.
+     * Конструктор из двух строк с датами и периодичности.
+     *
+     * @param firstText Строка с датой начала.
+     * @param secondText Строка с датой окончания.
+     * @param frequencyDate Периодичность ([Frequency]).
+     * @param pattern Формат даты (по умолчанию "yyyy-MM-dd").
+     * @throws DateParseException Если формат дат некорректен.
      */
     constructor(
         firstText: String,
@@ -55,7 +48,6 @@ class DateRange : DateItem {
         } catch (e: Exception) {
             throw DateParseException(
                 "Invalid parse date: $firstText and $secondText",
-                "$firstText - $secondText",
                 e
             )
         }
@@ -64,20 +56,20 @@ class DateRange : DateItem {
     }
 
     /**
-     * Конструктор диапазона дат.
-     * @param text текст с диапазоном.
-     * @param frequencyDate периодичность даты.
-     * @param pattern шаблон распознавания.
+     * Конструктор из строки диапазона (например "date1/date2" или "date1-date2") и периодичности.
+     *
+     * @param text Строка с диапазоном дат.
+     * @param frequencyDate Периодичность.
+     * @param pattern Формат даты.
+     * @throws DateParseException Если строка не соответствует формату диапазона.
      */
     constructor(text: String, frequencyDate: Frequency, pattern: String = JSON_DATE_PATTERN_V2) {
         var dates = text.split('/')
         if (dates.size != 2) {
-            // старый формат
             dates = text.split('-')
             if (dates.size != 2) {
                 throw DateParseException(
-                    "Invalid date text: $text, $dates, frequency: $frequencyDate",
-                    text
+                    "Invalid date text: $text, $dates, frequency: $frequencyDate"
                 )
             }
         }
@@ -93,7 +85,6 @@ class DateRange : DateItem {
         } catch (e: Exception) {
             throw DateParseException(
                 "Invalid parse date: $firstText and $secondText",
-                "$firstText - $secondText",
                 e
             )
         }
@@ -102,10 +93,11 @@ class DateRange : DateItem {
     }
 
     /**
-     * Конструктор диапазона дат.
-     * @param firstDate дата начала диапазона.
-     * @param secondDate дата конца диапазона.
-     * @param frequencyDate периодичность диапазона дат.
+     * Конструктор из объектов [LocalDate] и периодичности.
+     *
+     * @param firstDate Дата начала.
+     * @param secondDate Дата окончания.
+     * @param frequencyDate Периодичность.
      */
     constructor(firstDate: LocalDate, secondDate: LocalDate, frequencyDate: Frequency) {
         start = firstDate
@@ -116,8 +108,9 @@ class DateRange : DateItem {
     }
 
     /**
-     * Парсит дату начала и конца из строк по шаблону.
-     * Возвращает распознанные даты.
+     * Парсит строки дат в объекты [LocalDate].
+     *
+     * Пытается распарсить по основному паттерну, в случае неудачи - по запасному.
      */
     private fun parseDates(
         firstText: String,
@@ -133,8 +126,7 @@ class DateRange : DateItem {
             parseStart = formatter.parseLocalDate(firstText)
             parseEnd = formatter.parseLocalDate(secondText)
 
-        } catch (e: Exception) {
-            // старый формат
+        } catch (_: Exception) {
             val formatter = DateTimeFormat.forPattern(JSON_DATE_PATTERN)
             parseStart = formatter.parseLocalDate(firstText)
             parseEnd = formatter.parseLocalDate(secondText)
@@ -144,7 +136,9 @@ class DateRange : DateItem {
     }
 
     /**
-     * Инициализирует до конца объект.
+     * Инициализирует и валидирует поля объекта.
+     *
+     * Проверяет совпадение дней недели начала и конца, а также корректность периодичности.
      */
     private fun init() {
         if (DayOfWeek.of(start) != DayOfWeek.of(end)) {
@@ -163,10 +157,23 @@ class DateRange : DateItem {
         }
     }
 
+    /**
+     * Возвращает день недели диапазона.
+     */
     override fun dayOfWeek(): DayOfWeek = dayOfWeek
 
+    /**
+     * Возвращает периодичность диапазона.
+     */
     override fun frequency(): Frequency = frequency
 
+    /**
+     * Проверяет пересечение с другим элементом даты.
+     *
+     * @param item Элемент даты для проверки.
+     * @return true, если есть пересечение.
+     * @throws IllegalArgumentException Если передан неизвестный тип элемента даты.
+     */
     override fun intersect(item: DateItem): Boolean {
         if (item is DateSingle) {
             var it = start
@@ -199,6 +206,13 @@ class DateRange : DateItem {
         throw IllegalArgumentException("Invalid intersect object: $item")
     }
 
+    /**
+     * Проверяет, находится ли этот диапазон раньше другого элемента.
+     *
+     * @param item Другой элемент даты.
+     * @return true, если этот диапазон раньше.
+     * @throws IllegalArgumentException Если передан неизвестный тип элемента даты.
+     */
     override fun isBefore(item: DateItem): Boolean {
         if (item is DateSingle) {
             return start.isBefore(item.date) && end.isBefore(item.date)
@@ -211,10 +225,18 @@ class DateRange : DateItem {
         throw IllegalArgumentException("Invalid compare object: $item")
     }
 
+    /**
+     * Создает копию текущего диапазона.
+     *
+     * @return Новый экземпляр [DateRange].
+     */
     override fun clone(): DateItem {
         return DateRange(start, end, frequency)
     }
 
+    /**
+     * Проверяет равенство с другим объектом.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -229,6 +251,9 @@ class DateRange : DateItem {
         return true
     }
 
+    /**
+     * Возвращает хэш-код объекта.
+     */
     override fun hashCode(): Int {
         var result = start.hashCode()
         result = 31 * result + end.hashCode()
@@ -237,10 +262,20 @@ class DateRange : DateItem {
         return result
     }
 
+    /**
+     * Возвращает строковое представление диапазона.
+     */
     override fun toString(): String {
         return "$start-$end"
     }
 
+    /**
+     * Возвращает строковое представление диапазона с заданным форматом и разделителем.
+     *
+     * @param format Формат даты (например, "dd.MM.yyyy").
+     * @param delimiter Разделитель между датами.
+     * @return Строка диапазона.
+     */
     fun toString(format: String, delimiter: String): String {
         return start.toString(format) + delimiter + end.toString(format)
     }

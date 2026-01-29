@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 /**
- * Use case для работы с парами в расписании.
+ * UseCase для работы с парами (занятиями).
+ *
+ * Предоставляет методы для получения, удаления и изменения пар.
  */
 class PairUseCase @Inject constructor(
     private val storage: ScheduleStorage,

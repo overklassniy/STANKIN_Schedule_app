@@ -9,6 +9,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
+/**
+ * UseCase для работы с файловой системой устройства.
+ *
+ * Отвечает за импорт и экспорт расписаний.
+ */
 class ScheduleDeviceUseCase @Inject constructor(
     private val storage: ScheduleStorage,
     private val device: ScheduleDeviceRepository

@@ -7,7 +7,10 @@ import org.joda.time.LocalDate
 import java.util.TreeSet
 
 /**
- * Дата пары.
+ * Модель, представляющая набор дат проведения занятий.
+ *
+ * Содержит коллекцию [DateItem], которые могут быть как одиночными датами, так и диапазонами.
+ * Гарантирует, что все даты относятся к одному дню недели.
  */
 class DateModel : Cloneable, Iterable<DateItem> {
 
@@ -15,8 +18,11 @@ class DateModel : Cloneable, Iterable<DateItem> {
     private var dayOfWeek: DayOfWeek? = null
 
     /**
-     * Добавляет дату к датам пары.
-     * @param item добавляемая пара.
+     * Добавляет элемент даты в модель.
+     *
+     * @param item Элемент даты ([DateItem]) для добавления.
+     * @throws DateDayOfWeekException Если день недели добавляемой даты не совпадает с существующими.
+     * @throws DateIntersectException Если добавляемая дата пересекается с уже существующими.
      */
     fun add(item: DateItem) {
         possibleChange(null, item)
@@ -26,8 +32,9 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Удаляет дату из дат пары.
-     * @param item удаляемая пара.
+     * Удаляет элемент даты из модели.
+     *
+     * @param item Элемент даты для удаления. Если null, ничего не происходит.
      */
     fun remove(item: DateItem?) {
         if (item != null) {
@@ -39,8 +46,10 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Удаляет дату из дат пары по позиции по порядку.
-     * @param position позиция, с которой необходимо удалить дату.
+     * Удаляет элемент даты по индексу.
+     *
+     * @param position Индекс элемента для удаления.
+     * @return Удаленный элемент [DateItem].
      */
     fun remove(position: Int): DateItem {
         val item = dates.elementAt(position)
@@ -52,12 +61,17 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Возвращает
+     * Возвращает элемент даты по индексу.
+     *
+     * @param position Индекс элемента.
+     * @return Элемент [DateItem].
      */
     fun get(position: Int): DateItem = dates.elementAt(position)
 
     /**
-     * Дата начала из дат в паре.
+     * Возвращает самую раннюю дату начала занятий в этом наборе.
+     *
+     * @return [LocalDate] начала или null, если набор пуст.
      */
     fun startDate(): LocalDate? {
         if (dates.isEmpty()) {
@@ -71,7 +85,9 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Дата конца из дат в паре.
+     * Возвращает самую позднюю дату окончания занятий в этом наборе.
+     *
+     * @return [LocalDate] окончания или null, если набор пуст.
      */
     fun endDate(): LocalDate? {
         if (dates.isEmpty()) {
@@ -85,7 +101,10 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Определяет, пересекается ли даты пары с сравниваемой датой.
+     * Проверяет пересечение с элементом даты.
+     *
+     * @param item Элемент даты для проверки.
+     * @return true, если есть пересечение, иначе false.
      */
     fun intersect(item: DateItem): Boolean {
         for (date in dates) {
@@ -97,7 +116,10 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Определяет, пересекается ли даты пары с сравниваемой датой.
+     * Проверяет пересечение с другой моделью дат.
+     *
+     * @param other Другая модель дат ([DateModel]).
+     * @return true, если есть пересечение хотя бы одной даты, иначе false.
      */
     fun intersect(other: DateModel): Boolean {
         for (date in other.dates) {
@@ -109,7 +131,10 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Определяет, пересекается ли даты пары с сравниваемой датой.
+     * Проверяет, попадает ли конкретная дата в этот набор.
+     *
+     * @param item Дата [LocalDate] для проверки.
+     * @return true, если дата входит в набор, иначе false.
      */
     fun intersect(item: LocalDate): Boolean {
         val dateItem = DateSingle(item)
@@ -117,32 +142,32 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Возвращает день недели.
+     * Возвращает день недели для этого набора дат.
+     *
+     * @return [DayOfWeek] день недели.
+     * @throws NullPointerException если набор пуст.
      */
     fun dayOfWeek() = dayOfWeek!!
 
     /**
-     * Возвращает Json даты.
+     * Возвращает итератор по элементам дат.
+     *
+     * @return Итератор [Iterator]<[DateItem]>.
      */
-    /*
-    fun toJsonItems(): List<JsonPairItem.JsonDateItem> {
-        return dates.map { date -> date.toJsonItem() }
-    }
-
-     */
-
     override fun iterator(): Iterator<DateItem> = dates.iterator()
 
     /**
-     * Проверяет, является ли дата пустой.
+     * Проверяет, пуст ли набор дат.
+     *
+     * @return true, если набор пуст, иначе false.
      */
     fun isEmpty(): Boolean = dates.isEmpty()
 
     /**
-     * Преобразует дату в список из дат пары.
+     * Создает глубокую копию модели.
+     *
+     * @return Новый экземпляр [DateModel] с копиями всех элементов.
      */
-    fun toList(): MutableList<DateItem> = dates.toMutableList()
-
     public override fun clone(): DateModel {
         val date = DateModel()
         for (d in dates) {
@@ -152,11 +177,14 @@ class DateModel : Cloneable, Iterable<DateItem> {
     }
 
     /**
-     * Проверяет, можно ли заменить дату в датах.
-     * @param oldDate старая дата.
-     * @param newDate новая дата.
-     * @throws DateDayOfWeekException если нет совпадения по дню недели.
-     * @throws DateIntersectException если даты пересекаются.
+     * Проверяет возможность замены или добавления даты.
+     *
+     * Проверяет совместимость дня недели и отсутствие пересечений с другими датами.
+     *
+     * @param oldDate Старая дата, которую планируется заменить (может быть null при добавлении).
+     * @param newDate Новая дата.
+     * @throws DateDayOfWeekException Если день недели новой даты отличается от текущего дня недели модели.
+     * @throws DateIntersectException Если новая дата пересекается с существующими (кроме oldDate).
      */
     @Throws(DateDayOfWeekException::class, DateIntersectException::class)
     fun possibleChange(oldDate: DateItem?, newDate: DateItem) {
@@ -172,15 +200,19 @@ class DateModel : Cloneable, Iterable<DateItem> {
             if (date != oldDate) {
                 if (date.intersect(newDate)) {
                     throw DateIntersectException(
-                        "Date is intersect: $date and $newDate",
-                        date,
-                        newDate
+                        "Date is intersect: $date and $newDate"
                     )
                 }
             }
         }
     }
 
+    /**
+     * Проверяет равенство с другим объектом.
+     *
+     * @param other Объект для сравнения.
+     * @return true, если объекты равны.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -193,12 +225,22 @@ class DateModel : Cloneable, Iterable<DateItem> {
         return true
     }
 
+    /**
+     * Возвращает хэш-код объекта.
+     *
+     * @return Хэш-код.
+     */
     override fun hashCode(): Int {
         var result = dates.hashCode()
         result = 31 * result + (dayOfWeek?.hashCode() ?: 0)
         return result
     }
 
+    /**
+     * Возвращает строковое представление модели дат.
+     *
+     * @return Строка со списком дат.
+     */
     override fun toString(): String {
         return "[" + dates.joinToString(", ") + "]"
     }

@@ -5,23 +5,23 @@ import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDate
 
 /**
- * Модель расписания.
+ * Основная модель расписания.
+ *
+ * Содержит информацию о расписании ([ScheduleInfo]) и карту дней недели с парами ([ScheduleDayModel]).
+ * Предоставляет методы для управления парами (добавление, удаление, изменение) и получения информации о датах.
  */
 class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
 
-    /**
-     * Контейнер дней в расписании.
-     */
     private val days = linkedMapOf<DayOfWeek, ScheduleDayModel>()
 
-    /**
-     * Кэш диапазона дат (start, end). Инвалидируется при изменении расписания.
-     */
     @Volatile
     private var dateRangeCache: Pair<LocalDate?, LocalDate?>? = null
 
     /**
      * Добавляет пару в расписание.
+     *
+     * @param pair Пара для добавления.
+     * @throws PairIntersectException Если пара пересекается с существующими.
      */
     fun add(pair: PairModel) {
         dayFor(pair).add(pair)
@@ -30,6 +30,8 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
 
     /**
      * Удаляет пару из расписания.
+     *
+     * @param pair Пара для удаления.
      */
     fun remove(pair: PairModel) {
         dayFor(pair).remove(pair)
@@ -37,14 +39,16 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
     }
 
     /**
-     * Инвалидирует кэш дат.
+     * Сбрасывает кэш диапазона дат.
      */
     private fun invalidateCache() {
         dateRangeCache = null
     }
 
     /**
-     * Вычисляет диапазон дат за один проход по всем дням.
+     * Вычисляет диапазон дат семестра (по всем дням).
+     *
+     * @return Пара (начало, конец).
      */
     private fun computeDateRange(): Pair<LocalDate?, LocalDate?> {
         dateRangeCache?.let { return it }
@@ -68,33 +72,28 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
     }
 
     /**
-     * Возвращает дату, с которого начинается расписание.
-     * Если расписание пустое, то возвращается null.
+     * Возвращает дату начала семестра (самая ранняя дата пары).
+     *
+     * @return [LocalDate] или null, если расписание пустое.
      */
     fun startDate(): LocalDate? = computeDateRange().first
 
     /**
-     * Возвращает дату, на которую заканчивается расписание.
-     * Если расписание пустое, то возвращается null.
+     * Возвращает дату окончания семестра (самая поздняя дата пары).
+     *
+     * @return [LocalDate] или null, если расписание пустое.
      */
     fun endDate(): LocalDate? = computeDateRange().second
 
     /**
-     * Возвращает список всех дисциплин в расписании.
-     */
-    fun disciplines(): List<String> {
-        val disciplines = mutableSetOf<String>()
-        for (day in days.values) {
-            for (pair in day) {
-                disciplines.add(pair.title)
-            }
-        }
-
-        return disciplines.sorted()
-    }
-
-    /**
-     * Ограничивает дату, исходя из дат начала и конца расписания.
+     * Ограничивает дату в пределах семестра.
+     *
+     * Если переданная дата раньше начала семестра, возвращается дата начала.
+     * Если позже окончания - дата окончания.
+     * Иначе возвращается сама дата.
+     *
+     * @param date Дата для проверки.
+     * @return Ограниченная дата.
      */
     fun limitDate(date: LocalDate): LocalDate {
         startDate()?.let {
@@ -113,21 +112,29 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
     }
 
     /**
-     * Проверяет, является ли расписание пустым.
+     * Проверяет, пустое ли расписание.
+     *
+     * @return true, если нет дат начала или окончания.
      */
     fun isEmpty(): Boolean {
         return startDate() == null || endDate() == null
     }
 
     /**
-     * Возвращает список пар, которые есть в заданный день недели.
+     * Получает список пар на указанный день недели.
+     *
+     * @param dayOfWeek День недели.
+     * @return Список пар.
      */
     fun pairsByDay(dayOfWeek: DayOfWeek): List<PairModel> {
         return dayFor(dayOfWeek).toList()
     }
 
     /**
-     * Возвращает список пар, которые есть в заданный день.
+     * Получает список пар на конкретную дату.
+     *
+     * @param date Дата.
+     * @return Список пар.
      */
     fun pairsByDate(date: LocalDate): List<PairModel> {
         if (date.dayOfWeek == DateTimeConstants.SUNDAY) {
@@ -138,25 +145,21 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
     }
 
     /**
-     * Возвращает список всех пар по названию дисциплины.
-     */
-    fun pairsByDiscipline(discipline: String): List<PairModel> {
-        val pairs = arrayListOf<PairModel>()
-        for (day in days.values) {
-            pairs.addAll(day.pairsByDiscipline(discipline))
-        }
-        return pairs
-    }
-
-    /**
-     * Проверяет, можно ли заменить одну пару на другую.
+     * Проверяет возможность изменения пары (отсутствие конфликтов).
+     *
+     * @param old Старая пара (если есть).
+     * @param new Новая пара.
+     * @throws PairIntersectException Если новая пара создает конфликт.
      */
     fun possibleChangePair(old: PairModel?, new: PairModel) {
         dayFor(new).possibleChangePair(old, new)
     }
 
     /**
-     * Заменяет одну пару на другую.
+     * Изменяет пару в расписании (удаляет старую и добавляет новую).
+     *
+     * @param old Старая пара (если null, то только добавление).
+     * @param new Новая пара.
      */
     fun changePair(old: PairModel?, new: PairModel) {
         possibleChangePair(old, new)
@@ -168,18 +171,23 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
     }
 
     /**
-     * Возвращает день расписания для пары.
+     * Возвращает модель дня для указанной пары.
      */
     private fun dayFor(pair: PairModel): ScheduleDayModel {
         return dayFor(pair.date.dayOfWeek())
     }
 
     /**
-     * Возвращает день расписания для пары.
+     * Возвращает модель дня по дню недели (создает новую, если нет).
      */
     private fun dayFor(dayOfWeek: DayOfWeek): ScheduleDayModel {
         return days.getOrPut(dayOfWeek) { ScheduleDayModel() }
     }
 
+    /**
+     * Возвращает итератор по всем парам расписания (во всех днях).
+     *
+     * @return Итератор [PairModel].
+     */
     override fun iterator(): Iterator<PairModel> = days.values.flatten().iterator()
 }

@@ -7,8 +7,14 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.TextUtils
 import androidx.core.graphics.withRotation
-import androidx.core.graphics.withTranslation
 
+/**
+ * Временно устанавливает размер шрифта для [Paint], выполняет отрисовку и восстанавливает исходное значение.
+ *
+ * @param fontSize Новый размер шрифта.
+ * @param draw Блок отрисовки, получающий настроенный [Paint].
+ * @return Результат выполнения блока [draw].
+ */
 fun <R, P : Paint> P.withSize(fontSize: Float, draw: (paint: P) -> R): R {
     val prevSize = this.textSize
     this.textSize = fontSize
@@ -17,10 +23,27 @@ fun <R, P : Paint> P.withSize(fontSize: Float, draw: (paint: P) -> R): R {
     return result
 }
 
+/**
+ * Возвращает смещение по базовой линии для центрирования текста по вертикали.
+ *
+ * @return Смещение базовой линии.
+ */
 fun Paint.centerBaseline(): Float = (descent() + ascent()) / 2f
 
+/**
+ * Возвращает высоту строки текста по метрикам шрифта.
+ *
+ * @return Высота строки.
+ */
 fun Paint.lineHeight(): Float = fontMetrics.run { descent - ascent }
 
+/**
+ * Подбирает максимально возможный размер шрифта, чтобы высота строки не превышала [height].
+ *
+ * @param height Требуемая высота строки.
+ * @param textPaint Кисть для измерения метрик шрифта.
+ * @return Подходящий размер шрифта.
+ */
 fun fontSizeForHeight(height: Float, textPaint: Paint): Float {
     var fontSize = 1f
     while (true) {
@@ -37,6 +60,17 @@ fun fontSizeForHeight(height: Float, textPaint: Paint): Float {
     return fontSize
 }
 
+/**
+ * Строит многострочный [StaticLayout] с переносами и многоточием, уменьшая шрифт
+ * до вписывания в заданные размеры.
+ *
+ * @param text Текст.
+ * @param width Максимальная ширина.
+ * @param height Максимальная высота.
+ * @param fontSize Базовый размер шрифта.
+ * @param paint Кисть для текста.
+ * @return Готовый [StaticLayout].
+ */
 fun prepareMultilineLayout(
     text: String,
     width: Int,
@@ -68,40 +102,18 @@ fun prepareMultilineLayout(
     return layout
 }
 
-private fun Canvas.drawMultiText(
-    text: String,
-    x: Float,
-    y: Float,
-    w: Int,
-    h: Int,
-    fontSize: Float,
-    textPaint: TextPaint,
-) {
-    var layout: StaticLayout
-
-    var currentFontSize = fontSize
-
-    while (true) {
-        textPaint.textSize = currentFontSize
-
-        layout = StaticLayout.Builder.obtain(text, 0, text.length, textPaint, w)
-            .setEllipsizedWidth(w)
-            .setEllipsize(TextUtils.TruncateAt.END)
-            .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
-            .build()
-
-        if (layout.height <= h || currentFontSize < 3f) {
-            break
-        }
-
-        currentFontSize -= 0.5f
-    }
-
-    withTranslation(x, y + textPaint.centerBaseline()) {
-        layout.draw(this)
-    }
-}
-
+/**
+ * Рисует текст по центру прямоугольной области. При необходимости поворачивает.
+ *
+ * @param text Текст для отрисовки.
+ * @param x Левая координата области.
+ * @param y Верхняя координата области.
+ * @param w Ширина области.
+ * @param h Высота области.
+ * @param fontSize Размер шрифта.
+ * @param paint Кисть для текста.
+ * @param rotate Угол поворота (в градусах), по умолчанию 0.
+ */
 fun Canvas.drawCenterText(
     text: String,
     x: Float,
@@ -129,6 +141,16 @@ fun Canvas.drawCenterText(
     }
 }
 
+/**
+ * Рисует текст, центрируя его относительно точки (x, y). Возвращает высоту строки.
+ *
+ * @param text Текст для отрисовки.
+ * @param x Координата X центра.
+ * @param y Координата Y центра.
+ * @param fontSize Размер шрифта.
+ * @param paint Кисть для текста.
+ * @return Высота строки.
+ */
 fun Canvas.drawText(
     text: String,
     x: Float,

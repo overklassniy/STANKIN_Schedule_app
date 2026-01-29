@@ -3,6 +3,16 @@ package com.overklassniy.stankinschedule.schedule.table.domain.model
 import android.text.StaticLayout
 import android.text.TextPaint
 
+/**
+ * Представление ячейки таблицы для отрисовки.
+ *
+ * Содержит подготовленный [StaticLayout] для многострочного текста и координаты ячейки.
+ *
+ * @property row Номер строки.
+ * @property column Номер столбца.
+ * @property rowSpan Растяжение по строкам.
+ * @property columnSpan Растяжение по столбцам.
+ */
 class DrawScheduleTableCell(
     cell: ScheduleTableCell,
     width: Int,

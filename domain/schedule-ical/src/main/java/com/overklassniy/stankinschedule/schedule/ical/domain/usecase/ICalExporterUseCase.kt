@@ -30,7 +30,14 @@ class ICalExporterUseCase @Inject constructor(
     private val dateTimeFormat = ISODateTimeFormat.basicDateTimeNoMillis()
     private val dateFormat = DateTimeFormat.forPattern("yyyyMMdd'T'HHmmss'Z'")
 
-    suspend fun exportSchedule(schedule: ScheduleModel, path: String) = flow<Boolean> {
+    /**
+     * Экспортирует расписание в файл iCal.
+     *
+     * @param schedule Расписание для экспорта.
+     * @param path Путь к файлу.
+     * @return Flow, который эмитит true после успешного экспорта.
+     */
+    fun exportSchedule(schedule: ScheduleModel, path: String) = flow {
         val calendar = ICalCalendar(
             name = schedule.info.scheduleName,
             events = schedule.flatMap { pair -> eventFromPair(pair) }
