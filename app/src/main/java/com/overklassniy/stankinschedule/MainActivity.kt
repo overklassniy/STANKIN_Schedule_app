@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
         // Держим сплеш-экран пока анимация не завершится (600ms + запас)
         val startTime = System.currentTimeMillis()
-        splashScreen.setKeepOnScreenCondition { 
+        splashScreen.setKeepOnScreenCondition {
             System.currentTimeMillis() - startTime < 800
         }
 

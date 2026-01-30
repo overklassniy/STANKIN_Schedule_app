@@ -14,6 +14,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel экрана списка расписаний.
+ *
+ * Управляет состоянием списка, режимом редактирования, избранным, выбором элементов
+ * и операциями перемещения/удаления.
+ */
 @HiltViewModel
 class ScheduleScreenViewModel @Inject constructor(
     private val scheduleUseCase: ScheduleUseCase,
@@ -49,6 +55,12 @@ class ScheduleScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Проверяет, изменился ли порядок расписаний относительно их позиции.
+     *
+     * @param list Текущий список расписаний.
+     * @return true если обнаружено несовпадение позиции, иначе false.
+     */
     private fun isSchedulesMoved(list: List<ScheduleInfo>): Boolean {
         for ((index, schedule) in list.withIndex()) {
             if (schedule.position != index) {
@@ -58,6 +70,10 @@ class ScheduleScreenViewModel @Inject constructor(
         return false
     }
 
+    /**
+     * Сохраняет позиции расписаний при выходе из режима редактирования.
+     * Позиции обновляются только если они были изменены.
+     */
     private fun saveSchedulePositions() {
         val data = _schedules.value ?: return
 
@@ -68,6 +84,12 @@ class ScheduleScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Перемещает элемент в списке с позиции from на позицию to.
+     *
+     * @param from Исходная позиция.
+     * @param to Новая позиция.
+     */
     fun schedulesMove(from: Int, to: Int) {
         _schedules.value = _schedules.value?.let {
             it.toMutableList().apply { add(to, removeAt(from)) }
@@ -80,6 +102,12 @@ class ScheduleScreenViewModel @Inject constructor(
          */
     }
 
+    /**
+     * Включает или выключает режим редактирования.
+     * Очищает выбор. При выключении сохраняет позиции.
+     *
+     * @param enable Признак включения режима.
+     */
     fun setEditable(enable: Boolean) {
         _editableMode.value = enable
         selected.clear()
@@ -89,21 +117,41 @@ class ScheduleScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Устанавливает выбранное расписание как «избранное».
+     *
+     * @param id Идентификатор расписания.
+     */
     fun setFavorite(id: Long) {
         viewModelScope.launch {
             settingsUseCase.setFavorite(id)
         }
     }
 
+    /**
+     * Проверяет, выбран ли элемент.
+     *
+     * @param id Идентификатор расписания.
+     * @return true если выбран, иначе false.
+     */
     fun isSelected(id: Long): Boolean {
         return selected.getOrElse(id.toInt()) { false }
     }
 
+    /**
+     * Инвертирует выбор расписания.
+     *
+     * @param id Идентификатор расписания.
+     */
     fun selectSchedule(id: Long) {
         val index = id.toInt()
         selected[index] = !selected.getOrElse(index) { false }
     }
 
+    /**
+     * Удаляет все выбранные расписания.
+     * После удаления отключает режим редактирования и очищает выбор.
+     */
     fun removeSelectedSchedules() {
         val data = _schedules.value ?: return
         val removed = data.filter { selected.containsKey(it.id.toInt()) }
@@ -116,6 +164,11 @@ class ScheduleScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Удаляет указанное расписание.
+     *
+     * @param schedule Модель расписания для удаления.
+     */
     fun removeSchedule(schedule: ScheduleInfo) {
         viewModelScope.launch {
             scheduleUseCase.removeSchedules(listOf(schedule))

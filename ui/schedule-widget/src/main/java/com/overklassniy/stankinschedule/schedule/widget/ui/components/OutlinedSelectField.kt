@@ -14,6 +14,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
+/**
+ * Поле выбора со всплывающим меню (ExposedDropdownMenuBox).
+ *
+ * Формирует UI: нередактируемый OutlinedTextField с выпадающим меню,
+ * заполненным значениями items. Значение отображается через menuLabel.
+ *
+ * @param value Текущее выбранное значение.
+ * @param onValueChanged Обработчик изменения выбранного значения.
+ * @param items Список доступных значений.
+ * @param menuLabel Функция отображения текста для значения.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param label Заголовок поля, опционально.
+ * @return Unit. Побочные эффекты: управление состоянием раскрытия меню.
+ */
+@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> OutlinedSelectField(
@@ -27,6 +42,7 @@ fun <T> OutlinedSelectField(
 
     var isExposed by remember { mutableStateOf(false) }
 
+    // Переключение раскрытия меню по клику на поле.
     ExposedDropdownMenuBox(
         expanded = isExposed,
         onExpandedChange = { isExposed = !isExposed },

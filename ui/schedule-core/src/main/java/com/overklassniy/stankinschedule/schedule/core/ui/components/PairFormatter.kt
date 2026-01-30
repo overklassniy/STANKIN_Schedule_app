@@ -8,8 +8,24 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 
+/**
+ * Форматтер для человекочитаемого представления пары.
+ *
+ * Собирает строку вида: «Название. Преподаватель. Тип. Подгруппа. &#91;Даты&#93;».
+ */
 class PairFormatter {
 
+    /**
+     * Формирует строковое описание пары для отображения.
+     *
+     * Алгоритм:
+     * 1. Добавляет название, преподавателя и тип пары.
+     * 2. При наличии подгруппы добавляет её обозначение.
+     * 3. Добавляет блок дат в квадратных скобках.
+     *
+     * @param pair Модель пары.
+     * @return Строка описания пары.
+     */
     fun format(pair: PairModel): String {
         return buildString {
             append(pair.title)
@@ -31,6 +47,12 @@ class PairFormatter {
         }
     }
 
+    /**
+     * Возвращает текстовое название типа пары.
+     *
+     * @param type Тип пары.
+     * @return Локализованная строка типа пары.
+     */
     private fun pairType(type: Type): String {
         return when (type) {
             Type.LECTURE -> "Лекция"
@@ -39,7 +61,12 @@ class PairFormatter {
         }
     }
 
-
+    /**
+     * Возвращает обозначение подгруппы.
+     *
+     * @param subgroup Подгруппа.
+     * @return "(А)" или "(Б)", либо null для общей группы.
+     */
     private fun pairSubgroup(subgroup: Subgroup): String? {
         return when (subgroup) {
             Subgroup.COMMON -> return null
@@ -48,8 +75,17 @@ class PairFormatter {
         }
     }
 
-
+    /**
+     * Формирует блок дат в квадратных скобках.
+     *
+     * Формат: [dd.MM, dd.MM, dd.MM-dd.MM аббревиатура_частоты]
+     *
+     * @param date Модель набора дат (синглы и диапазоны).
+     * @return Строка с датами.
+     */
     private fun pairDate(date: DateModel): String {
+        // Формируем список дат через joinToString с разделителем ", "
+        // Для диапазонов добавляем частоту (к.н. – каждая неделя, ч.н. – через неделю)
         return "[" +
                 date.joinToString(
                     separator = ", ",
@@ -69,6 +105,17 @@ class PairFormatter {
                 "]"
     }
 
+    /**
+     * Возвращает аббревиатуру частоты повторения.
+     *
+     * Обозначения:
+     * - "" — единичное событие
+     * - "к.н." — каждая неделя (еженедельно)
+     * - "ч.н." — через неделю (по нечётным/чётным)
+     *
+     * @param frequency Частота повторения.
+     * @return Аббревиатура.
+     */
     private fun pairDateFrequency(frequency: Frequency): String {
         return when (frequency) {
             Frequency.ONCE -> return ""

@@ -2,10 +2,10 @@ package com.overklassniy.stankinschedule.schedule.editor.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.DateEmptyException
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateItem
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
-import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.DateEmptyException
 import com.overklassniy.stankinschedule.schedule.core.domain.usecase.PairUseCase
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.DateRequest
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.DateResult
@@ -22,6 +22,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
+/**
+ * ViewModel редактора пары.
+ *
+ * Управляет загрузкой пары, состоянием дат, обработкой ошибок и применением изменений.
+ * Обменивается событиями выбора даты через каналы pickerRequests/pickerResults.
+ */
 @HiltViewModel
 class PairEditorViewModel @Inject constructor(
     private val useCase: PairUseCase,
@@ -54,16 +60,14 @@ class PairEditorViewModel @Inject constructor(
     private var scheduleId: Long = -1
 
     /**
-     * Предназначен во избежании изменения данных при
-     * повороте и т.п.
+     * Загружает пару для редактирования или инициализирует создание новой.
+     *
+     * @param scheduleId Идентификатор расписания.
+     * @param pairId Идентификатор пары, null для создания новой.
+     * @param mode Режим редактора: создание или редактирование.
      */
-    var isInitial: Boolean = false
-        private set
-
     fun loadPair(scheduleId: Long, pairId: Long?, mode: EditorMode) {
         this.scheduleId = scheduleId
-
-        if (isInitial) return
 
         if (mode == EditorMode.Create || pairId == null) {
             _pair.value = PairEditorState.Content(null)
@@ -80,22 +84,34 @@ class PairEditorViewModel @Inject constructor(
         }
     }
 
-    fun setPairInitial() {
-        isInitial = true
-    }
-
+    /**
+     * Публикует запрос на выбор даты.
+     *
+     * @param request Параметры запроса для диалога выбора даты.
+     */
     fun onDateRequest(request: DateRequest) {
         viewModelScope.launch {
             _pickerRequests.send(request)
         }
     }
 
+    /**
+     * Передаёт результат выбора даты подписчикам.
+     *
+     * @param result Результат выбора даты с идентификатором запроса.
+     */
     fun onDateResult(result: DateResult) {
         viewModelScope.launch {
             _pickerResults.send(result)
         }
     }
 
+    /**
+     * Заменяет существующую дату новой.
+     *
+     * @param old Старая дата.
+     * @param new Новая дата.
+     */
     fun editDate(old: DateItem, new: DateItem) {
         _date.value = _date.value.clone().apply {
             remove(old)
@@ -103,18 +119,37 @@ class PairEditorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Добавляет новую дату в текущую модель.
+     *
+     * @param new Новая дата.
+     */
     fun newDate(new: DateItem) {
         _date.value = _date.value.clone().apply {
             add(new)
         }
     }
 
+    /**
+     * Удаляет указанную дату из текущей модели.
+     *
+     * @param date Дата для удаления.
+     */
     fun removeDate(date: DateItem) {
         _date.value = _date.value.clone().apply {
             remove(date)
         }
     }
 
+    /**
+     * Применяет изменения пары.
+     *
+     * Проверяет, что список дат не пуст, затем вызывает useCase.changePair.
+     * Ошибки домена отправляет в канал scheduleErrors.
+     *
+     * @param newPair Новая модель пары.
+     * @throws DateEmptyException Если даты не указаны.
+     */
     fun applyPair(newPair: PairModel) {
         viewModelScope.launch {
             try {
@@ -135,6 +170,11 @@ class PairEditorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Удаляет текущую редактируемую пару.
+     *
+     * Если пара существует, вызывает useCase.deletePair, затем завершает состояние.
+     */
     fun deletePair() {
         viewModelScope.launch {
             try {
@@ -152,6 +192,12 @@ class PairEditorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Возвращает пару из состояния Content, иначе null.
+     *
+     * @receiver Состояние редактора пары.
+     * @return Текущая редактируемая пара или null, если состояние не Content.
+     */
     private fun PairEditorState.getOrNull(): PairModel? {
         return if (this is PairEditorState.Content) pair else null
     }

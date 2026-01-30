@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -72,7 +71,7 @@ fun SwitchPreference(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (!enabled) {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 } else {
                     Color.Unspecified
                 },
@@ -82,9 +81,9 @@ fun SwitchPreference(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = if (!enabled) {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.medium)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.74f)
                 },
             )
         }
@@ -97,6 +96,7 @@ fun SwitchPreference(
     }
 }
 
+@Suppress("AssignedValueIsNeverRead")
 @Preview(showBackground = true)
 @Composable
 private fun SwitchPreferencePreview() {

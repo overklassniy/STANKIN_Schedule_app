@@ -17,6 +17,16 @@ import com.overklassniy.stankinschedule.core.ui.components.BackButton
 import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
 
+/**
+ * Верхняя панель экрана парсинга расписания.
+ *
+ * Показывает заголовок и текущий шаг процесса импорта.
+ *
+ * @param state Текущее состояние пошагового процесса.
+ * @param onBackPressed Обработчик навигации назад.
+ * @param scrollBehavior Поведение прокрутки AppBar.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleParserAppBar(

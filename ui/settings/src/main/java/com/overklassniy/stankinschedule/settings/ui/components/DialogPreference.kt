@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
 
+@Suppress("AssignedValueIsNeverRead")
 @Composable
 fun <T : Any> DialogPreference(
     title: String,
@@ -82,7 +82,7 @@ fun <T : Any> DialogPreference(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (!enabled) {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 } else {
                     Color.Unspecified
                 },
@@ -91,9 +91,9 @@ fun <T : Any> DialogPreference(
                 text = label(selected),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (!enabled) {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.medium)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.74f)
                 },
             )
         }

@@ -7,8 +7,16 @@ import android.content.Intent
 import android.util.Log
 import com.overklassniy.stankinschedule.schedule.widget.ui.utils.ScheduleDeepLink
 
+/**
+ * Провайдер виджета расписания.
+ *
+ * Обрабатывает широковещательные события и обновления виджета.
+ */
 class ScheduleWidgetProvider : AppWidgetProvider() {
 
+    /**
+     * Обработка входящих интентов. Логирует deep‑link действия.
+     */
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
 
@@ -19,6 +27,10 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
 
     }
 
+    /**
+     * Обновление экземпляров виджета.
+     * Загружает сохраненные данные и инициирует перерисовку.
+     */
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -36,6 +48,9 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
         }
     }
 
+    /**
+     * Удаление виджетов: очищает сохраненные данные из репозитория.
+     */
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         val preference = ScheduleWidget.widgetPreference(context)
         appWidgetIds.forEach { appWidgetId -> preference.deleteData(appWidgetId) }

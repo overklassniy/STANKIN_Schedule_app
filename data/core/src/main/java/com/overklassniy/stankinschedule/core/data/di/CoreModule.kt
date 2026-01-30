@@ -27,7 +27,7 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(SingletonComponent::class)
-@Suppress("unused")
+@Suppress("Unused")
 object CoreModule {
 
     // Размер кэша для HTTP запросов (10 МБ)

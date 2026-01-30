@@ -41,14 +41,21 @@ import com.overklassniy.stankinschedule.schedule.parser.ui.util.ParserErrorMappe
 import com.overklassniy.stankinschedule.schedule.table.domain.model.TableConfig
 import com.overklassniy.stankinschedule.schedule.table.ui.components.TableView
 
-
+/**
+ * Экран результатов парсинга.
+ *
+ * Показывает превью таблицы, списки успешных, пропущенных и ошибочных результатов.
+ *
+ * @param state Состояние результатов парсинга.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @Composable
 fun ParserForm(
     state: ParserState.ParserResult,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    
+
     Stateful(
         state = state.state,
         onSuccess = { parsedFile ->
@@ -76,6 +83,14 @@ fun ParserForm(
     )
 }
 
+/**
+ * Секция успешных результатов и превью таблицы.
+ *
+ * Управляет разворачиванием списков и форматированием пар.
+ *
+ * @param parsedFile Результаты парсинга и таблица.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SuccessParsed(
@@ -85,6 +100,7 @@ private fun SuccessParsed(
     val formatter = remember { PairFormatter() }
 
     var showSuccessResult by remember { mutableStateOf(false) }
+    // Производим отложенное вычисление списков в зависимости от флагов разворота
     val successResult by remember(showSuccessResult) {
         derivedStateOf { if (showSuccessResult) parsedFile.successResult else emptyList() }
     }
@@ -221,6 +237,15 @@ private fun SuccessParsed(
     }
 }
 
+/**
+ * Фиксированный заголовок списка с кнопкой разворота.
+ *
+ * @param isExpand Флаг разворота списка.
+ * @param labelText Функция, возвращающая текст заголовка.
+ * @param onClick Обработчик клика по заголовку.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param key Ключ для stickyHeader.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 private fun LazyListScope.stickyExpandHeader(
     isExpand: Boolean,

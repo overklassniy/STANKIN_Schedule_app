@@ -33,6 +33,6 @@ data class RepositoryEntity(
      * Подавление предупреждения "unused", так как поле используется фреймворком.
      */
     @PrimaryKey(autoGenerate = true)
-    @Suppress("unused")
+    @Suppress("Unused")
     var id: Long = 0
 }

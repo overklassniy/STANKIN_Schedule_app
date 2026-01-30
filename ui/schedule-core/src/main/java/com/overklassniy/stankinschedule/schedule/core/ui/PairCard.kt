@@ -44,6 +44,21 @@ import com.overklassniy.stankinschedule.schedule.viewer.domain.model.TextContent
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ViewContent
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.isNotEmpty
 
+/**
+ * Карточка пары расписания.
+ *
+ * Формирует блок с временем, названием, преподавателем, аудиторией, типом и подгруппой.
+ *
+ * @param pair Модель пары для отображения.
+ * @param pairColors Цвета для типов и подгрупп.
+ * @param onClicked Обработчик клика по карточке.
+ * @param onLinkClicked Обработчик клика по ссылке аудитории.
+ * @param onLinkCopied Обработчик долгого нажатия для копирования ссылки аудитории.
+ * @param modifier Внешний модификатор.
+ * @param contentPadding Внутренние отступы содержимого.
+ * @param enabled Признак активности клика по карточке.
+ * @param itemSpacing Вертикальные отступы между элементами внутри колонок.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PairCard(
@@ -134,6 +149,17 @@ fun PairCard(
     }
 }
 
+/**
+ * Отображает аудиторию: текст или кликабельную ссылку.
+ *
+ * @param classroom Контент аудитории (текст или набор ссылок).
+ * @param fontSize Размер шрифта.
+ * @param onClicked Обработчик клика по тексту (если это не ссылка).
+ * @param onLinkClicked Обработчик клика по ссылке.
+ * @param onLinkCopied Обработчик долгого нажатия по ссылке (копирование).
+ * @param interactionSource Источник взаимодействий для индикации.
+ * @param modifier Внешний модификатор.
+ */
 @Composable
 private fun ClassroomText(
     classroom: ViewContent,
@@ -146,12 +172,14 @@ private fun ClassroomText(
 ) {
     when (classroom) {
         is LinkContent -> {
+            // Цвет ссылок зависит от темы системы; значения подобраны под читаемость
             val linkColor = if (isSystemInDarkTheme()) {
                 Color(113, 170, 235)
             } else {
                 Color(51, 102, 204)
             }
 
+            // Используем LongClickableText, чтобы различать обычный клик по тексту и клик по ссылке
             LongClickableText(
                 text = classroom.toAnnotatedString(fontSize, linkColor),
                 onClick = { annotation ->
@@ -181,6 +209,13 @@ private fun ClassroomText(
     }
 }
 
+/**
+ * Преобразует ссылочный контент аудитории в AnnotatedString с подчёркнутыми кликабельными участками.
+ *
+ * @param fontSize Размер шрифта.
+ * @param linkColor Цвет ссылок.
+ * @return Размеченный текст с аннотациями "URL".
+ */
 private fun LinkContent.toAnnotatedString(
     fontSize: TextUnit,
     linkColor: Color
@@ -208,6 +243,12 @@ private fun LinkContent.toAnnotatedString(
     }
 }
 
+/**
+ * Плашка с типом пары (лекция/семинар/лабораторная) и соответствующим цветом.
+ *
+ * @param type Тип пары.
+ * @param colors Палитра цветов.
+ */
 @Composable
 private fun TypeText(
     type: Type,
@@ -243,6 +284,12 @@ private fun TypeText(
     )
 }
 
+/**
+ * Плашка с обозначением подгруппы (А/Б) и соответствующим цветом.
+ *
+ * @param subgroup Подгруппа пары.
+ * @param colors Палитра цветов.
+ */
 @Composable
 private fun SubgroupText(
     subgroup: Subgroup,
@@ -280,11 +327,19 @@ private fun SubgroupText(
     }
 }
 
+/**
+ * Выбирает цвет текста, контрастный фону плашки.
+ *
+ * @param background Цвет фона плашки.
+ * @param isDark Признак «тёмности» фона (по умолчанию вычисляется через luminance < 0.5).
+ * @return Цвет текста с достаточным контрастом.
+ */
 @Composable
 private fun textColor(
     background: Color,
     isDark: Boolean = background.luminance() < 0.5f
 ): Color {
+    // Порог 0.5 для luminance – эмпирический, обеспечивает читаемость в большинстве случаев
     return if (isSystemInDarkTheme()) {
         if (isDark) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.surface
     } else {

@@ -12,6 +12,15 @@ import androidx.compose.ui.text.style.TextAlign
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryItem
 
+/**
+ * Карточка расписания в списке.
+ *
+ * Отображает имя расписания и реагирует на клик.
+ *
+ * @param item Элемент репозитория.
+ * @param onItemClicked Обработчик клика по карточке.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepositorySchedule(

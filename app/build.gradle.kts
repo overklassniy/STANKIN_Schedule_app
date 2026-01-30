@@ -33,14 +33,14 @@ android {
 
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
+
         // Opt-in to annotation defaults for Kotlin 2.x
         javaCompileOptions {
-             annotationProcessorOptions {
-                 arguments["room.schemaLocation"] = "$projectDir/schemas"
-                 arguments["room.incremental"] = "true"
-                 arguments["room.expandProjection"] = "true"
-             }
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "$projectDir/schemas"
+                arguments["room.incremental"] = "true"
+                arguments["room.expandProjection"] = "true"
+            }
         }
     }
 

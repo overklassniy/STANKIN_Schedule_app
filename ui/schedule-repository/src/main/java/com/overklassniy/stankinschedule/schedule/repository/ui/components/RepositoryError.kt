@@ -14,7 +14,15 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
 
-
+/**
+ * Блок отображения ошибки загрузки из репозитория.
+ *
+ * Показывает текст ошибки и кнопку повторной попытки.
+ *
+ * @param error Исключение, содержащее причину ошибки.
+ * @param onRetryClicked Обработчик повторной попытки загрузки.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepositoryError(
@@ -23,7 +31,7 @@ fun RepositoryError(
     modifier: Modifier = Modifier,
 ) {
     val analytics = LocalAnalytics.current
-    
+
     // Записываем исключение в аналитику
     analytics.recordException(error)
 

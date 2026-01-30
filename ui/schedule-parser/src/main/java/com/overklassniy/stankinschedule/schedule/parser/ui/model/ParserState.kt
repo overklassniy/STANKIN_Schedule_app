@@ -6,7 +6,6 @@ import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParserSetti
 
 abstract class ParserState(val step: Int) {
 
-
     open val isSuccess: Boolean get() = true
 
     class SelectFile(

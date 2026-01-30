@@ -20,6 +20,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel экрана репозитория расписаний.
+ *
+ * Управляет описанием репозитория, списком элементов, фильтрами, поиском и событиями загрузки.
+ */
 @HiltViewModel
 class ScheduleRepositoryViewModel @Inject constructor(
     private val useCase: RepositoryUseCase,
@@ -29,13 +34,19 @@ class ScheduleRepositoryViewModel @Inject constructor(
     val description = _description.asStateFlow()
 
     private var _repositoryItemsCache: List<RepositoryItem>? = null
-    private val _repositoryItems = MutableStateFlow<UIState<List<RepositoryItem>>>(UIState.loading())
+    private val _repositoryItems =
+        MutableStateFlow<UIState<List<RepositoryItem>>>(UIState.loading())
     val repositoryItems = _repositoryItems.asStateFlow()
 
     private val _download = MutableSharedFlow<DownloadState?>()
     val download = _download.asSharedFlow()
 
     private val _category = MutableStateFlow<RepositoryCategory?>(null)
+
+    /**
+     * Текущая категория репозитория (год/тип), используется для фильтрации.
+     */
+    @Suppress("unused")
     val category = _category.asStateFlow()
 
     private val _grade = MutableStateFlow<Grade?>(null)
@@ -54,6 +65,12 @@ class ScheduleRepositoryViewModel @Inject constructor(
         reloadDescription()
     }
 
+    /**
+     * Загружает элементы выбранной категории репозитория.
+     *
+     * @param category Выбранная категория.
+     * @param useCache Использовать кэш при загрузке.
+     */
     private fun loadCategory(category: RepositoryCategory, useCache: Boolean = true) {
         _repositoryItems.value = UIState.loading()
 
@@ -69,6 +86,14 @@ class ScheduleRepositoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Фильтр по уровню образования (бакалавриат/магистратура/специалитет/аспирантура).
+     *
+     * @param item Элемент репозитория.
+     * @param currentGrade Выбранный уровень образования.
+     *
+     * @return [Boolean] Проходит ли элемент фильтр.
+     */
     private fun gradeFilter(item: RepositoryItem, currentGrade: Grade?): Boolean {
         if (currentGrade == null) {
             return true
@@ -77,7 +102,7 @@ class ScheduleRepositoryViewModel @Inject constructor(
         val part = item.name.split('-').getOrNull(0) ?: return true
 
         if (part.equals("АСП", ignoreCase = true)) {
-             return currentGrade == Grade.Postgraduate
+            return currentGrade == Grade.Postgraduate
         }
 
         val itemGrade = when (part.last().uppercaseChar()) {
@@ -90,15 +115,26 @@ class ScheduleRepositoryViewModel @Inject constructor(
         return itemGrade == currentGrade
     }
 
+    /**
+     * Перезагружает текущую категорию репозитория с учетом кэша.
+     */
     fun reloadCategory() {
         val currentCategory = _category.value ?: return
         loadCategory(currentCategory)
     }
 
+    /**
+     * Обновляет описание репозитория, принудительно отключая кэш.
+     */
     fun refresh() {
         reloadDescription(useCache = false)
     }
 
+    /**
+     * Загружает описание репозитория и инициализирует первую категорию.
+     *
+     * @param useCache Использовать ли кэш.
+     */
     fun reloadDescription(useCache: Boolean = true) {
         _description.value = UIState.loading()
 
@@ -117,6 +153,11 @@ class ScheduleRepositoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Переключает выбранный уровень образования.
+     *
+     * @param grade Выбираемый уровень.
+     */
     fun updateGrade(grade: Grade) {
         if (_grade.value == grade) {
             _grade.value = null
@@ -126,6 +167,11 @@ class ScheduleRepositoryViewModel @Inject constructor(
         updateCategoryFilters()
     }
 
+    /**
+     * Переключает выбранный курс.
+     *
+     * @param course Выбираемый курс.
+     */
     fun updateCourse(course: Course) {
         if (_course.value == course) {
             _course.value = null
@@ -135,6 +181,12 @@ class ScheduleRepositoryViewModel @Inject constructor(
         updateCategoryFilters()
     }
 
+    /**
+     * Обновляет текущую категорию и загружает соответствующие данные.
+     *
+     * @param category Новая категория.
+     */
+    @Suppress("unused")
     fun updateCategory(category: RepositoryCategory) {
         if (_category.value != category) {
             _category.value = category
@@ -142,6 +194,9 @@ class ScheduleRepositoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Включает/выключает режим поиска; при выключении очищает запрос.
+     */
     fun toggleSearch() {
         _isSearchActive.value = !_isSearchActive.value
         if (!_isSearchActive.value) {
@@ -149,11 +204,21 @@ class ScheduleRepositoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Обновляет поисковый запрос и пересчитывает фильтры.
+     *
+     * @param query Текст запроса.
+     */
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
         updateCategoryFilters()
     }
 
+    /**
+     * Обрабатывает события загрузки расписания.
+     *
+     * @param event Событие (начало загрузки и т.д.).
+     */
     fun onDownloadEvent(event: DownloadEvent) {
         viewModelScope.launch {
             when (event) {
@@ -169,6 +234,15 @@ class ScheduleRepositoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Фильтр по курсу, вычисляет ожидаемый год набора группы относительно текущего года категории.
+     *
+     * @param item: Элемент
+     * @param currentCourse Выбранный курс.
+     * @param year Год из категории (например, 2024).
+     *
+     * @return [Boolean] Проходит ли элемент фильтр по курсу.
+     */
     private fun courseFilter(item: RepositoryItem, currentCourse: Course?, year: Int?): Boolean {
         if (currentCourse == null || year == null) {
             return true
@@ -178,10 +252,19 @@ class ScheduleRepositoryViewModel @Inject constructor(
         val groupYear = part.toIntOrNull() ?: return true
 
         val expectedGroupYear = (year % 100) - (currentCourse.number - 1)
-        
+
         return expectedGroupYear == groupYear
     }
 
+    /**
+     * Применяет все фильтры и поиск к кэшу элементов, сортирует и обновляет состояние.
+     *
+     * Алгоритм:
+     *  1. Фильтрация по уровню образования.
+     *  2. Фильтрация по курсу (на основе года).
+     *  3. Фильтрация по поисковому запросу (нормализация без пробелов/дефисов, lowercase).
+     *  4. Сортировка по типу образования, году набора и названию.
+     */
     private fun updateCategoryFilters() {
         val cache = _repositoryItemsCache ?: return
 
@@ -201,11 +284,12 @@ class ScheduleRepositoryViewModel @Inject constructor(
                 }
                 .filter { item ->
                     if (currentQuery.isBlank()) return@filter true
-                    fun normalize(s: String): String = s.replace(" ", "").replace("-", "").lowercase()
-                    
+                    fun normalize(s: String): String =
+                        s.replace(" ", "").replace("-", "").lowercase()
+
                     val normalizedName = normalize(item.name)
                     val normalizedQuery = normalize(currentQuery)
-                    
+
                     normalizedName.contains(normalizedQuery)
                 }
                 .sortedWith(
@@ -220,7 +304,7 @@ class ScheduleRepositoryViewModel @Inject constructor(
                         }
                     }.thenBy { item ->
                         val part = item.name.split('-').getOrNull(1) ?: "0"
-                        -(part.toIntOrNull() ?: 0) 
+                        -(part.toIntOrNull() ?: 0)
                     }.thenBy { item ->
                         item.name
                     }

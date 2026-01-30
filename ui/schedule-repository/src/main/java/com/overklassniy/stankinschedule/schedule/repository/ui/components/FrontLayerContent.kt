@@ -27,6 +27,15 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryItem
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
 
+/**
+ * Передний слой списка расписаний.
+ *
+ * Отображает количество найденных расписаний и сетку карточек.
+ *
+ * @param repositoryItems Список доступных расписаний.
+ * @param onItemClicked Обработчик клика по элементу.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FrontLayerContent(

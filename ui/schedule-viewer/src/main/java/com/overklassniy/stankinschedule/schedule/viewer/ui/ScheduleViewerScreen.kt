@@ -74,6 +74,23 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
 
+/**
+ * Экран просмотра расписания.
+ *
+ * Формирует UI: список дней с карточками, верхнюю панель, FAB перехода к таблице,
+ * диалог выбора формата сохранения, календарь выбора даты, диалог удаления и переименования.
+ *
+ * @param scheduleId Идентификатор расписания.
+ * @param startDate Начальная дата в формате ISO, может быть null.
+ * @param scheduleName Имя расписания для показа до загрузки, может быть null.
+ * @param viewModel ViewModel, управляющий состояниями и действиями.
+ * @param onBackPressed Обработчик возврата назад.
+ * @param onEditorClicked Обработчик открытия редактора пары.
+ * @param onTableViewClicked Обработчик перехода к просмотру таблицы.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @return Unit. Содержит побочные эффекты через LaunchedEffect.
+ */
+@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleViewerScreen(
@@ -88,6 +105,7 @@ fun ScheduleViewerScreen(
 ) {
     TrackCurrentScreen(screen = "ScheduleViewerScreen")
 
+    // Загружаем расписание при изменении идентификатора. Парсим дату из строки, если задана.
     LaunchedEffect(scheduleId) {
         viewModel.loadSchedule(scheduleId, startDate?.let { LocalDate.parse(it) })
     }
@@ -100,6 +118,7 @@ fun ScheduleViewerScreen(
         }
     }
 
+    // Имя расписания берется из состояния Success, либо из переданного параметра, либо пустая строка.
     val currentScheduleName by remember(scheduleState.scheduleName) {
         derivedStateOf { (scheduleState.scheduleName ?: scheduleName) ?: "" }
     }
@@ -128,6 +147,7 @@ fun ScheduleViewerScreen(
     val openAction = stringResource(R.string.open)
     val saveProgress by viewModel.saveProgress.collectAsStateWithLifecycle()
 
+    // Реакция на завершение сохранения: показываем Snackbar с кнопкой открытия файла.
     LaunchedEffect(saveProgress) {
         when (val progress = saveProgress) {
             is ExportProgress.Finished -> {
@@ -199,9 +219,10 @@ fun ScheduleViewerScreen(
         SaveFormatDialog(state = saveFormatState)
 
         if (isDaySelector) {
+            // После выбора даты и закрытия диалога сбрасываем флаг показа.
             CalendarDialog(
                 selectedDate = viewModel.currentDay,
-                onDateSelected = { viewModel.selectDate(it);isDaySelector = false },
+                onDateSelected = { viewModel.selectDate(it); isDaySelector = false },
                 onDismissRequest = { isDaySelector = false }
             )
         }
@@ -240,6 +261,8 @@ fun ScheduleViewerScreen(
             }
         }
 
+        // Отслеживаем первый видимый элемент списка, чтобы сохранять текущую дату в состоянии.
+        // distinctUntilChanged предотвращает лишние обновления, когда индекс не меняется.
         LaunchedEffect(scheduleListState, scheduleDays) {
             snapshotFlow { scheduleListState.firstVisibleItemIndex }
                 .distinctUntilChanged()
@@ -251,6 +274,7 @@ fun ScheduleViewerScreen(
                 }
         }
 
+        // Параметр isVertical управляет типом контейнера: вертикальный список или горизонтальный ряд.
         PairsList(
             state = scheduleListState,
             isVertical = isVerticalViewer,
@@ -309,6 +333,21 @@ fun ScheduleViewerScreen(
     }
 }
 
+/**
+ * Контейнер списка карточек расписания.
+ *
+ * Формирует UI: вертикальный LazyColumn или горизонтальный LazyRow в зависимости
+ * от параметра isVertical. В вертикальном режиме используется вертикальный отступ
+ * между элементами 24.dp. В горизонтальном режиме добавлен snap‑fling для
+ * комфортной прокрутки, нижний отступ 72.dp под плавающую кнопку и системные
+ * элементы, а также анимация изменения размера для плавной компоновки.
+ *
+ * @param state Состояние списка (LazyListState), используется для отслеживания позиции.
+ * @param isVertical Признак вертикального режима. true — колонка, false — ряд.
+ * @param modifier Модификатор внешнего вида и расположения контейнера.
+ * @param content Слот элементов списка (LazyListScope.() -> Unit).
+ * @return Unit. Исключений не генерирует.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PairsList(

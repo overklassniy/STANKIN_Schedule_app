@@ -29,7 +29,7 @@ import kotlin.math.max
  */
 class PDFRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context
-    ) : PDFRepository {
+) : PDFRepository {
 
     /**
      * Парсит PDF файл и извлекает ячейки с текстом.

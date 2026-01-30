@@ -14,6 +14,19 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewDay
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewPair
 
+/**
+ * Компонент карточки дня расписания.
+ *
+ * Формирует заголовок дня и список пар. При отсутствии пар показывает текст-заглушку.
+ *
+ * @param scheduleDay Модель дня расписания, содержит дату и список пар.
+ * @param pairColors Цветовая схема для типов пар и подгрупп.
+ * @param onPairClicked Обработчик клика по паре (передаётся модель пары).
+ * @param onLinkClicked Обработчик клика по ссылке аудитории.
+ * @param onLinkCopied Обработчик долгого нажатия по ссылке аудитории (копирование).
+ * @param modifier Внешний модификатор.
+ * @param enabled Признак активных кликов по карточкам пар.
+ */
 @Composable
 fun ScheduleDayCard(
     scheduleDay: ScheduleViewDay,
@@ -35,6 +48,7 @@ fun ScheduleDayCard(
                 .padding(Dimen.ContentPadding)
         )
 
+        // Если список пар пуст – показываем локализованную заглушку вместо списка
         if (scheduleDay.pairs.isEmpty()) {
 
             Text(
@@ -47,6 +61,7 @@ fun ScheduleDayCard(
         }
 
         scheduleDay.pairs.forEach { pair ->
+            // key обеспечивает стабильность элементов списка для Compose и корректные анимации
             key(pair.id) {
                 PairCard(
                     pair = pair,

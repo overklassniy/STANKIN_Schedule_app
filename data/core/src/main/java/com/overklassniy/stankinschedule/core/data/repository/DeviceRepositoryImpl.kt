@@ -52,10 +52,10 @@ class DeviceRepositoryImpl @Inject constructor(
         return contentResolver.query(this, null, null, null, null)?.use { cursor ->
             // Переходим к первой записи результата
             cursor.moveToFirst()
-            
+
             // Получаем индекс колонки с отображаемым именем
             val columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            
+
             // Если колонка найдена, возвращаем имя, иначе null
             if (columnIndex >= 0) cursor.getString(columnIndex) else null
         }

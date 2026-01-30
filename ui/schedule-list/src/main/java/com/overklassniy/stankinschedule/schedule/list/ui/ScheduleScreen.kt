@@ -46,6 +46,18 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 
+/**
+ * Экран списка расписаний.
+ *
+ * Отображает список с возможностью реорганизации (drag-and-drop), выбором элементов,
+ * режимом действий, диалогами удаления и FAB для создания расписания.
+ *
+ * @param onScheduleCreate Обработчик создания нового расписания.
+ * @param onScheduleClicked Обработчик клика по расписанию.
+ * @param viewModel ViewModel экрана списка.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
+@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun ScheduleScreen(

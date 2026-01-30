@@ -24,6 +24,20 @@ import kotlinx.coroutines.delay
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
 
+/**
+ * Снackbar-индикатор процесса экспорта.
+ *
+ * Формирует UI: строка состояния с текстом, прогресс-баром и действиями.
+ * - При Running отображает линейный индикатор прогресса и кнопку отмены
+ * - При Finished для типа Save показывает кнопку открытия сохраненного файла
+ * - При Error автоматически скрывается через короткую задержку
+ *
+ * @param progress текущее состояние экспорта
+ * @param onOpen действие открытия сохраненного файла, если экспорт завершен
+ * @param onCancelJob колбэк отмены текущей операции экспорта
+ * @param onClose колбэк закрытия снackbar после таймаута или вручную
+ * @param modifier модификатор компоновки для контейнера Snackbar
+ */
 @Composable
 fun ExportSnackBar(
     progress: ExportProgress,
@@ -32,8 +46,10 @@ fun ExportSnackBar(
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Мемоизация флага Running — избавляет от лишних перерасчетов в компоновке
     val isRunning by remember(progress) { derivedStateOf { progress is ExportProgress.Running } }
 
+    // Управление авто-закрытием: скрыть ошибку через 10 секунд, успешный результат через 5 секунд
     LaunchedEffect(progress) {
         if (progress is ExportProgress.Error) {
             delay(10000)
@@ -62,6 +78,7 @@ fun ExportSnackBar(
                     },
                 )
 
+                // Прогресс-бар видим только во время Running
                 if (isRunning) {
                     LinearProgressIndicator(
                         modifier = Modifier
@@ -71,6 +88,7 @@ fun ExportSnackBar(
                 }
             }
 
+            // Кнопка отмены доступна только при Running
             if (isRunning) {
                 TextButton(onClick = onCancelJob) {
                     Text(
@@ -79,6 +97,7 @@ fun ExportSnackBar(
                     )
                 }
             }
+            // Кнопка «Открыть» доступна только для завершенного сохранения
             if (progress is ExportProgress.Finished && progress.type == ExportType.Save) {
                 TextButton(
                     onClick = { onOpen(progress) }

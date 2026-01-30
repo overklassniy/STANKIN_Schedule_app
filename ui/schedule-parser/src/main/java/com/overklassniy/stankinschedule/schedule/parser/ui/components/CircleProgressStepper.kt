@@ -78,6 +78,20 @@ fun ProgressStepperPreview() {
 }
 
 @OptIn(ExperimentalTextApi::class)
+/**
+ * Круговой индикатор прогресса шагов.
+ *
+ * Рисует окружность фона, дугу прогресса и текст текущего шага.
+ *
+ * @param step Текущий шаг.
+ * @param count Общее количество шагов.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param progressColor Цвет дуги прогресса.
+ * @param backgroundColor Цвет окружности фона.
+ * @param stroke Толщина линий в Dp.
+ * @param stepFormatter Форматтер текста шага.
+ * @param stepColor Цвет текста шага.
+ */
 @Composable
 fun CircleProgressStepper(
     step: Int,
@@ -97,16 +111,17 @@ fun CircleProgressStepper(
         textMeasurer.measure(text = stepFormatter(step, count))
     }
 
+    // Повышаем читаемость: разбиваем на этапы рисования
     Canvas(modifier = modifier) {
         val strokeWidth = stroke.toPx()
 
-        // background
+        // Фон
         drawCircle(
             color = backgroundColor,
             style = Stroke(width = strokeWidth)
         )
 
-        // progress
+        // Прогресс
         drawArc(
             color = progressColor,
             startAngle = -90f,

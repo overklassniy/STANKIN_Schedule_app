@@ -29,6 +29,15 @@ import com.overklassniy.stankinschedule.schedule.creator.ui.R
 import kotlinx.coroutines.delay
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
+/**
+ * Диалог создания нового расписания.
+ *
+ * Формирует поле ввода имени, сообщения об ошибках и кнопки Create/Cancel.
+ *
+ * @param state Состояние процесса создания.
+ * @param onDismiss Закрыть диалог.
+ * @param onCreate Колбэк создания расписания с указанным именем.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun ScheduleCreateDialog(
@@ -36,9 +45,11 @@ fun ScheduleCreateDialog(
     onDismiss: () -> Unit,
     onCreate: (scheduleName: String) -> Unit,
 ) {
+    // Флаги отображения ошибок: существование расписания и ошибка создания
     var showExistError by remember { mutableStateOf(false) }
     var showCreateError by remember { mutableStateOf(false) }
 
+    // Текущее значение имени расписания, сохраняется при изменениях конфигурации
     var currentValue by rememberSaveable { mutableStateOf("") }
 
     AlertDialog(
@@ -50,6 +61,7 @@ fun ScheduleCreateDialog(
             val focusRequester = remember { FocusRequester() }
             val keyboardController = LocalSoftwareKeyboardController.current
 
+            // Реакция на изменение состояния: подготовка UI и закрытие диалога при успехе
             LaunchedEffect(state) {
                 showExistError = state is CreateState.AlreadyExist
                 showCreateError = state is CreateState.Error
@@ -57,6 +69,7 @@ fun ScheduleCreateDialog(
                 if (state is CreateState.New) {
                     currentValue = ""
 
+                    // Небольшая задержка перед запросом фокуса, чтобы диалог успел построиться
                     delay(timeMillis = 300)
                     focusRequester.requestFocus()
                 }
@@ -72,6 +85,7 @@ fun ScheduleCreateDialog(
                     value = currentValue,
                     onValueChange = {
                         currentValue = it
+                        // Сбрасываем ошибки при новом вводе
                         showExistError = false
                         showCreateError = false
                     },
@@ -81,6 +95,7 @@ fun ScheduleCreateDialog(
                     modifier = Modifier
                         .focusRequester(focusRequester)
                         .onFocusChanged {
+                            // Показываем клавиатуру при фокусе на поле ввода
                             if (it.isFocused) {
                                 keyboardController?.show()
                             }
@@ -107,10 +122,12 @@ fun ScheduleCreateDialog(
         confirmButton = {
             TextButton(
                 onClick = {
+                    // Разрешаем создание только при непустом имени
                     if (currentValue.isNotEmpty()) {
                         onCreate(currentValue.trim())
                     }
                 },
+                // Блокируем кнопку при пустом имени или наличии конфликта
                 enabled = currentValue.isNotEmpty() && !showExistError
             ) {
                 Text(

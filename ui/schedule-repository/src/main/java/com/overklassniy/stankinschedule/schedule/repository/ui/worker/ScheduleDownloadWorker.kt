@@ -25,11 +25,16 @@ import org.joda.time.DateTimeUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
 /**
- * Worker для скачивание расписания с репозитория
+ * Фоновый загрузчик расписаний (WorkManager).
+ *
+ * Загружает файл расписания или сохраняет его локально и сообщает прогресс через foreground-уведомление.
+ *
+ * Примечания:
+ * - Использует expedited work (при дефиците квоты падает в обычный режим).
+ * - Требует сети (NetworkType.CONNECTED).
  */
 @HiltWorker
 class ScheduleDownloadWorker @AssistedInject constructor(
@@ -38,18 +43,22 @@ class ScheduleDownloadWorker @AssistedInject constructor(
     private val loaderUseCase: RepositoryLoaderUseCase
 ) : CoroutineWorker(context, workerParameters) {
 
-    // private val manager = NotificationManagerCompat.from(context)
-
+    /**
+     * Точка входа выполнения задачи.
+     *
+     * Алгоритм:
+     *  1. Читает входные данные (имя, путь, категория, режим).
+     *  2. Запускает downloadOnly или полноценную загрузку.
+     *  3. Возвращает Result.success с выходными данными.
+     *
+     * @return [Result] Результат выполнения Work.
+     */
     override suspend fun doWork(): Result {
 
         val scheduleName = inputData.getString(SCHEDULE_NAME)!!
         val schedulePath = inputData.getString(SCHEDULE_PATH)!!
         val scheduleCategory = inputData.getString(SCHEDULE_CATEGORY)!!
         val downloadOnly = inputData.getBoolean(SCHEDULE_DOWNLOAD_ONLY, true)
-
-        // val notificationId = createID()
-        // val info = createForegroundInfo(scheduleName, notificationId)
-        // setForeground(info)
 
         return if (downloadOnly) {
             val filePath = downloadOnly(scheduleCategory, schedulePath, scheduleName)
@@ -69,6 +78,11 @@ class ScheduleDownloadWorker @AssistedInject constructor(
         }
     }
 
+    /**
+     * Предоставляет ForegroundInfo для отображения прогресса через уведомление.
+     *
+     * @return [ForegroundInfo] Конфигурация foreground-уведомления для WorkManager.
+     */
     override suspend fun getForegroundInfo(): ForegroundInfo {
         return createForegroundInfo(
             scheduleName = inputData.getString(SCHEDULE_NAME) ?: "",
@@ -76,6 +90,17 @@ class ScheduleDownloadWorker @AssistedInject constructor(
         )
     }
 
+    /**
+     * Создаёт ForegroundInfo с уведомлением о загрузке расписания.
+     *
+     * @param scheduleName Заголовок уведомления.
+     * @param notificationId Идентификатор уведомления.
+     *
+     * @return [ForegroundInfo] Данные для запуска foreground-сервиса.
+     *
+     * Примечания:
+     *     - На Android Q+ указывается тип FOREGROUND_SERVICE_TYPE_DATA_SYNC.
+     */
     private fun createForegroundInfo(scheduleName: String, notificationId: Int): ForegroundInfo {
         val cancel = WorkManager.getInstance(applicationContext)
             .createCancelPendingIntent(id)
@@ -100,6 +125,14 @@ class ScheduleDownloadWorker @AssistedInject constructor(
         }
     }
 
+    /**
+     * Полноценная загрузка расписания с сохранением в хранилище.
+     *
+     * @param scheduleCategory Категория репозитория.
+     * @param schedulePath Относительный путь к файлу.
+     * @param scheduleName Имя для сохранения расписания.
+     * @param replaceExist Заменять существующую запись.
+     */
     private suspend fun download(
         scheduleCategory: String,
         schedulePath: String,
@@ -114,6 +147,15 @@ class ScheduleDownloadWorker @AssistedInject constructor(
         loaderUseCase.loadSchedule(scheduleCategory, schedulePath, scheduleName, replaceExist)
     }
 
+    /**
+     * Скачивает только файл расписания без сохранения в БД.
+     *
+     * @param scheduleCategory: Категория.
+     * @param schedulePath: Путь.
+     * @param scheduleName: Имя.
+     *
+     * @return [String] Абсолютный путь к скачанному файлу.
+     */
     private suspend fun downloadOnly(
         scheduleCategory: String,
         schedulePath: String,
@@ -128,12 +170,21 @@ class ScheduleDownloadWorker @AssistedInject constructor(
     }
 
     /**
-     * Получение строки из ресурсов.
+     * Получает строковый ресурс из контекста приложения.
+     *
+     * @param id Идентификатор ресурса.
+     *
+     * @return [String] Значение строкового ресурса.
      */
     private fun getString(@StringRes id: Int): String {
         return applicationContext.getString(id)
     }
 
+    /**
+     * Генерирует идентификатор уведомления на основе текущего времени.
+     *
+     * @return [Int] Уникальный идентификатор уведомления.
+     */
     private fun createID(): Int {
         return SimpleDateFormat("ddHHmmss", Locale.US).format(Date()).toInt()
     }
@@ -151,8 +202,17 @@ class ScheduleDownloadWorker @AssistedInject constructor(
         const val OUTPUT_FILE_PATH = "filePath"
 
         /**
-         * Запускает worker для загрузки расписания.
-         * По умолчанию скачивает файл и возвращает путь для ручного импорта.
+         * Запускает уникальный worker для загрузки расписания.
+         *
+         * @param context Context приложения.
+         * @param scheduleName Имя для сохранения расписания.
+         * @param item Репозитный элемент (путь, категория).
+         * @param downloadOnly Только скачать файл без сохранения в БД.
+         *
+         * @return [String] Уникальное имя задачи для отслеживания статуса.
+         *
+         * Примечания:
+         *     - Имя включает timestamp для предотвращения коллизий.
          */
         fun startWorker(
             context: Context,
@@ -162,7 +222,7 @@ class ScheduleDownloadWorker @AssistedInject constructor(
         ): String {
             val manager = WorkManager.getInstance(context)
 
-            // уникальное имя worker'а с timestamp для избежания конфликтов при повторных загрузках
+            // Уникальное имя worker'а с timestamp для избежания конфликтов при повторных загрузках
             val timestamp = System.currentTimeMillis()
             val workerName = "ScheduleWorker-${item.name}-${item.category}-$timestamp"
 
@@ -185,7 +245,7 @@ class ScheduleDownloadWorker @AssistedInject constructor(
                 .build()
 
             manager.enqueueUniqueWork(workerName, ExistingWorkPolicy.REPLACE, worker)
-            
+
             return workerName
         }
     }

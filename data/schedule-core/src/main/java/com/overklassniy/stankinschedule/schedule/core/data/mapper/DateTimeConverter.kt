@@ -14,7 +14,7 @@ class DateTimeConverter {
      * @param dateTime Объект даты и времени (может быть null).
      * @return Строковое представление даты и времени или null.
      */
-    @Suppress("unused")
+    @Suppress("Unused")
     @TypeConverter
     fun fromDateTime(dateTime: DateTime?): String? {
         return dateTime?.toString()
@@ -26,7 +26,7 @@ class DateTimeConverter {
      * @param dateTime Строковое представление даты и времени (может быть null).
      * @return Объект [DateTime] или null.
      */
-    @Suppress("unused")
+    @Suppress("Unused")
     @TypeConverter
     fun toDateTime(dateTime: String?): DateTime? {
         return dateTime?.let { DateTime.parse(it) }

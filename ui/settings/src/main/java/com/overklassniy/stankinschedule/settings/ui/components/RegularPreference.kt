@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -78,7 +77,7 @@ fun RegularPreference(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (!enabled) {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 } else {
                     Color.Unspecified
                 },
@@ -88,9 +87,9 @@ fun RegularPreference(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = if (!enabled) {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.medium)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.74f)
                 },
             )
         }
@@ -104,6 +103,5 @@ private fun RegularPreferencePreview() {
         title = "Advanced settings",
         subtitle = AnnotatedString(text = "Lorem ipsum dolor sit amet"),
         onClick = { },
-        // icon = R.drawable.ic_pref_general
     )
 }

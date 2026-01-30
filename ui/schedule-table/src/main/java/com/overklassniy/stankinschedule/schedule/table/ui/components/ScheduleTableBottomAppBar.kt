@@ -27,6 +27,21 @@ import com.overklassniy.stankinschedule.schedule.table.domain.model.TableMode
 import com.overklassniy.stankinschedule.schedule.table.ui.R
 import org.joda.time.LocalDate
 
+/**
+ * Нижняя панель управления таблицей расписания.
+ *
+ * Формирует UI: BottomAppBar с кнопками назад и вперед, селектором режима
+ * отображения и кнопкой настроек. При режиме Weekly отображает номер недели.
+ *
+ * @param tableMode Текущий режим представления таблицы. Влияет на доступность стрелок.
+ * @param onTableModeChanged Обработчик изменения режима таблицы.
+ * @param page Номер страницы для недельного режима. Влияет на подпись недели.
+ * @param onBackClicked Обработчик клика по кнопке назад.
+ * @param onNextClicked Обработчик клика по кнопке вперед.
+ * @param onSettingsClicked Обработчик клика по кнопке настроек.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @return Ничего не возвращает. Побочных эффектов нет.
+ */
 @Composable
 fun ScheduleTableBottomAppBar(
     tableMode: TableMode,
@@ -40,6 +55,7 @@ fun ScheduleTableBottomAppBar(
     BottomAppBar(
         modifier = modifier
     ) {
+        // Стрелки доступны только в недельном режиме. derivedStateOf оптимизирует пересчеты.
         val isArrowsEnabled by remember(tableMode) {
             derivedStateOf { tableMode == TableMode.Weekly }
         }
@@ -122,6 +138,16 @@ fun ScheduleTableBottomAppBar(
 }
 
 
+/**
+ * Возвращает строку диапазона дат текущей недели с учетом смещения страницы.
+ *
+ * Алгоритм: вычисляет дату на сегодня с прибавлением 7 * page дней, затем
+ * формирует диапазон от понедельника до воскресенья в формате dd.MM.yyyy.
+ *
+ * @param page Номер страницы. Каждая единица равна 7 дням смещения относительно текущей даты.
+ * Допустимые значения: целые числа, отрицательные для прошлых недель.
+ * @return Строка вида dd.MM.yyyy-dd.MM.yyyy.
+ */
 private fun getDateWeek(page: Int): String {
     val date = LocalDate.now().plusDays(page * 7)
     return date.withDayOfWeek(1).toString("dd.MM.yyyy") +

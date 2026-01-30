@@ -34,7 +34,16 @@ import com.overklassniy.stankinschedule.schedule.parser.ui.forms.SelectForm
 import com.overklassniy.stankinschedule.schedule.parser.ui.forms.SettingsForm
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
 
-
+/**
+ * Экран пошагового импорта расписания из PDF.
+ *
+ * Управляет навигацией по шагам, отображает соответствующие формы и панель прогресса.
+ *
+ * @param viewModel ViewModel экрана парсинга.
+ * @param onBackPressed Обработчик навигации назад.
+ * @param onImportSuccess Обработчик успешного завершения импорта.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun ScheduleParserScreen(

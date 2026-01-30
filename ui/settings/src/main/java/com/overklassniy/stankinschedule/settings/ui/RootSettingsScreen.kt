@@ -1,12 +1,9 @@
 package com.overklassniy.stankinschedule.settings.ui
 
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -42,6 +39,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withAnnotation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import androidx.core.os.LocaleListCompat
 import com.overklassniy.stankinschedule.core.domain.settings.AppLanguage
 import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
 import com.overklassniy.stankinschedule.core.ui.utils.BrowserUtils
@@ -93,7 +92,7 @@ fun RootSettingsScreen(
 
         DialogPreference(
             title = stringResource(R.string.pref_dark_mode),
-            items = DarkMode.values().asList(),
+            items = DarkMode.entries,
             selected = nightMode,
             label = {
                 @StringRes val id = when (it) {
@@ -109,7 +108,7 @@ fun RootSettingsScreen(
 
         DialogPreference(
             title = stringResource(R.string.pref_language),
-            items = AppLanguage.values().asList(),
+            items = AppLanguage.entries,
             selected = appLanguage,
             label = {
                 @StringRes val id = when (it) {
@@ -132,18 +131,16 @@ fun RootSettingsScreen(
             icon = R.drawable.ic_pref_schedule
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            RegularPreference(
-                title = stringResource(R.string.pref_notification),
-                subtitle = stringResource(R.string.pref_notification_summary),
-                onClick = {
-                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                    intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                    context.startActivity(intent)
-                },
-                icon = R.drawable.ic_pref_notifications
-            )
-        }
+        RegularPreference(
+            title = stringResource(R.string.pref_notification),
+            subtitle = stringResource(R.string.pref_notification_summary),
+            onClick = {
+                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                context.startActivity(intent)
+            },
+            icon = R.drawable.ic_pref_notifications
+        )
 
         RegularPreference(
             title = stringResource(R.string.pref_more),
@@ -154,18 +151,13 @@ fun RootSettingsScreen(
 
         PreferenceDivider()
 
-        val isRussian = remember(appLanguage) {
+        val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+        val isRussian = remember(appLanguage, configuration) {
             when (appLanguage) {
                 AppLanguage.Russian -> true
                 AppLanguage.English -> false
                 AppLanguage.System -> {
-                    val config = context.resources.configuration
-                    val systemLanguage = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        config.locales.get(0)?.language ?: "en"
-                    } else {
-                        @Suppress("DEPRECATION")
-                        config.locale?.language ?: "en"
-                    }
+                    val systemLanguage = configuration.locales.get(0)?.language ?: "en"
                     systemLanguage == "ru"
                 }
             }
@@ -217,19 +209,31 @@ fun RootSettingsScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.update_available_title, update.latestVersion),
+                        text = stringResource(
+                            R.string.update_available_title,
+                            update.latestVersion
+                        ),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    
+
                     if (update.changelog.isNotEmpty()) {
                         val cleanChangelog = remember(update.changelog) {
                             update.changelog
-                                .replace(Regex("^#+\\s*", RegexOption.MULTILINE), "") // Remove headers ##
+                                .replace(
+                                    Regex("^#+\\s*", RegexOption.MULTILINE),
+                                    ""
+                                ) // Remove headers ##
                                 .replace(Regex("\\*\\*([^*]+)\\*\\*"), "$1") // Remove bold **text**
                                 .replace(Regex("\\*([^*]+)\\*"), "$1") // Remove italic *text*
-                                .replace(Regex("^-\\s*", RegexOption.MULTILINE), "• ") // Replace - with bullet
-                                .replace(Regex("\\[([^]]+)]\\([^)]+\\)"), "$1") // Remove links [text](url)
+                                .replace(
+                                    Regex("^-\\s*", RegexOption.MULTILINE),
+                                    "• "
+                                ) // Replace - with bullet
+                                .replace(
+                                    Regex("\\[([^]]+)]\\([^)]+\\)"),
+                                    "$1"
+                                ) // Remove links [text](url)
                                 .replace(Regex("\n{3,}"), "\n\n") // Reduce multiple newlines
                                 .trim()
                         }
@@ -240,7 +244,7 @@ fun RootSettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -248,7 +252,10 @@ fun RootSettingsScreen(
                     ) {
                         TextButton(
                             onClick = {
-                                BrowserUtils.openLink(context, "https://apps.rustore.ru/app/com.overklassniy.stankinschedule")
+                                BrowserUtils.openLink(
+                                    context,
+                                    "https://apps.rustore.ru/app/com.overklassniy.stankinschedule"
+                                )
                             },
                             modifier = Modifier.weight(1f)
                         ) {
@@ -284,18 +291,24 @@ fun RootSettingsScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
+            val appVersion = try {
+                val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                pInfo.versionName ?: "0.0.0"
+            } catch (_: Exception) {
+                "0.0.0"
+            }
             Text(
-                text = stringResource(R.string.version) + " " + BuildConfig.APP_VERSION,
+                text = stringResource(R.string.version) + " " + appVersion,
                 style = MaterialTheme.typography.titleMedium
             )
-            
+
             val changelogText = stringResource(R.string.changelog)
             val changelogUrl = if (isRussian) {
                 "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/changelog.md"
             } else {
                 "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/.info/docs/changelog_en.md"
             }
-            
+
             val primaryColor = MaterialTheme.colorScheme.primary
             val changelogAnnotatedText = buildAnnotatedString {
                 withAnnotation(tag = "URL", annotation = changelogUrl) {
@@ -304,9 +317,9 @@ fun RootSettingsScreen(
                     }
                 }
             }
-            
+
             var changelogLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-            
+
             Text(
                 text = changelogAnnotatedText,
                 style = MaterialTheme.typography.bodyMedium.copy(
@@ -317,11 +330,15 @@ fun RootSettingsScreen(
                         detectTapGestures { pos ->
                             changelogLayoutResult?.let { layout ->
                                 val offset = layout.getOffsetForPosition(pos)
-                                changelogAnnotatedText.getStringAnnotations(tag = "URL", start = offset, end = offset)
+                                changelogAnnotatedText.getStringAnnotations(
+                                    tag = "URL",
+                                    start = offset,
+                                    end = offset
+                                )
                                     .firstOrNull()?.let { annotation ->
                                         val intent = MarkdownViewerActivity.createIntent(
-                                            context, 
-                                            changelogText, 
+                                            context,
+                                            changelogText,
                                             annotation.item
                                         )
                                         context.startActivity(intent)
@@ -352,7 +369,10 @@ fun RootSettingsScreen(
                 append(legacyText)
                 append(" ")
 
-                withAnnotation(tag = "URL", annotation = "https://github.com/Nikololoshka/ProjectPepega") {
+                withAnnotation(
+                    tag = "URL",
+                    annotation = "https://github.com/Nikololoshka/ProjectPepega"
+                ) {
                     withStyle(style = SpanStyle(color = primaryColor)) {
                         append(legacyName)
                     }
@@ -360,7 +380,7 @@ fun RootSettingsScreen(
             }
 
             var legacyLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-            
+
             Text(
                 text = legacyAnnotatedText,
                 style = MaterialTheme.typography.bodyMedium.copy(
@@ -373,7 +393,11 @@ fun RootSettingsScreen(
                         detectTapGestures { pos ->
                             legacyLayoutResult?.let { layout ->
                                 val offset = layout.getOffsetForPosition(pos)
-                                legacyAnnotatedText.getStringAnnotations(tag = "URL", start = offset, end = offset)
+                                legacyAnnotatedText.getStringAnnotations(
+                                    tag = "URL",
+                                    start = offset,
+                                    end = offset
+                                )
                                     .firstOrNull()?.let { annotation ->
                                         BrowserUtils.openLink(context, annotation.item)
                                     }
@@ -390,7 +414,10 @@ fun RootSettingsScreen(
                 append(forkText)
                 append(" ")
 
-                withAnnotation(tag = "URL", annotation = "https://github.com/overklassniy/STANKIN_Schedule_app.git") {
+                withAnnotation(
+                    tag = "URL",
+                    annotation = "https://github.com/overklassniy/STANKIN_Schedule_app.git"
+                ) {
                     withStyle(style = SpanStyle(color = primaryColor)) {
                         append(forkName)
                     }
@@ -398,7 +425,7 @@ fun RootSettingsScreen(
             }
 
             var forkLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-            
+
             Text(
                 text = forkAnnotatedText,
                 style = MaterialTheme.typography.bodyMedium.copy(
@@ -411,7 +438,11 @@ fun RootSettingsScreen(
                         detectTapGestures { pos ->
                             forkLayoutResult?.let { layout ->
                                 val offset = layout.getOffsetForPosition(pos)
-                                forkAnnotatedText.getStringAnnotations(tag = "URL", start = offset, end = offset)
+                                forkAnnotatedText.getStringAnnotations(
+                                    tag = "URL",
+                                    start = offset,
+                                    end = offset
+                                )
                                     .firstOrNull()?.let { annotation ->
                                         BrowserUtils.openLink(context, annotation.item)
                                     }
@@ -425,22 +456,24 @@ fun RootSettingsScreen(
         PreferenceDivider()
 
         val supportEmail = stringResource(R.string.support_email)
+        val emailCopiedText = stringResource(R.string.email_copied_to_clipboard)
         RegularPreference(
             title = stringResource(R.string.support_email_title),
             subtitle = stringResource(R.string.support_email_summary),
             onClick = {
                 try {
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:$supportEmail")
+                        data = "mailto:$supportEmail".toUri()
                     }
                     context.startActivity(emailIntent)
                 } catch (_: Exception) {
-                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val clipboard =
+                        context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                     val clip = android.content.ClipData.newPlainText("Email", supportEmail)
                     clipboard.setPrimaryClip(clip)
                     android.widget.Toast.makeText(
                         context,
-                        context.getString(R.string.email_copied_to_clipboard),
+                        emailCopiedText,
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                 }

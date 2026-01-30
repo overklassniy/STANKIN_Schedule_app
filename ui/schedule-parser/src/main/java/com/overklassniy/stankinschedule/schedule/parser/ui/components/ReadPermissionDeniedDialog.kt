@@ -8,6 +8,13 @@ import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
+/**
+ * Диалог информирования о запрете на чтение файлов.
+ *
+ * Показывает причины и кнопку закрытия.
+ *
+ * @param onDismiss Обработчик закрытия диалога.
+ */
 @Composable
 fun ReadPermissionDeniedDialog(
     onDismiss: () -> Unit,

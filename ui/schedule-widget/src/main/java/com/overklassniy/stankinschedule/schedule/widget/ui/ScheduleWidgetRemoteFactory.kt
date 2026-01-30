@@ -42,6 +42,23 @@ class ScheduleWidgetRemoteFactory(
     private val darkColor: Int =
         context.resources.getColor(R_core.color.md_theme_dark_onSurface, context.theme)
 
+    /**
+     * Загружает данные виджета и преобразует их в список дней для отображения.
+     *
+     * Алгоритм:
+     * 1. Получить сохраненные настройки виджета по appWidgetId.
+     * 2. Если данные отсутствуют — установить isError = true и завершить метод.
+     * 3. Определить текущую дату и диапазон: сегодня + 7 дней.
+     * 4. Запросить пары по дням для указанной подгруппы в выбранном диапазоне.
+     * 5. Сформировать модели ScheduleWidgetDay и ScheduleWidgetPair и обновить состояние days.
+     * 6. Загрузить и применить набор цветов для типов пар.
+     *
+     * Поведение при ошибке:
+     * - Устанавливается флаг isError и список дней не заполняется.
+     *
+     * Возвращаемое значение:
+     * - Unit: метод изменяет внутреннее состояние фабрики без возврата значения.
+     */
     override suspend fun onDataChanged() {
         val data = useCase.loadWidgetData(appWidgetId)
 
@@ -87,21 +104,48 @@ class ScheduleWidgetRemoteFactory(
         colors = useCase.pairColors().toColor()
     }
 
+    /**
+     * Возвращает количество элементов списка виджета.
+     *
+     * Примечания:
+     * - В режиме ошибки возвращает 1, чтобы отобразить макет ошибки.
+     *
+     * Возвращаемое значение:
+     * - Int: число элементов для отображения.
+     */
     override fun getCount(): Int = if (isError) 1 else days.size
 
+    /**
+     * Возвращает RemoteViews для указанной позиции списка.
+     *
+     * @param position Индекс элемента.
+     * @return RemoteViews макет ошибки при isError=true, иначе макет дня с парами.
+     */
     override fun getViewAt(position: Int): RemoteViews {
         return if (isError) getErrorView() else getDayView(days[position])
     }
 
+    /**
+     * Создает RemoteViews для состояния ошибки загрузки данных.
+     *
+     * Возвращаемое значение:
+     * - RemoteViews: макет widget_schedule_error.
+     */
     private fun getErrorView(): RemoteViews {
         return RemoteViews(packageName, R.layout.widget_schedule_error)
     }
 
+    /**
+     * Создает RemoteViews для одного дня, включая заголовок и список пар.
+     *
+     * @param day Модель дня с локализованным заголовком, датой и списком пар.
+     * @return RemoteViews собранного элемента дня для списка виджета.
+     */
     private fun getDayView(day: ScheduleWidgetDay): RemoteViews {
         val dayView = RemoteViews(packageName, R.layout.widget_schedule_item)
         dayView.removeAllViews(R.id.day_layout)
 
-        // заголовок дня
+        // Заголовок дня
         dayView.setTextViewText(R.id.day_title, day.day)
 
         if (day.pairs.isEmpty()) {
@@ -119,13 +163,27 @@ class ScheduleWidgetRemoteFactory(
         return dayView
     }
 
+    /**
+     * Устанавливает интент для клика по дню и передает дату в экран просмотра расписания (deep-link).
+     *
+     * @param view Контейнер RemoteViews для дня.
+     * @param date Дата дня, которая будет передана в навигационный интент.
+     */
     private fun setDayClickIntent(view: RemoteViews, date: LocalDate) {
         view.setOnClickFillInIntent(
             R.id.widget_day, ScheduleDeepLink.viewerIntent(scheduleId, date)
         )
     }
 
+    /**
+     * Устанавливает цвет оформления элемента пары с учетом версии API.
+     * На API 31+ применяет фон через ColorStateList, на более ранних — цвет фильтра для ImageView.
+     *
+     * @param view RemoteViews элемента пары.
+     * @param color Цвет ARGB для оформления.
+     */
     private fun setPairColor(view: RemoteViews, color: Int) {
+        // С API 31+ используем установку ColorStateList, иначе — setColorFilter на ImageView.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             view.setColorStateList(
                 R.id.widget_pair,
@@ -141,6 +199,12 @@ class ScheduleWidgetRemoteFactory(
         }
     }
 
+    /**
+     * Добавляет элементы пар в контейнер дня.
+     *
+     * @param pairs Список пар.
+     * @param addView Колбэк добавления элемента с применением цвета.
+     */
     private fun addPairs(
         pairs: List<ScheduleWidgetPair>,
         addView: (view: RemoteViews, color: Int) -> Unit
@@ -170,6 +234,15 @@ class ScheduleWidgetRemoteFactory(
         }
     }
 
+    /**
+     * Определяет цвет ARGB и признак темного фона для указанного типа пары.
+     *
+     * Критерий темного фона:
+     * - Считается темным, если яркость (luminance) меньше 0.5.
+     *
+     * @param type Тип пары для выбора цвета из набора.
+     * @return Pair<Int, Boolean> цвет в ARGB и флаг темного фона.
+     */
     private fun colorForPair(type: ScheduleWidgetPairType): Pair<Int, Boolean> {
         val color = when (type) {
             ScheduleWidgetPairType.Lecture -> colors.lectureColor
@@ -182,6 +255,12 @@ class ScheduleWidgetRemoteFactory(
         return color to (ColorUtils.calculateLuminance(color) < 0.5)
     }
 
+    /**
+     * Возвращает представление состояния загрузки для элементов виджета.
+     *
+     * Возвращаемое значение:
+     * - RemoteViews с макетом widget_schedule_item_loading.
+     */
     override fun getLoadingView(): RemoteViews {
         return RemoteViews(packageName, R.layout.widget_schedule_item_loading)
     }

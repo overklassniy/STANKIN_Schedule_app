@@ -16,7 +16,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 
-
+/**
+ * Превью линейного индикатора шагов.
+ */
 @Preview(showBackground = true)
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
@@ -35,6 +37,19 @@ private fun LineProgressStepperPreview() {
     }
 }
 
+/**
+ * Линейный индикатор прогресса шагов.
+ *
+ * Рисует последовательность отрезков с подсветкой пройденных.
+ *
+ * @param step Текущий шаг.
+ * @param count Общее количество шагов.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param progressColor Цвет активных отрезков.
+ * @param stepColor Цвет неактивных отрезков.
+ * @param stroke Толщина линии в Dp.
+ * @param space Пробел между отрезками в Dp.
+ */
 @Composable
 fun LineProgressStepper(
     step: Int,

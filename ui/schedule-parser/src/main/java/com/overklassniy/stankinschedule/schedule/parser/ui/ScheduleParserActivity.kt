@@ -16,6 +16,11 @@ import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+/**
+ * Activity импорта расписания из PDF.
+ *
+ * Инициализирует тему, передаёт аналитику в CompositionLocal и запускает экран парсинга.
+ */
 @AndroidEntryPoint
 class ScheduleParserActivity : AppCompatActivity() {
 
@@ -31,7 +36,7 @@ class ScheduleParserActivity : AppCompatActivity() {
 
         val filePath = intent.getStringExtra(EXTRA_FILE_PATH)
         val fileName = intent.getStringExtra(EXTRA_FILE_NAME)
-        
+
         if (filePath != null && savedInstanceState == null) {
             viewModel.selectFileFromPath(filePath, fileName ?: "schedule")
         }
@@ -44,10 +49,13 @@ class ScheduleParserActivity : AppCompatActivity() {
                         onBackPressed = { onBackPressedDispatcher.onBackPressed() },
                         onImportSuccess = {
                             try {
-                                val mainActivityClass = Class.forName("com.overklassniy.stankinschedule.MainActivity")
-                                val intent = Intent(this@ScheduleParserActivity, mainActivityClass).apply {
-                                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                                }
+                                val mainActivityClass =
+                                    Class.forName("com.overklassniy.stankinschedule.MainActivity")
+                                val intent =
+                                    Intent(this@ScheduleParserActivity, mainActivityClass).apply {
+                                        flags =
+                                            Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                    }
                                 startActivity(intent)
                                 finish()
                             } catch (e: Exception) {
@@ -66,6 +74,14 @@ class ScheduleParserActivity : AppCompatActivity() {
         private const val EXTRA_FILE_PATH = "extra_file_path"
         private const val EXTRA_FILE_NAME = "extra_file_name"
 
+        /**
+         * Создаёт Intent для запуска импорта с заранее выбранным файлом.
+         *
+         * @param context Контекст для создания Intent.
+         * @param filePath Путь к PDF файлу.
+         * @param fileName Имя расписания.
+         * @return Готовый Intent.
+         */
         fun createIntent(context: Context, filePath: String, fileName: String): Intent {
             return Intent(context, ScheduleParserActivity::class.java).apply {
                 putExtra(EXTRA_FILE_PATH, filePath)

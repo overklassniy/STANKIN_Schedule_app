@@ -10,6 +10,15 @@ import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.core.ui.components.BackButton
 import com.overklassniy.stankinschedule.schedule.widget.ui.R
 
+/**
+ * Верхняя панель конфигурации виджета.
+ *
+ * Формирует UI: TopAppBar с заголовком и кнопкой назад.
+ *
+ * @param onBackPressed Обработчик возврата назад.
+ * @param scrollBehavior Поведение прокрутки панели.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleWidgetConfigureAppBar(

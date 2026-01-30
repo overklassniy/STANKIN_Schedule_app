@@ -12,11 +12,12 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ColorIcon(
     color: Color,
-    modifier: Modifier = Modifier.size(24.dp),
+    modifier: Modifier = Modifier,
+    size: androidx.compose.ui.unit.Dp = 24.dp,
     colorBorder: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Canvas(
-        modifier = modifier
+        modifier = modifier.size(size)
     ) {
         drawRect(color = color, size = this.size)
         drawRect(color = colorBorder, size = this.size, style = Stroke(width = 2f))

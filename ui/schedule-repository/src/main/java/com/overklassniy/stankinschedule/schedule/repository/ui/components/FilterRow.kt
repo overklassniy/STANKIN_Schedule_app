@@ -20,6 +20,20 @@ import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
 
+/**
+ * Ряд фильтров с выбором одного значения.
+ *
+ * Универсальный composable для списка значений типа T.
+ *
+ * @param selected Текущее выбранное значение.
+ * @param items Список доступных значений.
+ * @param title Функция формирования подписи для значения.
+ * @param onItemSelected Обработчик выбора значения.
+ * @param containerColor Цвет контейнера чипов.
+ * @param contentColor Цвет текста чипов.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param itemSpacing Расстояние между чипами.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> FilterRow(

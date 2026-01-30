@@ -24,6 +24,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.overklassniy.stankinschedule.core.ui.components.BackButton
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
 
+/**
+ * Верхняя панель экрана репозитория.
+ *
+ * Содержит поле поиска, кнопки обновления и фильтров, навигацию назад.
+ *
+ * @param isSearchActive Признак активного поиска.
+ * @param searchQuery Текущий запрос поиска.
+ * @param onSearchQueryChange Обработчик изменения запроса.
+ * @param onSearchToggle Переключение режима поиска.
+ * @param onFilterClick Открытие панели фильтров.
+ * @param onRefresh Обновление данных.
+ * @param onBackPressed Навигация назад.
+ * @param containerColor Цвет контейнера AppBar.
+ * @param contentColor Цвет контента AppBar.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepositoryToolBar(

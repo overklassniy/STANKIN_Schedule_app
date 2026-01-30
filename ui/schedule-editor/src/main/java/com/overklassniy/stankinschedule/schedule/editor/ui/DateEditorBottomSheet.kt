@@ -21,11 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.OutlinedSelectField
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
+import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.DateDayOfWeekException
 import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.DateFrequencyException
 import com.overklassniy.stankinschedule.schedule.core.domain.exceptions.DateIntersectException
@@ -40,10 +40,12 @@ import com.overklassniy.stankinschedule.schedule.editor.ui.components.DateReques
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.OutlinedDateField
 
 
+// Идентификаторы для сопоставления результата выбора даты из пикера
 private const val SINGLE_DATE_ID = "single_date"
 private const val START_DATE_ID = "start_date"
 private const val END_DATE_ID = "end_date"
 
+// Строковый формат даты для отображения и парсинга
 private const val DATE_FORMAT = "dd.MM.yyyy"
 
 private enum class DateEditorMode {
@@ -51,6 +53,17 @@ private enum class DateEditorMode {
     RangeMode
 }
 
+/**
+ * Нижняя шторка редактирования дат пары.
+ *
+ * Формирует UI для выбора одиночной даты или диапазона дат с частотой повторения.
+ * Содержит обработку ошибок домена и публикацию изменений через ViewModel.
+ *
+ * @param request Текущий запрос редактирования даты: новый или редактирование существующей.
+ * @param viewModel ViewModel редактора пары для коммуникации с состоянием и результатами.
+ * @param onDismissClicked Обработчик закрытия шторки.
+ * @param modifier Модификатор для внешнего вида и расположения.
+ */
 @Composable
 fun DateEditorBottomSheet(
     request: DateEditorRequest,
@@ -59,7 +72,11 @@ fun DateEditorBottomSheet(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val resources = context.resources
+
+    val errImpossibleAddedDate = stringResource(R.string.editor_impossible_added_date)
+    val errInvalidFrequency = stringResource(R.string.editor_invalid_frequency)
+    val errInvalidDate = stringResource(R.string.editor_invalid_date)
+    val errInvalidDayOfWeek = stringResource(R.string.editor_invalid_day_of_week)
 
     var currentMode by rememberSaveable { mutableStateOf(DateEditorMode.SingleMode) }
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
@@ -70,6 +87,7 @@ fun DateEditorBottomSheet(
     var endDate by rememberSaveable { mutableStateOf("") }
     var frequency by rememberSaveable { mutableStateOf(Frequency.EVERY) }
 
+    // Инициализация состояния при новом запросе
     LaunchedEffect(request) {
 
         currentMode = DateEditorMode.SingleMode
@@ -85,6 +103,7 @@ fun DateEditorBottomSheet(
                     currentMode = DateEditorMode.SingleMode
                     singleDate = request.date.toString(DATE_FORMAT)
                 }
+
                 is DateRange -> {
                     currentMode = DateEditorMode.RangeMode
                     startDate = request.date.start.toString(DATE_FORMAT)
@@ -95,6 +114,7 @@ fun DateEditorBottomSheet(
         }
     }
 
+    // Подписка на результаты выбора даты из диалога
     LaunchedEffect(request) {
         viewModel.pickerResults.collect { result ->
             val date = result.date.toString(DATE_FORMAT)
@@ -182,6 +202,7 @@ fun DateEditorBottomSheet(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+
             DateEditorMode.RangeMode -> {
                 OutlinedDateField(
                     value = startDate,
@@ -257,15 +278,13 @@ fun DateEditorBottomSheet(
                     onDismissClicked()
 
                 } catch (e: Exception) {
-                    @StringRes val id: Int? = when (e) {
-                        is DateIntersectException -> R.string.editor_impossible_added_date
-                        is DateFrequencyException -> R.string.editor_invalid_frequency
-                        is DateParseException -> R.string.editor_invalid_date
-                        is DateDayOfWeekException -> R.string.editor_invalid_day_of_week
-                        else -> null
+                    errorMessage = when (e) {
+                        is DateIntersectException -> errImpossibleAddedDate
+                        is DateFrequencyException -> errInvalidFrequency
+                        is DateParseException -> errInvalidDate
+                        is DateDayOfWeekException -> errInvalidDayOfWeek
+                        else -> context.exceptionDescription(e)
                     }
-
-                    errorMessage = if (id != null) resources.getString(id) else context.exceptionDescription(e)
                 }
             },
             enabled = errorMessage == null,

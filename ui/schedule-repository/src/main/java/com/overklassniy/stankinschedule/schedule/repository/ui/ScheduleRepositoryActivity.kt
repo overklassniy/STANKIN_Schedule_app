@@ -16,14 +16,32 @@ import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+/**
+ * Активность репозитория расписаний.
+ *
+ * Предоставляет контейнер для Compose-экрана и внедряет аналитику.
+ */
 @AndroidEntryPoint
 class ScheduleRepositoryActivity : AppCompatActivity() {
 
+    /**
+     * Аналитика событий (LoggerAnalytics), передается в Compose через LocalAnalytics.
+     */
     @Inject
     lateinit var loggerAnalytics: LoggerAnalytics
 
     private val viewModel: ScheduleRepositoryViewModel by viewModels()
 
+    /**
+     * Инициализация UI.
+     *
+     * Алгоритм:
+     *  1. Отключает системные отступы (edge-to-edge).
+     *  2. Устанавливает тему приложения.
+     *  3. Передает аналитику через CompositionLocal и отображает экран.
+     *
+     * @param savedInstanceState Сохраненное состояние.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

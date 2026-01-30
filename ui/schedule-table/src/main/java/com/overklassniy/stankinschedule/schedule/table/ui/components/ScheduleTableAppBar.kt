@@ -14,6 +14,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.overklassniy.stankinschedule.core.ui.components.BackButton
 import com.overklassniy.stankinschedule.schedule.table.ui.R
 
+/**
+ * Верхняя панель экрана таблицы расписания.
+ *
+ * Формирует UI: TopAppBar с заголовком и кнопкой назад. Во второй строке
+ * отображает имя расписания, если оно не пустое.
+ *
+ * @param scheduleName Имя расписания. Пустая строка скрывает вторую строку заголовка.
+ * @param onBackClicked Обработчик клика по кнопке назад.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param scrollBehavior Поведение прокрутки панели. Влияет на подъем и скрытие.
+ * @return Ничего не возвращает. Побочных эффектов нет.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleTableAppBar(

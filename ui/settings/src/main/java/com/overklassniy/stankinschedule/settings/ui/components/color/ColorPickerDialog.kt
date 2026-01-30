@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.godaddy.android.colorpicker.ClassicColorPicker
+import com.godaddy.android.colorpicker.HsvColor
 import com.overklassniy.stankinschedule.core.ui.ext.parse
 import com.overklassniy.stankinschedule.core.ui.ext.toHEX
 import com.overklassniy.stankinschedule.settings.ui.R
@@ -85,7 +86,7 @@ fun ColorPickerDialog(
                                 try {
                                     currentColor = Color.parse(newHex)
                                     isHexError = false
-                                } catch (e: IllegalArgumentException) {
+                                } catch (_: IllegalArgumentException) {
                                     isHexError = true
                                 }
                             } else {
@@ -122,9 +123,8 @@ private fun ColorPicker(
     modifier: Modifier = Modifier
 ) {
     ClassicColorPicker(
-        color = color,
-        onColorChanged = { onColorChanged(it.toColor()) },
         modifier = modifier,
-        showAlphaBar = false
-    )
+        color = HsvColor.from(color = color),
+        showAlphaBar = false,
+        onColorChanged = { onColorChanged(it.toColor()) })
 }

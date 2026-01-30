@@ -5,7 +5,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -18,6 +18,17 @@ import com.overklassniy.stankinschedule.schedule.table.domain.model.TableConfig
 import com.overklassniy.stankinschedule.schedule.table.domain.model.toDraw
 import com.overklassniy.stankinschedule.schedule.table.domain.usecase.drawScheduleTable
 
+/**
+ * Рисует таблицу расписания на Canvas.
+ *
+ * Формирует UI: холст с рассчитанными размерами и масштабом, на котором
+ * вызывается отрисовка таблицы.
+ *
+ * @param table Модель таблицы для отрисовки.
+ * @param tableConfig Конфигурация таблицы. Влияет на цвет и масштаб.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @return Ничего не возвращает. Производит отрисовку на холсте.
+ */
 @Composable
 fun TableView(
     table: ScheduleTable,
@@ -26,9 +37,9 @@ fun TableView(
 ) {
     val configuration = LocalConfiguration.current
 
-    var width by remember { mutableStateOf(0f) }
-    var height by remember { mutableStateOf(0f) }
-    var scale by remember { mutableStateOf(1f) }
+    var width by remember { mutableFloatStateOf(0f) }
+    var height by remember { mutableFloatStateOf(0f) }
+    var scale by remember { mutableFloatStateOf(1f) }
 
     val drawTable by remember(table, tableConfig.color) {
         derivedStateOf { table.toDraw(height, width, tableConfig.color) }
@@ -37,6 +48,9 @@ fun TableView(
     Canvas(
         modifier = modifier
             .onSizeChanged { size ->
+                // Расчет размеров холста и базового масштаба.
+                // В портретной ориентации используем scale = 1.5.
+                // Коэффициент 1.4 приблизительно равен sqrt(2) и задает отношение сторон близкое к A4.
                 if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
                     scale = 1.5f
                     width = size.width.toFloat() * scale

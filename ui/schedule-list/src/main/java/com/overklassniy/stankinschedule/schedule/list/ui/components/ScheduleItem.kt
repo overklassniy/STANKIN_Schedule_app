@@ -32,6 +32,20 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
 import com.overklassniy.stankinschedule.schedule.list.ui.R
 
+/**
+ * Элемент списка расписаний в обычном режиме.
+ *
+ * Отображает название, метку «избранное» и меню действий (избранное/удаление).
+ * Реагирует на короткое и длинное нажатия.
+ *
+ * @param schedule Модель расписания.
+ * @param isFavorite Признак избранного.
+ * @param onClicked Обработчик короткого нажатия.
+ * @param onLongClicked Обработчик длинного нажатия.
+ * @param onScheduleFavorite Обработчик установки/снятия избранного.
+ * @param onScheduleRemove Обработчик удаления расписания.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ScheduleItem(
@@ -47,6 +61,7 @@ fun ScheduleItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimen.ContentPadding),
         modifier = modifier
+            // Обработка жестов: короткое и длинное нажатия
             .pointerInput(schedule.id) {
                 detectTapGestures(
                     onTap = { onClicked() },

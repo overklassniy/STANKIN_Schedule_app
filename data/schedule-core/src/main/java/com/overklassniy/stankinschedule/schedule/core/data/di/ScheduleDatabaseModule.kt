@@ -16,7 +16,7 @@ import javax.inject.Singleton
  * Dagger модуль для предоставления зависимостей базы данных расписания.
  * Устанавливается в [SingletonComponent], чтобы зависимости жили в течение всего времени работы приложения.
  */
-@Suppress("unused")
+@Suppress("Unused")
 @Module
 @InstallIn(SingletonComponent::class)
 object ScheduleDatabaseModule {

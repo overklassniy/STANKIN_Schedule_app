@@ -13,6 +13,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.schedule.list.ui.R
 
+/**
+ * Верхняя панель списка расписаний в обычном режиме.
+ *
+ * Отображает заголовок экрана и кнопку перехода в режим действий.
+ *
+ * @param onActionMode Обработчик включения режима действий.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param title Заголовок панели.
+ * @param scrollBehavior Поведение прокрутки AppBar.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleToolBar(

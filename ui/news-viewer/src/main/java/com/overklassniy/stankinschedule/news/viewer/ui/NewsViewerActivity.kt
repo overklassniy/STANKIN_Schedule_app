@@ -1,7 +1,6 @@
 package com.overklassniy.stankinschedule.news.viewer.ui
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
@@ -31,12 +30,21 @@ import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.core.ui.utils.newsImageLoader
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsContent
 import com.overklassniy.stankinschedule.news.viewer.ui.databinding.ActivityNewsViewerBinding
-import com.overklassniy.stankinschedule.news.viewer.utils.NewsBrowserUtils
+import com.overklassniy.stankinschedule.news.viewer.ui.utils.NewsBrowserUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
+/**
+ * Экран просмотра содержимого новости.
+ *
+ * Отвечает за:
+ * - чтение аргументов из Intent;
+ * - настройку WebView и загрузку HTML через Quill;
+ * - обработку состояний загрузки/ошибки;
+ * - действия тулбара (открыть в браузере, поделиться, обновить).
+ */
 class NewsViewerActivity : AppCompatActivity() {
 
     @Inject
@@ -49,6 +57,17 @@ class NewsViewerActivity : AppCompatActivity() {
     private val imageLoader by lazy { newsImageLoader(this) }
     private var newsId: Int = -1
 
+    /**
+     * Инициализирует экран просмотра новости.
+     *
+     * Алгоритм:
+     * 1. Инициализирует binding и тулбар.
+     * 2. Читает аргументы из intent.
+     * 3. Настраивает WebView и подписки на состояние [newsContent].
+     * 4. Запускает первичную загрузку данных.
+     *
+     * @param savedInstanceState Сохраненное состояние activity.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -78,7 +97,8 @@ class NewsViewerActivity : AppCompatActivity() {
                         updateContent(state.data)
                     }
                     if (state is UIState.Failed) {
-                        binding.errorTitle.text = this@NewsViewerActivity.exceptionDescription(state.error)
+                        binding.errorTitle.text =
+                            this@NewsViewerActivity.exceptionDescription(state.error)
                     }
 
                     updateVisibleView(state)
@@ -89,11 +109,20 @@ class NewsViewerActivity : AppCompatActivity() {
         loggerAnalytics.logEvent(LoggerAnalytics.SCREEN_ENTER, "NewsViewerActivity")
     }
 
+    /**
+     * Логирует уход со страницы.
+     */
     override fun onDestroy() {
         super.onDestroy()
         loggerAnalytics.logEvent(LoggerAnalytics.SCREEN_LEAVE, "NewsViewerActivity")
     }
 
+    /**
+     * Обработчик кликов по пунктам меню тулбара.
+     *
+     * @param item Пункт меню.
+     * @return true если событие обработано, иначе делегируется базовой реализации.
+     */
     private fun onMenuItemClickListener(item: MenuItem): Boolean {
         when (item.itemId) {
             // Открыть в браузере
@@ -124,6 +153,18 @@ class NewsViewerActivity : AppCompatActivity() {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
+    /**
+     * Настраивает WebView для отображения контента новости.
+     *
+     * Алгоритм:
+     * 1. Инициализирует WebViewAssetLoader для доступа к ресурсам в assets.
+     * 2. Включает JavaScript и загрузку изображений.
+     * 3. Регистрирует JS-интерфейс [NewsViewInterface] под именем "Android".
+     * 4. Настраивает перехват ссылок и ресурсов.
+     *
+     * Примечания:
+     * - JavaScript включен, так как Quill требует JS для рендера.
+     */
     private fun setupWebViewSettings() {
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
@@ -137,15 +178,14 @@ class NewsViewerActivity : AppCompatActivity() {
             settings.apply {
                 allowFileAccess = true
                 loadsImagesAutomatically = true
-                javaScriptEnabled = true // Suppressed!!!
+                javaScriptEnabled = true
             }
 
             addJavascriptInterface(NewsViewInterface {
-                // Callback from js
             }, "Android")
         }
 
-        // переадресация ссылок
+        // Переадресация ссылок
         binding.newsView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
@@ -164,15 +204,30 @@ class NewsViewerActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Открывает ссылку во внешнем браузере/приложении.
+     *
+     * @param url Абсолютный URL.
+     */
     private fun openLink(url: String) {
         BrowserUtils.openLink(this, url)
     }
 
+    /**
+     * Возвращает цвет фона экрана новостей в HEX-формате.
+     *
+     * @return Строка HEX вида #RRGGBB.
+     */
     private fun newsBackgroundHex(): String {
         val backgroundColor = resources.getColor(R.color.news_viewer_background, theme)
         return "#" + Integer.toHexString(backgroundColor).drop(2)
     }
 
+    /**
+     * Обновляет UI контентом новости.
+     *
+     * @param content Модель полной новости.
+     */
     private fun updateContent(content: NewsContent) {
         binding.newsPreview.load(content.previewImageUrl, imageLoader)
         binding.toolbar.title = content.title
@@ -187,6 +242,11 @@ class NewsViewerActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Обновляет видимость элементов в зависимости от состояния загрузки.
+     *
+     * @param state Текущее состояние UI.
+     */
     private fun updateVisibleView(state: UIState<*>) {
         binding.newsView.setVisibility(state is UIState.Success)
         binding.newsRefresh.isRefreshing = state is UIState.Loading
@@ -194,41 +254,50 @@ class NewsViewerActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
+    /**
+     * Включает алгоритмическое затемнение (ALG DARKENING) в WebView, если поддерживается.
+     *
+     * @param isDarkTheme Признак темной темы.
+     */
     private fun WebView.supportDarkMode(isDarkTheme: Boolean) {
         if (isDarkTheme) {
-            // Old API
-            // WebSettingsCompat.setForceDark(settings, WebSettingsCompat.FORCE_DARK_ON)
             if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
                 WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, true)
             }
         }
     }
 
+    /**
+     * Определяет, включен ли режим темной темы.
+     *
+     * @return true, если активна темная тема.
+     */
     private fun isDarkMode(): Boolean {
         val currentNightMode = resources.configuration.uiMode.and(Configuration.UI_MODE_NIGHT_MASK)
         return currentNightMode == Configuration.UI_MODE_NIGHT_YES
     }
 
     /**
-     * Интерфейс для определения загрузки HTML в WebView.
+     * JS-интерфейс для обратного вызова из страницы после рендера контента.
+     *
+     * @param loaded Колбэк, вызываемый после завершения загрузки контента.
      */
     class NewsViewInterface(private val loaded: () -> Unit) {
+        /**
+         * Обратный вызов из JS после рендера Quill.
+         *
+         * Примечания:
+         * - Вызывается скриптом страницы через Android.onNewsLoaded().
+         */
         @JavascriptInterface
+        @Suppress("Unused")
         fun onNewsLoaded() {
             loaded.invoke()
         }
     }
 
     companion object {
-
         private const val NEWS_TITLE = "news_title"
         private const val NEWS_ID = "news_id"
-
-        fun createIntent(context: Context, newsTitle: String?, newsId: Int): Intent {
-            return Intent(context, NewsViewerActivity::class.java).apply {
-                putExtra(NEWS_TITLE, newsTitle)
-                putExtra(NEWS_ID, newsId)
-            }
-        }
     }
 }

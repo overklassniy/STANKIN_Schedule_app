@@ -34,10 +34,10 @@ class MarkdownViewerViewModel : ViewModel() {
                         .build()
 
                     val response = client.newCall(request).execute()
-                    
+
                     try {
                         if (response.isSuccessful) {
-                            response.body?.string() ?: ""
+                            response.body.string()
                         } else {
                             throw IOException("HTTP ${response.code}: ${response.message}")
                         }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.viewModels
@@ -49,11 +50,11 @@ class MarkdownViewerActivity : AppCompatActivity() {
             onBackPressedDispatcher.onBackPressed()
         }
 
-        binding.markdownRefresh.setOnRefreshListener { 
-            viewModel.loadMarkdown(url, force = true) 
+        binding.markdownRefresh.setOnRefreshListener {
+            viewModel.loadMarkdown(url, force = true)
         }
-        binding.errorAction.setOnClickListener { 
-            viewModel.loadMarkdown(url) 
+        binding.errorAction.setOnClickListener {
+            viewModel.loadMarkdown(url)
         }
 
         setupWebViewSettings()
@@ -66,9 +67,12 @@ class MarkdownViewerActivity : AppCompatActivity() {
                         is UIState.Success -> {
                             updateContent(state.data)
                         }
+
                         is UIState.Failed -> {
-                            binding.errorTitle.text = this@MarkdownViewerActivity.exceptionDescription(state.error)
+                            binding.errorTitle.text =
+                                this@MarkdownViewerActivity.exceptionDescription(state.error)
                         }
+
                         is UIState.Loading -> {
                             // Loading state
                         }
@@ -101,10 +105,10 @@ class MarkdownViewerActivity : AppCompatActivity() {
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(
-                    view: WebView?,
-                    url: String?
+                    view: WebView,
+                    request: WebResourceRequest
                 ): Boolean {
-                    url?.let { BrowserUtils.openLink(this@MarkdownViewerActivity, it) }
+                    BrowserUtils.openLink(this@MarkdownViewerActivity, request.url.toString())
                     return true
                 }
             }
@@ -133,16 +137,16 @@ class MarkdownViewerActivity : AppCompatActivity() {
         val backgroundColor = if (isDark) "#121212" else "#FFFFFF"
         val textColor = if (isDark) "#E0E0E0" else "#000000"
         val linkColor = if (isDark) "#90CAF9" else "#1976D2"
-        
+
         // Разбить на строки для обработки
         val lines = markdown.lines()
         val htmlLines = mutableListOf<String>()
         var inList = false
         var listType = ""
-        
+
         for (line in lines) {
             val trimmed = line.trim()
-            
+
             when {
                 trimmed.startsWith("# ") -> {
                     if (inList) {
@@ -151,6 +155,7 @@ class MarkdownViewerActivity : AppCompatActivity() {
                     }
                     htmlLines.add("<h1>${trimmed.substring(2)}</h1>")
                 }
+
                 trimmed.startsWith("## ") -> {
                     if (inList) {
                         htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
@@ -158,6 +163,7 @@ class MarkdownViewerActivity : AppCompatActivity() {
                     }
                     htmlLines.add("<h2>${trimmed.substring(3)}</h2>")
                 }
+
                 trimmed.startsWith("### ") -> {
                     if (inList) {
                         htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
@@ -165,6 +171,7 @@ class MarkdownViewerActivity : AppCompatActivity() {
                     }
                     htmlLines.add("<h3>${trimmed.substring(4)}</h3>")
                 }
+
                 trimmed.startsWith("#### ") -> {
                     if (inList) {
                         htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
@@ -172,6 +179,7 @@ class MarkdownViewerActivity : AppCompatActivity() {
                     }
                     htmlLines.add("<h4>${trimmed.substring(5)}</h4>")
                 }
+
                 trimmed.startsWith("- ") || trimmed.matches(Regex("^\\d+\\. .+")) -> {
                     val currentListType = if (trimmed.startsWith("- ")) "ul" else "ol"
                     if (!inList || listType != currentListType) {
@@ -189,6 +197,7 @@ class MarkdownViewerActivity : AppCompatActivity() {
                     }
                     htmlLines.add("<li>${processInlineMarkdown(content, linkColor)}</li>")
                 }
+
                 trimmed.isEmpty() -> {
                     if (inList) {
                         htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
@@ -196,6 +205,7 @@ class MarkdownViewerActivity : AppCompatActivity() {
                     }
                     htmlLines.add("<br>")
                 }
+
                 else -> {
                     if (inList) {
                         htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
@@ -205,13 +215,13 @@ class MarkdownViewerActivity : AppCompatActivity() {
                 }
             }
         }
-        
+
         if (inList) {
             htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
         }
-        
+
         val html = htmlLines.joinToString("\n")
-        
+
         return """
         <!DOCTYPE html>
         <html>
@@ -257,7 +267,10 @@ class MarkdownViewerActivity : AppCompatActivity() {
         return text
             .replace(Regex("\\*\\*(.+?)\\*\\*"), "<strong>$1</strong>")
             .replace(Regex("(?<!\\*)\\*(?!\\*)(.+?)(?<!\\*)\\*(?!\\*)"), "<em>$1</em>")
-            .replace(Regex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)"), "<a href=\"$2\" style=\"color: $linkColor;\">$1</a>")
+            .replace(
+                Regex("\\[([^]]+)]\\(([^)]+)\\)"),
+                "<a href=\"$2\" style=\"color: $linkColor;\">$1</a>"
+            )
     }
 
     private fun updateVisibleView(state: UIState<*>) {
@@ -266,6 +279,7 @@ class MarkdownViewerActivity : AppCompatActivity() {
         binding.markdownError.setVisibility(state is UIState.Failed)
     }
 
+    @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun WebView.supportDarkMode(isDarkTheme: Boolean) {
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {

@@ -16,15 +16,32 @@ import com.overklassniy.stankinschedule.core.ui.components.RadioItem
 import com.overklassniy.stankinschedule.schedule.viewer.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
+/**
+ * Состояние диалога выбора формата сохранения.
+ *
+ * @property onFormatSelected Колбэк, вызываемый при подтверждении выбора.
+ * @property isShow Признак отображения диалога. true — диалог открыт.
+ * Инвариант: при закрытии диалога isShow становится false.
+ */
 class SaveFormatDialogState internal constructor(
     internal val onFormatSelected: (format: ExportFormat) -> Unit,
     internal val isShow: MutableState<Boolean>
 ) {
+    /**
+     * Открывает диалог выбора формата.
+     * Побочный эффект: меняет isShow на true.
+     */
     fun showDialog() {
         isShow.value = true
     }
 }
 
+/**
+ * Создает и запоминает состояние диалога формата.
+ *
+ * @param onFormatSelected Обработчик выбора формата.
+ * @return Состояние диалога, привязанное к композиции.
+ */
 @Composable
 fun rememberSaveFormatDialogState(
     onFormatSelected: (format: ExportFormat) -> Unit,
@@ -35,6 +52,16 @@ fun rememberSaveFormatDialogState(
     }
 }
 
+/**
+ * Диалог выбора формата сохранения расписания.
+ *
+ * Формирует UI: AlertDialog с радиокнопками выбора формата и кнопками Ok/Cancel.
+ *
+ * @param state Состояние диалога и обработчик выбора формата.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @return Unit. Побочные эффекты: изменение state.isShow и вызов onFormatSelected.
+ */
+@Suppress("AssignedValueIsNeverRead")
 @Composable
 fun SaveFormatDialog(
     state: SaveFormatDialogState,
@@ -49,6 +76,7 @@ fun SaveFormatDialog(
                 RadioGroup(
                     title = stringResource(R.string.choose_format)
                 ) {
+                    // Варианты выбора формата. currentFormat хранит промежуточный выбор.
                     RadioItem(
                         title = stringResource(R.string.format_json),
                         selected = currentFormat == ExportFormat.Json,

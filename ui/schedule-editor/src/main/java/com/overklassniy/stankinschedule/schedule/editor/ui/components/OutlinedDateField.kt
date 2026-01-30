@@ -12,6 +12,19 @@ import com.overklassniy.stankinschedule.schedule.editor.ui.R
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 
+/**
+ * Поле ввода даты с иконкой календаря.
+ *
+ * Формирует OutlinedTextField с плейсхолдером и кнопкой открытия календаря. При нажатии
+ * на иконку календаря пытается распарсить введённую дату, иначе берёт текущую дату.
+ *
+ * @param value Текущее текстовое значение даты.
+ * @param onValueChange Обработчик изменения текста.
+ * @param onCalendarClicked Колбэк открытия календаря, получает вычисленную дату.
+ * @param label Компонент метки поля.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param dateFormat Формат даты для парсинга, по умолчанию "dd.MM.yyyy".
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OutlinedDateField(
@@ -33,9 +46,11 @@ fun OutlinedDateField(
         trailingIcon = {
             IconButton(
                 onClick = {
+                    // Пытаемся распарсить введённую дату по заданному формату
                     val current = try {
                         DateTimeFormat.forPattern(dateFormat).parseLocalDate(value)
-                    } catch (ignored: Exception) {
+                    } catch (_: Exception) {
+                        // Если парсинг не удался, подставляем текущую дату
                         LocalDate.now()
                     }
                     onCalendarClicked(current)

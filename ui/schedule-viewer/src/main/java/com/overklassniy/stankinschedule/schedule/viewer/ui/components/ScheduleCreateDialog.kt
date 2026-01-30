@@ -26,6 +26,17 @@ import androidx.compose.ui.window.DialogProperties
 import com.overklassniy.stankinschedule.schedule.viewer.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
+/**
+ * Диалог переименования расписания.
+ *
+ * Формирует UI: AlertDialog с текстовым полем, индикацией ошибок и кнопками.
+ *
+ * @param currentScheduleName Текущее имя расписания для предварительного заполнения.
+ * @param state Состояние диалога и результата переименования.
+ * @param onDismiss Обработчик закрытия диалога.
+ * @param onRename Обработчик подтверждения нового имени.
+ * @return Unit. Побочные эффекты: фокус ввода, отображение ошибок.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun ScheduleRenameDialog(
@@ -40,6 +51,8 @@ fun ScheduleRenameDialog(
     var currentValue by rememberSaveable { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
 
+    // Реакция на изменение состояния диалога.
+    // Переключает флаги ошибок и устанавливает фокус при входе в режим Rename.
     LaunchedEffect(state) {
         showExistError = state is RenameState.AlreadyExist
         showCreateError = state is RenameState.Error
@@ -63,6 +76,7 @@ fun ScheduleRenameDialog(
             Column(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
+                // Сброс ошибок при изменении ввода.
                 OutlinedTextField(
                     value = currentValue,
                     onValueChange = {

@@ -46,7 +46,15 @@ import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.schedule.parser.ui.components.ReadPermissionDeniedDialog
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
 
-
+/**
+ * Форма выбора PDF-файла расписания.
+ *
+ * Показывает превью, обрабатывает запрос разрешений и открывает файловый пикер.
+ *
+ * @param state Состояние выбора файла с превью.
+ * @param selectFile Обработчик выбора файла по Uri.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SelectForm(
@@ -66,11 +74,13 @@ fun SelectForm(
             )
         }
 
+        // Лаунчер системного диалога выбора PDF-файла
         val openScheduleLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument(),
             onResult = { if (it != null) selectFile(it) }
         )
 
+        // Состояние разрешения на чтение внешнего хранилища
         val readStoragePermission = rememberPermissionState(
             permission = Manifest.permission.READ_EXTERNAL_STORAGE,
             onPermissionResult = { isGranted ->
@@ -169,6 +179,12 @@ fun SelectForm(
     }
 }
 
+/**
+ * Проверка совместимости разрешения на чтение.
+ *
+ * Возвращает true, если разрешение предоставлено или SDK >= 33 (TIRAMISU),
+ * где доступ к PDF не требует READ_EXTERNAL_STORAGE.
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 val PermissionState.isGrantedCompat: Boolean
     get() =

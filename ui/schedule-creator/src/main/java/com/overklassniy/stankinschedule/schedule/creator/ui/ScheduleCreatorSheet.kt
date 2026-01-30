@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -52,6 +51,19 @@ import com.overklassniy.stankinschedule.schedule.creator.ui.components.ReadPermi
 import com.overklassniy.stankinschedule.schedule.creator.ui.components.ScheduleCreateDialog
 
 
+/**
+ * Лист создания расписания.
+ *
+ * Формирует сетку действий: создать новое, импорт с устройства, импорт вручную, из репозитория.
+ * Управляет разрешениями на чтение и обработкой состояний создания и импорта.
+ *
+ * @param onNavigateBack Возврат к предыдущему экрану.
+ * @param onRepositoryClicked Открыть репозиторий расписаний.
+ * @param onImportClicked Открыть экран импорта из буфера/ввода.
+ * @param onShowSnackBar Показ сообщения пользователю.
+ * @param viewModel ViewModel, управляющая логикой создания/импорта.
+ * @param modifier Внешний модификатор.
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ScheduleCreatorSheet(
@@ -62,9 +74,8 @@ fun ScheduleCreatorSheet(
     viewModel: ScheduleCreatorViewModel,
     modifier: Modifier = Modifier,
 ) {
+    // Трекинг экрана для аналитики
     TrackCurrentScreen(screen = "ScheduleCreatorSheet")
-
-    val context = LocalContext.current
 
     val createState by viewModel.createState.collectAsState()
     LaunchedEffect(createState) {
@@ -86,14 +97,21 @@ fun ScheduleCreatorSheet(
     }
 
     val importState by viewModel.importState.collectAsState()
-    LaunchedEffect(importState) {
-        val state = importState
-        if (state is ImportState.Success) {
-            onShowSnackBar(context.getString(R.string.schedule_added, state.scheduleName))
+    // Готовим локализованные сообщения для snackbar из состояния импорта
+    val successMessage = if (importState is ImportState.Success) stringResource(
+        R.string.schedule_added,
+        (importState as ImportState.Success).scheduleName
+    ) else null
+    val errorMessage =
+        if (importState is ImportState.Failed) stringResource(R.string.import_error) else null
+    // Запускаем побочный эффект при изменении сообщений: показать уведомление и вернуться назад
+    LaunchedEffect(successMessage, errorMessage) {
+        successMessage?.let {
+            onShowSnackBar(it)
             onNavigateBack()
         }
-        if (state is ImportState.Failed) {
-            onShowSnackBar(context.getString(R.string.import_error))
+        errorMessage?.let {
+            onShowSnackBar(it)
             onNavigateBack()
         }
     }
@@ -105,6 +123,7 @@ fun ScheduleCreatorSheet(
         )
     }
 
+    // Лаунчер системного диалога выбора файла (только JSON)
     val openScheduleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = {
@@ -114,6 +133,7 @@ fun ScheduleCreatorSheet(
         }
     )
 
+    // Разрешение на чтение внешнего хранилища для SDK ниже 33 (TIRAMISU)
     val readStoragePermission = rememberPermissionState(
         permission = android.Manifest.permission.READ_EXTERNAL_STORAGE,
         onPermissionResult = { isGranted ->
@@ -169,6 +189,7 @@ fun ScheduleCreatorSheet(
         val configuration = LocalConfiguration.current
 
         LazyVerticalGrid(
+            // В альбомной ориентации показываем 4 столбца, в портретной 2
             columns = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 GridCells.Fixed(4)
             } else {
@@ -178,6 +199,7 @@ fun ScheduleCreatorSheet(
             verticalArrangement = Arrangement.Bottom,
             modifier = Modifier.fillMaxWidth()
         ) {
+            // Используем иконку как ключ: она уникальна для каждого действия
             items(createItems, key = { it.icon }) { item ->
                 CreateScheduleItem(
                     item = item,
@@ -189,6 +211,16 @@ fun ScheduleCreatorSheet(
     }
 }
 
+/**
+ * Элемент сетки действий создания расписания.
+ *
+ * Показывает иконку и подпись; по клику вызывает обработчик действия.
+ *
+ * @param item Модель элемента (иконка, заголовок, обработчик).
+ * @param modifier Внешний модификатор.
+ * @param contentPadding Внутренние отступы содержимого.
+ * @param iconSize Размер иконки в dp (по умолчанию 64).
+ */
 @Composable
 private fun CreateScheduleItem(
     item: ScheduleCreatorItem,
@@ -208,6 +240,7 @@ private fun CreateScheduleItem(
             )
             .padding(contentPadding)
     ) {
+        // Иконка элемента; размер по умолчанию 64 dp — компромисс читабельности и компактности
         Icon(
             painter = painterResource(item.icon),
             contentDescription = null,
@@ -225,8 +258,15 @@ private fun CreateScheduleItem(
     }
 }
 
+/**
+ * Модель элемента сетки создателя расписаний.
+ *
+ * @property title Идентификатор строкового ресурса заголовка.
+ * @property icon Идентификатор ресурса иконки.
+ * @property onItemClicked Обработчик клика по элементу.
+ */
 private class ScheduleCreatorItem(
-    @StringRes val title: Int,
-    @DrawableRes val icon: Int,
+    @param:StringRes val title: Int,
+    @param:DrawableRes val icon: Int,
     val onItemClicked: () -> Unit,
 )

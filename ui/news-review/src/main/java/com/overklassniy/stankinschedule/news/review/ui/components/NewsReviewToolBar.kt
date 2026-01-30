@@ -21,7 +21,7 @@ import com.overklassniy.stankinschedule.news.review.ui.R
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Suppress("unused")
+@Suppress("Unused")
 fun NewsReviewToolBar(
     modifier: Modifier = Modifier,
     title: String = stringResource(R.string.news_review_title),

@@ -36,6 +36,7 @@ object ScheduleJsonUtils {
                         )
                     }
                 }
+
                 is DateRange -> {
                     JsonObject().apply {
                         addProperty(

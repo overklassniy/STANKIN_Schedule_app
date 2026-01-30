@@ -23,6 +23,19 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.table.domain.model.TableMode
 import com.overklassniy.stankinschedule.schedule.table.ui.R
 
+/**
+ * Нижняя шторка настроек таблицы.
+ *
+ * Формирует UI: заголовок, выпадающий список выбора режима таблицы и пункты
+ * действий отправки копии и сохранения.
+ *
+ * @param tableMode Текущий режим таблицы. Определяет выбранный элемент списка.
+ * @param onTableModeChanged Обработчик изменения режима таблицы.
+ * @param onSendCopyClicked Обработчик нажатия пункта отправки копии.
+ * @param onSaveClicked Обработчик нажатия пункта сохранения.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @return Ничего не возвращает. Побочных эффектов нет.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsSheet(
@@ -46,10 +59,11 @@ fun SettingsSheet(
                 .padding(Dimen.ContentPadding * 2)
         )
 
+        // Элемент выбора режима таблицы. Список заполняется из TableMode.entries.
         OutlinedSelectField(
             value = tableMode,
             onValueChanged = onTableModeChanged,
-            items = TableMode.values().toList(),
+            items = TableMode.entries,
             menuLabel = { mode ->
                 when (mode) {
                     TableMode.Full -> stringResource(R.string.table_full)

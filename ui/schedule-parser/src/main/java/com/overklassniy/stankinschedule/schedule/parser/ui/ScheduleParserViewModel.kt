@@ -28,8 +28,9 @@ import org.joda.time.LocalDate
 import javax.inject.Inject
 
 /**
- * ViewModel для экрана парсера расписания из PDF.
- * Управляет состоянием парсинга, выбором файла, настройками и сохранением расписания.
+ * ViewModel процесса импорта расписания из PDF.
+ *
+ * Управляет шагами мастера, выбранным файлом, настройками парсера и результатами.
  */
 @HiltViewModel
 class ScheduleParserViewModel @Inject constructor(
@@ -40,6 +41,10 @@ class ScheduleParserViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _parserState = MutableStateFlow<ParserState>(ParserState.SelectFile())
+
+    /**
+     * Публичное состояние пошагового процесса импорта.
+     */
     val parserState = _parserState.asStateFlow()
 
     private var _selectedFile: SelectedFile? = null
@@ -50,6 +55,11 @@ class ScheduleParserViewModel @Inject constructor(
     private var _parserResult: ParsedFile? = null
     private var _scheduleName: String = ""
 
+    /**
+     * Выбирает файл по Uri, извлекает имя и рендерит превью.
+     *
+     * @param uri Ссылка на PDF.
+     */
     fun selectFile(uri: Uri) {
         viewModelScope.launch {
             try {
@@ -67,6 +77,12 @@ class ScheduleParserViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Выбирает файл по пути и имени, рендерит превью.
+     *
+     * @param filePath Путь к PDF.
+     * @param fileName Имя расписания.
+     */
     fun selectFileFromPath(filePath: String, fileName: String) {
         viewModelScope.launch {
             try {
@@ -85,14 +101,30 @@ class ScheduleParserViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Обновляет настройки парсера.
+     *
+     * @param settings Новые настройки парсера.
+     */
     fun onSetupSettings(settings: ParserSettings) {
         _parserSettings = settings
     }
 
+    /**
+     * Обновляет имя расписания перед сохранением.
+     *
+     * @param scheduleName Новое имя расписания.
+     */
     fun onScheduleNameChanged(scheduleName: String) {
         _scheduleName = scheduleName
     }
 
+    /**
+     * Проверяет корректность имени расписания и уникальность, затем инициирует сохранение.
+     *
+     * @param scheduleName Имя расписания для проверки.
+     * @param currentResult Текущий результат парсинга.
+     */
     private fun checkScheduleName(scheduleName: String, currentResult: ParsedFile) {
         viewModelScope.launch {
             if (scheduleName.isEmpty()) {
@@ -117,6 +149,11 @@ class ScheduleParserViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Сохраняет модель расписания и обновляет состояние завершения импорта.
+     *
+     * @param schedule Модель расписания для сохранения.
+     */
     private fun saveSchedule(schedule: ScheduleModel) {
         viewModelScope.launch {
             _parserState.value = ParserState.ImportFinish(state = UIState.loading())
@@ -140,6 +177,13 @@ class ScheduleParserViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Запускает парсинг PDF по выбранному файлу и настройкам.
+     * Раскладывает результаты на success/missing/error и формирует ParsedFile.
+     *
+     * @param selectedFile Выбранный файл.
+     * @param settings Настройки парсера.
+     */
     private fun startScheduleParser(
         selectedFile: SelectedFile,
         settings: ParserSettings
@@ -153,6 +197,7 @@ class ScheduleParserViewModel @Inject constructor(
                 val successResult = mutableListOf<ParseResult.Success>()
                 val missingResult = mutableListOf<ParseResult.Missing>()
                 val errorResult = mutableListOf<ParseResult.Error>()
+                // Раскладываем результаты по типам: success/missing/error
                 for (r in result) {
                     when (r) {
                         is ParseResult.Success -> successResult += r
@@ -181,6 +226,13 @@ class ScheduleParserViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Создаёт модель расписания из успешных результатов парсинга.
+     *
+     * @param scheduleName Имя расписания.
+     * @param successResult Список успешно распознанных пар.
+     * @return Модель расписания.
+     */
     private fun createScheduleModel(
         scheduleName: String,
         successResult: List<ParseResult.Success>
@@ -196,7 +248,9 @@ class ScheduleParserViewModel @Inject constructor(
         return schedule
     }
 
-
+    /**
+     * Переход назад по шагам мастера.
+     */
     fun back() {
         when (_parserState.value) {
             is ParserState.Settings -> {
@@ -206,7 +260,7 @@ class ScheduleParserViewModel @Inject constructor(
                         try {
                             val preview = parserUseCase.renderPreview(selectedFile.path.toString())
                             _parserState.value = ParserState.SelectFile(selectedFile, preview)
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             // Если не удалось загрузить превью, возвращаемся без него
                             _parserState.value = ParserState.SelectFile(selectedFile, null)
                         }
@@ -235,6 +289,9 @@ class ScheduleParserViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Переход на следующий шаг мастера.
+     */
     fun next() {
         when (_parserState.value) {
             is ParserState.SelectFile -> {

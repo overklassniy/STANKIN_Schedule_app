@@ -12,6 +12,16 @@ import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.core.ui.components.BackButton
 import com.overklassniy.stankinschedule.schedule.editor.ui.R
 
+/**
+ * Верхняя панель редактора пары.
+ *
+ * Формирует заголовок, кнопку назад, а также действия удаления и применения изменений.
+ *
+ * @param onApplyClicked Обработчик нажатия на кнопку применения.
+ * @param onDeleteClicked Обработчик нажатия на кнопку удаления пары.
+ * @param onBackClicked Обработчик кнопки навигации назад.
+ * @param scrollBehavior Поведение прокрутки AppBar, может быть null.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorToolbar(
@@ -24,9 +34,11 @@ fun EditorToolbar(
         title = {
             Text(text = stringResource(R.string.editor_title))
         },
+        // Кнопка навигации назад
         navigationIcon = {
             BackButton(onClick = onBackClicked)
         },
+        // Кнопки действий редактора: удалить и применить
         actions = {
             IconButton(onClick = onDeleteClicked) {
                 Icon(

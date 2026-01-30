@@ -8,6 +8,15 @@ import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
+/**
+ * Диалог уведомления о существующем имени расписания.
+ *
+ * Предлагает переименовать или отменить действие.
+ *
+ * @param scheduleName Текущее имя расписания.
+ * @param onRename Обработчик перехода к переименованию.
+ * @param onDismiss Обработчик закрытия диалога.
+ */
 @Composable
 fun RequiredNameDialog(
     scheduleName: String,

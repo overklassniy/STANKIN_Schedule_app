@@ -16,6 +16,12 @@ import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+/**
+ * Activity просмотра таблицы расписания.
+ *
+ * Назначение: хостит Compose-экран ScheduleTableScreen и передает ему идентификатор
+ * расписания через Intent extras.
+ */
 @AndroidEntryPoint
 class ScheduleTableViewActivity : AppCompatActivity() {
 
@@ -27,8 +33,10 @@ class ScheduleTableViewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Отключаем системные отступы, чтобы контент занимал всю область экрана.
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        // Читаем идентификатор расписания из Intent. Значение -1 используется как маркер отсутствия.
         val scheduleId = intent.getLongExtra(SCHEDULE_ID, -1)
 
         setContent {
@@ -47,8 +55,19 @@ class ScheduleTableViewActivity : AppCompatActivity() {
 
     companion object {
 
+        /**
+         * Ключ для передачи идентификатора расписания в Intent extras.
+         * Инвариант: совпадает по обе стороны передачи.
+         */
         private const val SCHEDULE_ID = "schedule_id"
 
+        /**
+         * Создает Intent для запуска Activity просмотра таблицы.
+         *
+         * @param context Контекст, из которого создается Intent.
+         * @param scheduleId Идентификатор расписания.
+         * @return Intent с установленным extra SCHEDULE_ID.
+         */
         fun createIntent(context: Context, scheduleId: Long): Intent {
             return Intent(context, ScheduleTableViewActivity::class.java).apply {
                 putExtra(SCHEDULE_ID, scheduleId)

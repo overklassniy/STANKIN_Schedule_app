@@ -147,16 +147,16 @@ class UniversityNewsRepositoryImpl @Inject constructor(
                 """<a\s+[^>]*?href="(/ads/[^"]+/)"[^>]*?>(.*?)</a>""",
                 setOf(RegexOption.DOT_MATCHES_ALL, RegexOption.IGNORE_CASE)
             )
-            
+
             // Паттерн для изображения
             val adsImage = Regex("""<img[^>]*src="([^"]+)"[^>]*>""", RegexOption.DOT_MATCHES_ALL)
-            
+
             // Паттерн для даты: <span class="date">22/01<br>2026</span>
             val adsDate = Regex(
                 """<span[^>]*class="date"[^>]*>(\d{1,2}/\d{1,2})<br>(\d{4})</span>""",
                 RegexOption.DOT_MATCHES_ALL
             )
-            
+
             // Паттерн для заголовка: <span class="name">...</span>
             val adsTitle = Regex(
                 """<span[^>]*class="name"[^>]*>([^<]+)</span>""",
@@ -168,23 +168,23 @@ class UniversityNewsRepositoryImpl @Inject constructor(
                 .map { match ->
                     val link = match.groupValues[1]
                     val content = match.groupValues[2]
-                    
-                    val imageUrl = adsImage.find(content)?.let { 
+
+                    val imageUrl = adsImage.find(content)?.let {
                         StankinUniversityNewsAPI.BASE_URL + it.groupValues[1]
                     }
-                    
+
                     val dateMatch = adsDate.find(content)
                     val dateStr = if (dateMatch != null) {
                         processAdsDate(dateMatch.groupValues[1], dateMatch.groupValues[2])
                     } else {
                         DateTime.now().toString(ISODateTimeFormat.date())
                     }
-                    
+
                     val title = adsTitle.find(content)?.groupValues?.get(1)
                         ?.trim()
                         ?.replace(Regex("\\s+"), " ")
                         ?: "Анонс"
-                    
+
                     NewsPost(
                         id = 0,
                         title = title,

@@ -14,6 +14,22 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 
+/**
+ * Текстовый компонент с поддержкой короткого и долгого нажатия.
+ *
+ * При клике/лонг-клике определяет аннотацию (например, ссылку) по позиции курсора
+ * и передаёт её в соответствующий колбэк.
+ *
+ * @param text Размеченный текст [AnnotatedString] с возможными аннотациями.
+ * @param modifier Внешний модификатор.
+ * @param style Стиль текста.
+ * @param softWrap Перенос строк.
+ * @param overflow Поведение переполнения.
+ * @param maxLines Максимальное число строк.
+ * @param interactionSource Источник взаимодействий для эффектов нажатия.
+ * @param onClick Колбэк короткого нажатия с аннотацией под курсором (или null).
+ * @param onLongClick Колбэк долгого нажатия с аннотацией под курсором (или null).
+ */
 @Composable
 fun LongClickableText(
     text: AnnotatedString,
@@ -28,6 +44,7 @@ fun LongClickableText(
 ) {
     val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
     val gesture = Modifier.pointerInput(onClick, onLongClick, interactionSource) {
+        // Обрабатываем жесты: долгий тап, короткий тап и press (для визуальной обратной связи)
         detectTapGestures(
             onLongPress = { pos ->
                 layoutResult.value?.let { layout ->
@@ -49,6 +66,7 @@ fun LongClickableText(
                     text.getStringAnnotations(offset, offset).firstOrNull()
                 }
 
+                // Если аннотации под курсором нет — эмитим обычное нажатие для стандартной индикации
                 if (annotation == null) {
                     val press = PressInteraction.Press(pos)
                     interactionSource.emit(press)

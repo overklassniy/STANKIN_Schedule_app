@@ -23,6 +23,19 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
 import com.overklassniy.stankinschedule.schedule.list.ui.R
 
+/**
+ * Элемент списка в режиме действий.
+ *
+ * Позволяет выбирать элементы и перетаскивать их при помощи drag-ручки.
+ * Выбранные элементы подсвечиваются цветом контейнера.
+ *
+ * @param schedule Модель расписания.
+ * @param isSelected Признак выбранного элемента.
+ * @param onClicked Обработчик клика по элементу.
+ * @param draggableModifier Модификатор для drag-ручки.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
+@Suppress("ModifierParameter")
 @Composable
 fun ScheduleActionItem(
     schedule: ScheduleInfo,

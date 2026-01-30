@@ -14,6 +14,17 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
 
+/**
+ * Панель навигации по шагам импорта.
+ *
+ * Содержит кнопки «Назад», «Далее» и «Готово», учитывая текущее состояние.
+ *
+ * @param parserState Текущее состояние шагов.
+ * @param navigateBack Обработчик перехода назад.
+ * @param navigateNext Обработчик перехода на следующий шаг.
+ * @param navigateDone Обработчик завершения процесса.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @Composable
 fun StepperNavigation(
     parserState: ParserState,
@@ -37,16 +48,6 @@ fun StepperNavigation(
         }
 
         Spacer(modifier = Modifier.weight(1f))
-
-        /*
-        LineProgressStepper(
-            step = parserState.step,
-            count = ParserState.STEP_TOTAL,
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = Dimen.ContentPadding)
-        )
-         */
 
         Button(
             onClick = if (parserState is ParserState.ImportFinish) {

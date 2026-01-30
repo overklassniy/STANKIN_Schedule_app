@@ -31,7 +31,7 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(SingletonComponent::class)
-@Suppress("unused")
+@Suppress("Unused")
 object NewsNetworkModule {
 
     /**
@@ -61,7 +61,7 @@ object NewsNetworkModule {
      */
     @Provides
     @Singleton
-    @Suppress("unused")
+    @Suppress("Unused")
     fun provideDeanNewsService(client: OkHttpClient): StankinDeanNewsAPI {
         return Retrofit.Builder()
             .baseUrl(StankinDeanNewsAPI.BASE_URL)
@@ -86,7 +86,7 @@ object NewsNetworkModule {
  */
 @Module
 @InstallIn(ViewModelComponent::class)
-@Suppress("unused")
+@Suppress("Unused")
 object NewsModule {
 
     /**

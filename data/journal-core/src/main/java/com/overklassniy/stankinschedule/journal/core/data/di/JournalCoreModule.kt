@@ -31,7 +31,7 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 @Module
 @InstallIn(ViewModelComponent::class, SingletonComponent::class)
-@Suppress("unused")
+@Suppress("Unused")
 object JournalCoreModule {
 
     /**

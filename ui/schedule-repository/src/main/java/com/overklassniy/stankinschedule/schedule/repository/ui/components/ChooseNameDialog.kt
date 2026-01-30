@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
+@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChooseNameDialog(

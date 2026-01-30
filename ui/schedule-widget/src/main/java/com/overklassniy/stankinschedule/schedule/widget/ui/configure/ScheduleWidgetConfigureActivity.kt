@@ -14,6 +14,12 @@ import com.overklassniy.stankinschedule.schedule.widget.ui.ScheduleWidget
 import com.overklassniy.stankinschedule.schedule.widget.ui.components.ScheduleWidgetConfigureScreen
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Activity конфигурации виджета расписания.
+ *
+ * Назначение: отображает Compose‑экран конфигурации, возвращает результат
+ * системы AppWidgetManager при подтверждении настроек.
+ */
 @AndroidEntryPoint
 class ScheduleWidgetConfigureActivity : AppCompatActivity() {
 
@@ -22,8 +28,10 @@ class ScheduleWidgetConfigureActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // По умолчанию конфигурирование считается отмененным до явного подтверждения.
         setResult(RESULT_CANCELED)
 
+        // Читаем идентификатор виджета из Intent. INVALID_APPWIDGET_ID сигнализирует об ошибке.
         val appWidgetId = intent.getIntExtra(
             AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID
         )
@@ -41,6 +49,12 @@ class ScheduleWidgetConfigureActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Обработка подтверждения настроек виджета.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     * @param data Настройки виджета.
+     */
     private fun onScheduleWidgetChanged(appWidgetId: Int, data: ScheduleWidgetData) {
         // обновляем виджет
         val appWidgetManager = AppWidgetManager.getInstance(this)

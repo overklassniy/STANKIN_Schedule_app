@@ -20,6 +20,20 @@ import com.overklassniy.stankinschedule.schedule.repository.domain.model.Course
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.Grade
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
 
+/**
+ * Задний слой фильтров репозитория расписаний.
+ *
+ * Формирует список фильтров по уровню образования и курсу.
+ *
+ * @param selectedGrade Текущий выбранный уровень образования.
+ * @param onGradeSelected Обработчик выбора уровня образования.
+ * @param selectedCourse Текущий выбранный курс.
+ * @param onCourseSelected Обработчик выбора курса.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param itemSpacing Интервал между элементами списка.
+ * @param containerColor Цвет контейнера фильтров.
+ * @param contentColor Цвет текста и иконок.
+ */
 @Composable
 fun BackLayerContent(
     selectedGrade: Grade?,
@@ -78,7 +92,7 @@ fun BackLayerContent(
             Grade.Postgraduate -> Course.entries.take(3)
             null -> Course.entries
         }
-        
+
         FilterRow(
             selected = selectedCourse,
             items = availableCourses,

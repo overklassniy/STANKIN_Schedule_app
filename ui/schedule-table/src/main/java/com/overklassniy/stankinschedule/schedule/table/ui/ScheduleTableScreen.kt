@@ -1,5 +1,8 @@
 package com.overklassniy.stankinschedule.schedule.table.ui
 
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -28,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,9 +41,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.FileSaveDialogs
@@ -60,6 +63,19 @@ import com.overklassniy.stankinschedule.schedule.table.ui.components.rememberFor
 import kotlinx.coroutines.launch
 
 
+/**
+ * Экран просмотра таблицы расписания.
+ *
+ * Формирует UI: холст с таблицей, панель инструментов сверху и снизу,
+ * шторка настроек, диалоги выбора формата и сохранения, индикатор экспорта.
+ * Обрабатывает жесты масштабирования и клики через ZoomableBox.
+ *
+ * @param scheduleId Идентификатор расписания для загрузки.
+ * @param viewModel ViewModel экрана. Управляет данными и экспортом.
+ * @param onBackClicked Обработчик возврата назад.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @return Ничего не возвращает. Содержит побочные эффекты через LaunchedEffect.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun ScheduleTableScreen(
@@ -77,6 +93,7 @@ fun ScheduleTableScreen(
         skipHalfExpanded = true
     )
     val sheetScope = rememberCoroutineScope()
+    // Перехватываем системную кнопку назад для закрытия шторки настроек.
     BackHandler(enabled = sheetState.isVisible) {
         sheetScope.launch { sheetState.hide() }
     }
@@ -90,24 +107,20 @@ fun ScheduleTableScreen(
     val table by viewModel.table.collectAsState()
 
     val color = MaterialTheme.colorScheme.onBackground
-    val configuration = LocalConfiguration.current
-    val density = LocalDensity.current
-    val longScreenSize by remember(configuration, density) {
+    val windowInfo = LocalWindowInfo.current
+    val longScreenSize by remember(windowInfo) {
         derivedStateOf {
-            val size = if (configuration.screenWidthDp > configuration.screenHeightDp) {
-                configuration.screenWidthDp
-            } else {
-                configuration.screenHeightDp
-            }
-            with(density) { size.dp.toPx() }
+            val size = windowInfo.containerSize
+            maxOf(size.width, size.height).toFloat()
         }
     }
 
     var tableMode by rememberSaveable { mutableStateOf(TableMode.Full) }
-    var pageNumber by rememberSaveable { mutableStateOf(0) }
+    var pageNumber by rememberSaveable { mutableIntStateOf(0) }
     var showUI by rememberSaveable { mutableStateOf(true) }
 
-    LaunchedEffect(color, configuration, tableMode, pageNumber) {
+    // Синхронизируем конфигурацию таблицы с изменениями цвета, размеров экрана и режима.
+    LaunchedEffect(color, longScreenSize, tableMode, pageNumber) {
         viewModel.setConfig(
             color = color.toArgb(),
             longScreenSize = longScreenSize,
@@ -136,6 +149,7 @@ fun ScheduleTableScreen(
     val exportProgress by viewModel.exportProgress.collectAsState()
 
     val context = LocalContext.current
+    // Реакция на завершение экспорта. При типе Send открываем системный диалог отправки.
     LaunchedEffect(exportProgress) {
         val progress = exportProgress
 

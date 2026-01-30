@@ -15,32 +15,64 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel создания расписания.
+ *
+ * Управляет состояниями создания пустого расписания и импорта из файла.
+ * Все операции выполняются в viewModelScope.
+ */
 @HiltViewModel
 class ScheduleCreatorViewModel @Inject constructor(
     private val scheduleUseCase: ScheduleUseCase,
     private val scheduleDeviceUseCase: ScheduleDeviceUseCase
 ) : ViewModel() {
 
+    /**
+     * Состояние диалога создания расписания.
+     * null означает отсутствие активного диалога.
+     */
     private val _createState = MutableStateFlow<CreateState?>(null)
     val createState = _createState.asStateFlow()
 
+    /**
+     * Состояние импорта расписания с устройства.
+     * null означает отсутствие активного процесса импорта.
+     */
     private val _importState = MutableStateFlow<ImportState?>(null)
     val importState = _importState.asStateFlow()
 
+    /**
+     * Обрабатывает событие запуска или отмены создания расписания.
+     *
+     * @param event Событие создания [CreateEvent].
+     */
     fun onCreateSchedule(event: CreateEvent) {
+        // Переключаем состояние диалога в зависимости от события
         _createState.value = when (event) {
             CreateEvent.Cancel -> null
             CreateEvent.New -> CreateState.New
         }
     }
 
+    /**
+     * Создает пустое расписание.
+     *
+     * Алгоритм:
+     * 1. Вызывает use case создания.
+     * 2. При ошибке публикует CreateState.Error.
+     * 3. При успехе публикует CreateState.Success, иначе CreateState.AlreadyExist.
+     *
+     * @param scheduleName Имя нового расписания.
+     */
     fun createSchedule(scheduleName: String) {
         viewModelScope.launch {
             scheduleUseCase.createEmptySchedule(scheduleName)
+                // Обрабатываем ошибку потока создания и транслируем её в состояние
                 .catch { e ->
                     _createState.value = CreateState.Error(e)
                 }
                 .collect { isCreated ->
+                    // true означает успешное создание, false означает конфликт имени
                     _createState.value = if (isCreated) {
                         CreateState.Success
                     } else {
@@ -50,13 +82,20 @@ class ScheduleCreatorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Импортирует расписание из выбранного файла.
+     *
+     * @param uri Ссылка на документ.
+     */
     fun importSchedule(uri: Uri) {
         viewModelScope.launch {
             scheduleDeviceUseCase.loadFromDevice(uri.toString())
+                // Ошибки чтения файла транслируем в состояние Failed
                 .catch { e ->
                     _importState.value = ImportState.Failed(e)
                 }
                 .collect {
+                    // При успехе передаем загруженную модель в состояние Success
                     _importState.value = ImportState.Success(it)
                 }
         }

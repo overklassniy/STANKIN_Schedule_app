@@ -13,6 +13,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.schedule.list.ui.R
 
+/**
+ * Верхняя панель в режиме действий.
+ *
+ * Показывает количество выбранных элементов, кнопку закрытия режима и действие удаления выбранных.
+ *
+ * @param selectedCount Количество выбранных расписаний.
+ * @param onActionClose Обработчик выхода из режима действий.
+ * @param onRemoveSelected Обработчик удаления выбранных расписаний.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param scrollBehavior Поведение прокрутки AppBar.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleActionToolbar(

@@ -16,6 +16,15 @@ import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.SaveScheduleError
 
+/**
+ * Форма сохранения расписания.
+ *
+ * Позволяет задать имя и показывает ошибки валидации имени.
+ *
+ * @param state Состояние сохранения с текущим именем и ошибкой.
+ * @param onScheduleNameChanged Обработчик изменения имени расписания.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @Composable
 fun SaveForm(
     state: ParserState.SaveResult,
@@ -44,6 +53,7 @@ fun SaveForm(
             isError = isShowError,
             supportingText = {
                 if (isShowError) {
+                    // Отображаем текст ошибки в зависимости от типа
                     Text(
                         text = when (state.saveScheduleError) {
                             is SaveScheduleError.ScheduleNameAlreadyExists -> stringResource(R.string.name_already_exists)

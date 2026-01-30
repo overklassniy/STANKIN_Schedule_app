@@ -15,7 +15,7 @@ import javax.inject.Singleton
  * предоставляемые зависимости будут жить столько же, сколько и само приложение,
  * и будут единственными экземплярами (синглтонами).
  */
-@Suppress("unused")
+@Suppress("Unused")
 @Module
 @InstallIn(SingletonComponent::class)
 interface AppModule {
@@ -31,7 +31,7 @@ interface AppModule {
      *                  Dagger сам найдет, как создать этот объект, так как у него есть конструктор с @Inject.
      * @return Экземпляр [LoggerAnalytics], который можно внедрять в другие классы.
      */
-    @Suppress("unused")
+    @Suppress("Unused")
     @Binds
     @Singleton
     fun provideAnalytics(analytics: FirebaseLoggerAnalytics): LoggerAnalytics

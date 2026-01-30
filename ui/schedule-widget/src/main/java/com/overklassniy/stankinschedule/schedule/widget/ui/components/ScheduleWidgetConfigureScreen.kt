@@ -34,6 +34,19 @@ import com.overklassniy.stankinschedule.schedule.widget.ui.R
 import com.overklassniy.stankinschedule.schedule.widget.ui.configure.ScheduleWidgetConfigureViewModel
 import com.overklassniy.stankinschedule.schedule.core.ui.R as R_core
 
+/**
+ * Экран конфигурации виджета расписания.
+ *
+ * Формирует UI: верхняя панель, поля выбора расписания и подгруппы,
+ * переключатель отображения подгруппы, кнопка подтверждения.
+ *
+ * @param appWidgetId Идентификатор виджета, для которого выполняется конфигурация.
+ * @param viewModel ViewModel экрана. Поставляет списки и сохраняет данные.
+ * @param onBackPressed Обработчик возврата назад.
+ * @param onScheduleWidgetChanged Обработчик применения настроек виджета.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @return Unit. Содержит побочные эффекты через LaunchedEffect.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleWidgetConfigureScreen(
@@ -69,6 +82,7 @@ fun ScheduleWidgetConfigureScreen(
             var currentSubgroup by remember(currentWidgetData) { mutableStateOf(Subgroup.COMMON) }
             var isShowSubgroup by remember(currentWidgetData) { mutableStateOf(true) }
 
+            // Инициализация полей из сохраненных настроек виджета, если они есть.
             LaunchedEffect(currentWidgetData) {
                 currentWidgetData?.let { data ->
                     currentSchedule = ScheduleItem(
@@ -80,6 +94,7 @@ fun ScheduleWidgetConfigureScreen(
                 }
             }
 
+            // Загрузка сохраненных настроек виджета при входе на экран.
             LaunchedEffect(appWidgetId) {
                 viewModel.loadConfigure(appWidgetId)
             }
@@ -96,7 +111,7 @@ fun ScheduleWidgetConfigureScreen(
             OutlinedSelectField(
                 value = currentSubgroup,
                 onValueChanged = { currentSubgroup = it },
-                items = Subgroup.values().toList(),
+                items = Subgroup.entries,
                 menuLabel = {
                     val id = when (it) {
                         Subgroup.COMMON -> R_core.string.subgroup_common

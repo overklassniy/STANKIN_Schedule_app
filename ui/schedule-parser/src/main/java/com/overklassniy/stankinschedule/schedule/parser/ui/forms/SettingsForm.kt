@@ -7,7 +7,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -20,6 +21,17 @@ import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
 import org.joda.time.LocalDate
 
+/**
+ * Форма настроек парсера.
+ *
+ * Позволяет выбрать год расписания и порог распознавания.
+ *
+ * @param state Текущее состояние настроек.
+ * @param onSetupSettings Обработчик применения настроек.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param scheduleYearVariants Варианты года: текущий год ±2 (всего 5 значений).
+ * @param parserThresholdVariants Варианты порога: от 0.25 до 2.0 с шагом 0.25.
+ */
 @Composable
 fun SettingsForm(
     state: ParserState.Settings,
@@ -33,8 +45,8 @@ fun SettingsForm(
         verticalArrangement = Arrangement.spacedBy(Dimen.ContentPadding),
         modifier = modifier
     ) {
-        var scheduleYear by rememberSaveable { mutableStateOf(state.settings.scheduleYear) }
-        var parserThreshold by rememberSaveable { mutableStateOf(state.settings.parserThreshold) }
+        var scheduleYear by rememberSaveable { mutableIntStateOf(state.settings.scheduleYear) }
+        var parserThreshold by rememberSaveable { mutableFloatStateOf(state.settings.parserThreshold) }
 
         LaunchedEffect(scheduleYear, parserThreshold) {
             onSetupSettings(ParserSettings(scheduleYear, parserThreshold))

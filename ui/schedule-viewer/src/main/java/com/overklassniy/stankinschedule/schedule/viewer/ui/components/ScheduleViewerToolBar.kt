@@ -22,6 +22,21 @@ import com.overklassniy.stankinschedule.core.ui.components.BackButton
 import com.overklassniy.stankinschedule.schedule.viewer.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
+/**
+ * Верхняя панель экрана просмотра расписания.
+ *
+ * Формирует UI: TopAppBar с заголовком, кнопкой назад, кнопкой выбора даты и меню действий.
+ *
+ * @param scheduleName Имя расписания. Влияет на заголовок.
+ * @param onBackClicked Обработчик клика по кнопке назад.
+ * @param onDayChangeClicked Обработчик открытия выбора даты.
+ * @param onAddClicked Обработчик добавления пары.
+ * @param onRemoveSchedule Обработчик удаления расписания.
+ * @param onRenameSchedule Обработчик переименования расписания.
+ * @param onSaveToDevice Обработчик сохранения расписания на устройство.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param scrollBehavior Поведение прокрутки панели.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleViewerToolBar(
@@ -59,6 +74,7 @@ fun ScheduleViewerToolBar(
                 )
             }
 
+            // Переключение видимости меню действий.
             IconButton(onClick = { showMenu = !showMenu }) {
                 Icon(
                     painter = painterResource(R_core.drawable.ic_action_more),

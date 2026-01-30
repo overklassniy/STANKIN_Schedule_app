@@ -58,7 +58,7 @@ fun DateModel.toJson(): List<PairJson.DateJson> {
  *
  * @return Модель пары для API.
  */
-fun PairModel.toJson() : PairJson {
+fun PairModel.toJson(): PairJson {
     return PairJson(
         title = title,
         lecturer = lecturer,
@@ -75,6 +75,6 @@ fun PairModel.toJson() : PairJson {
  *
  * @return Список пар для API.
  */
-fun ScheduleModel.toJson() : List<PairJson> {
+fun ScheduleModel.toJson(): List<PairJson> {
     return this.map { pair -> pair.toJson() }
 }

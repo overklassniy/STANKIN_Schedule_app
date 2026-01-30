@@ -9,6 +9,15 @@ import com.overklassniy.stankinschedule.schedule.viewer.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
 
+/**
+ * Диалог подтверждения удаления расписания.
+ *
+ * Формирует UI: AlertDialog с заголовком, текстом и кнопками удаления и отмены.
+ *
+ * @param scheduleName Имя расписания для отображения в тексте подтверждения.
+ * @param onRemove Обработчик подтверждения удаления.
+ * @param onDismiss Обработчик закрытия диалога.
+ */
 @Composable
 fun ScheduleRemoveDialog(
     scheduleName: String,

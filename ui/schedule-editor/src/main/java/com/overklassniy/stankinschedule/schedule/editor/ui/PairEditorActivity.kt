@@ -23,16 +23,32 @@ import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
 
 @AndroidEntryPoint
+/**
+ * Экран редактора пары.
+ *
+ * Инициализирует Compose UI, получает аргументы из Intent, обрабатывает запросы на выбор даты.
+ */
 class PairEditorActivity : AppCompatActivity() {
 
     private val viewModel: PairEditorViewModel by viewModels()
 
+    /**
+     * Инициализация активити редактора пары.
+     *
+     * Алгоритм:
+     * 1. Отключает системные отступы.
+     * 2. Читает аргументы пары и расписания.
+     * 3. Строит Compose UI и подписывается на запросы выбора даты.
+     *
+     * @param savedInstanceState Сохранённое состояние.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Отключаем системные отступы, чтобы UI занимал всю область экрана
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        // Получение ID пары и расписания
+        // Получение ID пары и расписания из Intent
         val scheduleId: Long = intent.getLongExtra(SCHEDULE_ID, -1L)
         var pairId: Long? = intent.getLongExtra(PAIR_ID, -1L)
         if (pairId == -1L) pairId = null
@@ -61,13 +77,21 @@ class PairEditorActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Показывает диалог выбора даты.
+     *
+     * @param request Запрос на выбор даты с текущим значением и заголовком.
+     */
     private fun showDatePicker(request: DateRequest) {
+        // Строим диалог выбора даты
         val dialog = MaterialDatePicker.Builder.datePicker()
             .setTitleText(request.title)
             .setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
+            // Преобразуем LocalDate в миллисекунды, привязанные к текущему времени
             .setSelection(request.selectedDate.toDateTimeAtCurrentTime().millis)
             .build()
 
+        // При подтверждении выбора отправляем результат во ViewModel
         dialog.addOnPositiveButtonClickListener {
             viewModel.onDateResult(DateResult(request.id, LocalDate(it)))
         }
@@ -75,12 +99,27 @@ class PairEditorActivity : AppCompatActivity() {
         dialog.show(supportFragmentManager, DATE_PICKER_TAG)
     }
 
+    /**
+     * Константы и фабрика Intent для запуска PairEditorActivity.
+     */
     companion object {
+        /** Тег для диалога выбора даты. */
         private const val DATE_PICKER_TAG = "date_picker_tag"
 
+        /** Ключ extra для идентификатора пары. */
         private const val PAIR_ID = "pair_id"
+
+        /** Ключ extra для идентификатора расписания. */
         private const val SCHEDULE_ID = "schedule_id"
 
+        /**
+         * Создаёт Intent для запуска экрана редактора пары.
+         *
+         * @param context Контекст.
+         * @param scheduleId Идентификатор расписания.
+         * @param pairId Идентификатор пары или null для создания новой.
+         * @return Готовый Intent.
+         */
         fun createIntent(context: Context, scheduleId: Long, pairId: Long?): Intent {
             return Intent(context, PairEditorActivity::class.java).apply {
                 putExtra(PAIR_ID, pairId)

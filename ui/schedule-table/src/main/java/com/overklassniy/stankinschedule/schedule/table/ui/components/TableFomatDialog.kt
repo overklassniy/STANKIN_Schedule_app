@@ -16,16 +16,33 @@ import com.overklassniy.stankinschedule.core.ui.components.RadioItem
 import com.overklassniy.stankinschedule.schedule.table.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
-
+/**
+ * Состояние диалога выбора формата сохранения или отправки.
+ *
+ * @property onFormatSelected Колбэк выбора формата. Вызывается при подтверждении.
+ * @property isShow Признак отображения диалога. true - диалог видим.
+ * Инвариант: при закрытии диалога isShow всегда устанавливается в false.
+ */
 class TableFormatDialogState internal constructor(
     internal val onFormatSelected: (format: ExportFormat) -> Unit,
     internal val isShow: MutableState<Boolean>
 ) {
+    /**
+     * Открывает диалог выбора формата.
+     *
+     * Побочный эффект: меняет isShow на true, что инициирует показ диалога.
+     */
     fun showDialog() {
         isShow.value = true
     }
 }
 
+/**
+ * Создает и запоминает состояние диалога формата.
+ *
+ * @param onFormatSelected Обработчик выбора формата.
+ * @return Экземпляр состояния диалога, привязанный к композиции.
+ */
 @Composable
 fun rememberFormatDialogState(
     onFormatSelected: (format: ExportFormat) -> Unit,
@@ -36,6 +53,17 @@ fun rememberFormatDialogState(
     }
 }
 
+/**
+ * Диалог выбора формата экспорта.
+ *
+ * Формирует UI: AlertDialog с заголовком и радиокнопками выбора формата.
+ *
+ * @param title Заголовок диалога.
+ * @param state Состояние диалога и обработчик результата.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @return Ничего не возвращает. Изменяет состояние через state.
+ */
+@Suppress("AssignedValueIsNeverRead")
 @Composable
 fun TableFormatDialog(
     title: String,
@@ -51,6 +79,7 @@ fun TableFormatDialog(
                 RadioGroup(
                     title = stringResource(R.string.choose_format)
                 ) {
+                    // Варианты выбора формата. currentFormat хранит промежуточный выбор.
                     RadioItem(
                         title = stringResource(R.string.format_image),
                         selected = currentFormat == ExportFormat.Image,

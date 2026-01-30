@@ -73,7 +73,7 @@ import kotlinx.coroutines.launch
  * @param modifier Модификатор корневого контейнера.
  * @param onBackPressed Действие «назад».
  */
-@Suppress("unused")
+@Suppress("Unused")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PredictScreen(

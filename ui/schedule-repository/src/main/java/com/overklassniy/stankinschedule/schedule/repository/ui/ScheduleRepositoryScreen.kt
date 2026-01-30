@@ -4,10 +4,14 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.BackdropScaffold
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.BackdropValue
 import androidx.compose.material.ExperimentalMaterialApi
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.SnackbarDuration
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.rememberBackdropScaffoldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -40,6 +44,16 @@ import com.overklassniy.stankinschedule.schedule.repository.ui.components.Requir
 import com.overklassniy.stankinschedule.schedule.repository.ui.worker.ScheduleDownloadWorker
 import kotlinx.coroutines.launch
 
+/**
+ * Экран репозитория расписаний.
+ *
+ * Управляет поиском, фильтрами, загрузкой и именованием расписаний.
+ *
+ * @param onBackPressed Обработчик навигации назад.
+ * @param viewModel ViewModel экрана репозитория.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
+@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ScheduleRepositoryScreen(
@@ -72,20 +86,24 @@ fun ScheduleRepositoryScreen(
         val workManager = WorkManager.getInstance(context)
         val workInfoLiveData = workManager.getWorkInfosForUniqueWorkLiveData(workerName)
         val workInfos by workInfoLiveData.observeAsState(initial = emptyList())
-        
+
         LaunchedEffect(workInfos, workerName) {
             val workInfo = workInfos.firstOrNull()
             when (workInfo?.state) {
                 WorkInfo.State.SUCCEEDED -> {
-                    val filePath = workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_FILE_PATH)
-                    val scheduleName = workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_SCHEDULE_NAME)
-                    
+                    val filePath =
+                        workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_FILE_PATH)
+                    val scheduleName =
+                        workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_SCHEDULE_NAME)
+
                     if (filePath != null && scheduleName != null) {
                         currentWorkerName = null
-                        val intent = ScheduleParserActivity.createIntent(context, filePath, scheduleName)
+                        val intent =
+                            ScheduleParserActivity.createIntent(context, filePath, scheduleName)
                         context.startActivity(intent)
                     }
                 }
+
                 WorkInfo.State.FAILED -> {
                     currentWorkerName = null
                     scaffoldState.snackbarHostState.showSnackbar(
@@ -93,6 +111,7 @@ fun ScheduleRepositoryScreen(
                         duration = SnackbarDuration.Short
                     )
                 }
+
                 else -> {}
             }
         }
@@ -113,9 +132,11 @@ fun ScheduleRepositoryScreen(
                     duration = SnackbarDuration.Short
                 )
             }
+
             is DownloadState.RequiredName -> {
                 isRequiredName = state
             }
+
             else -> {}
         }
     }
@@ -144,7 +165,7 @@ fun ScheduleRepositoryScreen(
 
     val grade by viewModel.grade.collectAsState()
     val course by viewModel.course.collectAsState()
-    
+
     val isSearchActive by viewModel.isSearchActive.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 

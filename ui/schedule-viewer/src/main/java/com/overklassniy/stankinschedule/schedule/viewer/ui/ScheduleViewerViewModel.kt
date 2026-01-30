@@ -43,7 +43,10 @@ import javax.inject.Inject
 
 /**
  * ViewModel для экрана просмотра расписания.
- * Управляет отображением расписания, экспортом, переименованием и удалением.
+ *
+ * Назначение: загружает модель расписания, управляет листингом дней,
+ * сохранением в файлы и операциями переименования и удаления.
+ * Содержит состояния: scheduleState, saveProgress, renameState, а также настройки отображения.
  */
 @HiltViewModel
 class ScheduleViewerViewModel @Inject constructor(
@@ -55,26 +58,43 @@ class ScheduleViewerViewModel @Inject constructor(
     private val handle: SavedStateHandle
 ) : ViewModel() {
 
+    /**
+     * Признак вертикального просмотра.
+     * Воздействует на выбор контейнера списка (LazyColumn или LazyRow).
+     */
     val isVerticalViewer: Flow<Boolean> = settingsUseCase.isVerticalViewer()
+
+    /**
+     * Группа цветов пар.
+     * Воздействует на палитру карточек пар.
+     */
     val pairColorGroup: Flow<PairColorGroup> = settingsUseCase.pairColorGroup()
 
     private val _scheduleState = MutableStateFlow<ScheduleState>(ScheduleState.Loading)
+
+    /** Публичное состояние экрана расписания. */
     val scheduleState = _scheduleState.asStateFlow()
 
     private val clearPager = Channel<Unit>(Channel.CONFLATED)
 
-    val currentDay: LocalDate get() {
-        val dateString = handle.get<String>(CURRENT_PAGER_DATE)
-        return if (dateString != null) {
-            try {
-                LocalDate.parse(dateString)
-            } catch (e: Exception) {
+    /**
+     * Текущая дата для отображения в pager.
+     * Если в SavedStateHandle есть сохраненное значение, используется оно.
+     * В противном случае возвращается текущая дата.
+     */
+    val currentDay: LocalDate
+        get() {
+            val dateString = handle.get<String>(CURRENT_PAGER_DATE)
+            return if (dateString != null) {
+                try {
+                    LocalDate.parse(dateString)
+                } catch (_: Exception) {
+                    LocalDate.now()
+                }
+            } else {
                 LocalDate.now()
             }
-        } else {
-            LocalDate.now()
         }
-    }
     private val _scheduleStartDay = MutableStateFlow(currentDay)
 
     private var _scheduleId: Long = -1
@@ -82,11 +102,23 @@ class ScheduleViewerViewModel @Inject constructor(
 
     private var _saveFormat = ExportFormat.Json
     private val _saveProgress = MutableStateFlow<ExportProgress>(ExportProgress.Nothing)
+
+    /** Публичное состояние прогресса сохранения файла. */
     val saveProgress = _saveProgress.asStateFlow()
 
     private val _renameState = MutableStateFlow<RenameState?>(null)
+
+    /** Публичное состояние диалога переименования. */
     val renameState = _renameState.asStateFlow()
 
+    /**
+     * Поток страниц дней расписания для отображения.
+     *
+     * Алгоритм:
+     * 1. При очистке pager отправляет пустые данные для плавного обновления.
+     * 2. Комбинирует модель и начальную дату, создает Pager при наличии модели.
+     * 3. Выносит работу с источником на IO и кэширует в scope ViewModel.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     val scheduleDays: Flow<PagingData<ScheduleViewDay>> =
         flowOf(
@@ -98,15 +130,22 @@ class ScheduleViewerViewModel @Inject constructor(
                 .flowOn(Dispatchers.IO).cachedIn(viewModelScope)
         ).flattenMerge(2)
 
+    /**
+     * Создает Pager для постраничного отображения дней расписания.
+     *
+     * @param model Модель расписания.
+     * @param currentDay Текущая дата для начального ключа.
+     * @return Pager, конфигурированный на 60 элементов в странице.
+     */
     private fun createPager(
         model: ScheduleModel,
         currentDay: LocalDate
     ): Pager<LocalDate, ScheduleViewDay> {
         return Pager(
             config = PagingConfig(
-                pageSize = 60,
-                initialLoadSize = 60,
-                prefetchDistance = 30,
+                pageSize = 60, // размер страницы 60 дней для комфортной прокрутки
+                initialLoadSize = 60, // начальная загрузка соответствует размеру страницы
+                prefetchDistance = 30, // предзагрузка на 30 элементов для плавности
                 enablePlaceholders = false
             ),
             initialKey = currentDay,
@@ -114,6 +153,12 @@ class ScheduleViewerViewModel @Inject constructor(
         )
     }
 
+    /**
+     * Загружает расписание и подготавливает состояние экрана.
+     *
+     * @param scheduleId Идентификатор расписания.
+     * @param startDate Начальная дата для отображения, может быть null.
+     */
     fun loadSchedule(scheduleId: Long, startDate: LocalDate?) {
         // Если расписание уже загружено, но есть новая дата - применяем её
         if (_scheduleId == scheduleId) {
@@ -153,14 +198,28 @@ class ScheduleViewerViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Устанавливает формат сохранения.
+     *
+     * @param format Формат: Json или ICal.
+     */
     fun setSaveFormat(format: ExportFormat) {
         _saveFormat = format
     }
 
+    /**
+     * Сбрасывает состояние прогресса сохранения.
+     */
     fun saveFinished() {
         _saveProgress.value = ExportProgress.Nothing
     }
 
+    /**
+     * Выбирает новую дату для отображения.
+     * Если дата совпадает с текущей, ничего не делает.
+     *
+     * @param date Новая дата.
+     */
     fun selectDate(date: LocalDate) {
         if (date == currentDay) return
 
@@ -173,13 +232,19 @@ class ScheduleViewerViewModel @Inject constructor(
     }
 
     /**
-     * Устанавливает текущую дату, которая отображается в pager, для
-     * ее последующего отображения, если расписание обновится.
+     * Сохраняет текущую дату для восстановления после обновления данных.
+     *
+     * @param currentPagingDate Текущая дата или null.
      */
     fun updatePagingDate(currentPagingDate: LocalDate?) {
         handle[CURRENT_PAGER_DATE] = currentPagingDate?.toString()
     }
 
+    /**
+     * Обрабатывает событие диалога переименования.
+     *
+     * @param event Событие: Rename или Cancel.
+     */
     fun onRenameEvent(event: RenameEvent) {
         _renameState.value = when (event) {
             is RenameEvent.Rename -> RenameState.Rename
@@ -187,6 +252,9 @@ class ScheduleViewerViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Удаляет текущее расписание и переводит состояние в NotFound.
+     */
     fun removeSchedule() {
         viewModelScope.launch {
             scheduleUseCase.removeSchedule(_scheduleId)
@@ -194,6 +262,11 @@ class ScheduleViewerViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Сохраняет расписание в выбранном формате по указанному Uri.
+     *
+     * @param uri Целевой путь сохранения.
+     */
     fun saveAs(uri: Uri) {
         viewModelScope.launch {
             when (_saveFormat) {
@@ -208,9 +281,15 @@ class ScheduleViewerViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Сохраняет расписание в формате JSON.
+     *
+     * @param uri Целевой путь сохранения.
+     */
     private suspend fun saveAsJson(uri: Uri) {
         scheduleDeviceUseCase.saveToDevice(_scheduleId, uri.toString())
             .catch { e ->
+                // Ошибки сохранения отображаются пользователю.
                 _saveProgress.value = ExportProgress.Error(e)
             }
             .collect {
@@ -218,6 +297,11 @@ class ScheduleViewerViewModel @Inject constructor(
             }
     }
 
+    /**
+     * Сохраняет расписание в формате iCalendar (.ics).
+     *
+     * @param uri Целевой путь сохранения.
+     */
     private suspend fun saveAsICal(uri: Uri) {
         val currentSchedule = _schedule.value
         if (currentSchedule != null) {
@@ -231,6 +315,11 @@ class ScheduleViewerViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Выполняет переименование расписания.
+     *
+     * @param newName Новое имя расписания.
+     */
     fun renameSchedule(newName: String) {
         viewModelScope.launch {
             scheduleUseCase.renameSchedule(_scheduleId, newName)
@@ -249,6 +338,7 @@ class ScheduleViewerViewModel @Inject constructor(
     }
 
     companion object {
+        /** Ключ для сохранения текущей даты pager в SavedStateHandle. */
         private const val CURRENT_PAGER_DATE = "current_pager_date"
     }
 }

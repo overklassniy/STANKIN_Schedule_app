@@ -22,13 +22,21 @@ import com.overklassniy.stankinschedule.schedule.parser.ui.R
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParserState
 import com.overklassniy.stankinschedule.schedule.parser.ui.util.ParserErrorMapper
 
+/**
+ * Финальный экран импорта расписания.
+ *
+ * Отображает результат: успех (иконка и текст), загрузку или ошибку парсинга.
+ *
+ * @param state Состояние завершения импорта.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
 @Composable
 fun FinishForm(
     state: ParserState.ImportFinish,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,

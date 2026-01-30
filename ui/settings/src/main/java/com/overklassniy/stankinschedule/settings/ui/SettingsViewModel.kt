@@ -1,5 +1,6 @@
 package com.overklassniy.stankinschedule.settings.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.core.domain.ext.subHours
@@ -12,6 +13,7 @@ import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorType
 import com.overklassniy.stankinschedule.schedule.settings.domain.repository.SchedulePreference
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,13 +29,9 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val applicationPreference: ApplicationPreference,
     private val schedulePreference: SchedulePreference,
-    private val updateRepository: UpdateRepository
+    private val updateRepository: UpdateRepository,
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
-
-    /**
-     * General settings
-     */
-
     private val _nightMode = MutableStateFlow(value = applicationPreference.currentDarkMode())
     val nightMode: StateFlow<DarkMode> = _nightMode.asStateFlow()
 
@@ -49,10 +47,6 @@ class SettingsViewModel @Inject constructor(
         applicationPreference.setAppLanguage(language)
         _appLanguage.value = language
     }
-
-    /**
-     * Schedule settings
-     */
 
     val isVerticalViewer: Flow<Boolean> = schedulePreference.isVerticalViewer()
     val pairColorGroup: Flow<PairColorGroup> = schedulePreference.scheduleColorGroup()
@@ -95,7 +89,7 @@ class SettingsViewModel @Inject constructor(
         val version = applicationPreference.availableUpdateVersion
         val changelog = applicationPreference.availableUpdateChangelog
         val url = applicationPreference.availableUpdateUrl
-        
+
         if (!version.isNullOrEmpty()) {
             _availableUpdate.value = AppUpdate(
                 latestVersion = version,
@@ -112,11 +106,11 @@ class SettingsViewModel @Inject constructor(
             val shouldCheck = force || lastCheck == null || (lastCheck subHours DateTime.now()) > 24
 
             if (shouldCheck) {
-                val currentVersion = BuildConfig.APP_VERSION
+                val currentVersion = appVersion()
                 val update = updateRepository.checkForUpdate(currentVersion)
-                
+
                 applicationPreference.lastUpdateCheck = DateTime.now()
-                
+
                 if (update != null) {
                     applicationPreference.availableUpdateVersion = update.latestVersion
                     applicationPreference.availableUpdateChangelog = update.changelog
@@ -130,8 +124,19 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    @Suppress("unused")
     fun hasUpdate(): Boolean = applicationPreference.hasUpdate()
 
+    private fun appVersion(): String {
+        return try {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            pInfo.versionName ?: "0.0.0"
+        } catch (_: Exception) {
+            "0.0.0"
+        }
+    }
+
+    @Suppress("unused")
     fun dismissUpdate() {
         applicationPreference.clearUpdate()
         _availableUpdate.value = null

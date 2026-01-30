@@ -8,7 +8,15 @@ import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.schedule.list.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
-
+/**
+ * Диалог подтверждения удаления расписания.
+ *
+ * Показывает текст подтверждения, кнопку удаления и кнопку отмены.
+ *
+ * @param text Текст предупреждения/подтверждения.
+ * @param onRemove Обработчик удаления.
+ * @param onDismiss Обработчик закрытия диалога.
+ */
 @Composable
 fun ScheduleRemoveDialog(
     text: String,

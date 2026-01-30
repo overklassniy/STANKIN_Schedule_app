@@ -1,6 +1,5 @@
 package com.overklassniy.stankinschedule.schedule.editor.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,21 +14,19 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,8 +68,21 @@ import com.overklassniy.stankinschedule.schedule.widget.ui.ScheduleWidget
 import kotlinx.coroutines.launch
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+/**
+ * Экран редактирования пары расписания.
+ *
+ * Формирует верхнюю панель, содержимое редактора и диалоги подтверждения/ошибок.
+ * Управляет показом нижней шторки для редактирования дат.
+ *
+ * @param mode Режим редактора: создание или редактирование.
+ * @param scheduleId Идентификатор расписания, в котором редактируется пара.
+ * @param pairId Идентификатор пары (может быть null при создании).
+ * @param onBackClicked Обработчик кнопки «Назад».
+ * @param viewModel ViewModel редактора пары.
+ * @param modifier Модификатор внешнего вида и расположения.
+ */
+@Suppress("AssignedValueIsNeverRead")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PairEditorScreen(
     mode: EditorMode,
@@ -88,14 +98,9 @@ fun PairEditorScreen(
         state = rememberTopAppBarState()
     )
 
-    val sheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val sheetScope = rememberCoroutineScope()
-
-    BackHandler(enabled = sheetState.isVisible) {
-        sheetScope.launch { sheetState.hide() }
-    }
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     var request by remember { mutableStateOf<DateEditorRequest>(DateEditorRequest.New) }
     var isDeletePair by remember { mutableStateOf(false) }
@@ -121,128 +126,149 @@ fun PairEditorScreen(
                 ScheduleWidget.updateWidgetById(context, scheduleId, true)
                 onBackClicked()
             }
-            is PairEditorState.Error -> {
-                onBackClicked()
-            }
+
             else -> {}
         }
     }
 
-    ModalBottomSheetLayout(
-        sheetState = sheetState,
-        sheetBackgroundColor = MaterialTheme.colorScheme.background,
-        sheetContent = {
-            DateEditorBottomSheet(
-                request = request,
-                viewModel = viewModel,
-                onDismissClicked = { sheetScope.launch { sheetState.hide() } },
-                modifier = Modifier.navigationBarsPadding()
+    Scaffold(
+        topBar = {
+            EditorToolbar(
+                onApplyClicked = {
+                    viewModel.applyPair(editorState.toPair(date))
+                },
+                onDeleteClicked = { isDeletePair = true },
+                onBackClicked = onBackClicked,
+                scrollBehavior = scrollBehavior
+            )
+        },
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+    ) { innerPadding ->
+
+        if (isDeletePair) {
+            AlertDialog(
+                onDismissRequest = { isDeletePair = false },
+                title = {
+                    Text(text = stringResource(R.string.editor_removing_pair))
+                },
+                text = {
+                    Text(text = stringResource(R.string.editor_removing_pair_detail))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { viewModel.deletePair() }
+                    ) {
+                        Text(text = stringResource(R.string.editor_delete_pair))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { isDeletePair = false }
+                    ) {
+                        Text(text = stringResource(R_core.string.cancel))
+                    }
+                }
             )
         }
-    ) {
-        Scaffold(
-            topBar = {
-                EditorToolbar(
-                    onApplyClicked = {
-                        viewModel.applyPair(editorState.toPair(date))
-                    },
-                    onDeleteClicked = { isDeletePair = true },
-                    onBackClicked = onBackClicked,
-                    scrollBehavior = scrollBehavior
-                )
-            },
-            modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) { innerPadding ->
 
-            if (isDeletePair) {
-                AlertDialog(
-                    onDismissRequest = { isDeletePair = false },
-                    title = {
-                        Text(text = stringResource(R.string.editor_removing_pair))
-                    },
-                    text = {
-                        Text(text = stringResource(R.string.editor_removing_pair_detail))
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = { viewModel.deletePair() }
-                        ) {
-                            Text(text = stringResource(R.string.editor_delete_pair))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = { isDeletePair = false }
-                        ) {
-                            Text(text = stringResource(R_core.string.cancel))
-                        }
-                    }
-                )
-            }
-
-            scheduleError?.let {
-                AlertDialog(
-                    onDismissRequest = { scheduleError = null },
-                    title = { Text(text = stringResource(R_core.string.error)) },
-                    text = {
-                        Text(
-                            text = when (it) {
-                                is PairIntersectException -> {
-                                    stringResource(R.string.editor_conflict_pair, it.second)
-                                }
-                                is DateEmptyException -> {
-                                    stringResource(R.string.editor_empty_date_error)
-                                }
-                                else -> it.message ?: it.toString()
+        scheduleError?.let {
+            AlertDialog(
+                onDismissRequest = { scheduleError = null },
+                title = { Text(text = stringResource(R_core.string.error)) },
+                text = {
+                    Text(
+                        text = when (it) {
+                            is PairIntersectException -> {
+                                stringResource(R.string.editor_conflict_pair, it.second)
                             }
-                        )
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = { scheduleError = null }
-                        ) {
-                            Text(text = stringResource(R_core.string.ok))
+
+                            is DateEmptyException -> {
+                                stringResource(R.string.editor_empty_date_error)
+                            }
+
+                            else -> it.message ?: it.toString()
                         }
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { scheduleError = null }
+                    ) {
+                        Text(text = stringResource(R_core.string.ok))
                     }
+                }
+            )
+        }
+
+        when (pairState) {
+            is PairEditorState.Content -> {
+                EditorContent(
+                    editorState = editorState,
+                    date = date,
+                    onDateEdit = { item ->
+                        request = DateEditorRequest.Edit(item)
+                        showBottomSheet = true
+                    },
+                    onDateNew = {
+                        request = DateEditorRequest.New
+                        showBottomSheet = true
+                    },
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(Dimen.ContentPadding)
                 )
             }
 
-            when (pairState) {
-                is PairEditorState.Content -> {
-                    EditorContent(
-                        editorState = editorState,
-                        date = date,
-                        onDateEdit = { item ->
-                            request = DateEditorRequest.Edit(item)
-                            sheetScope.launch { sheetState.show() }
-                        },
-                        onDateNew = {
-                            request = DateEditorRequest.New
-                            sheetScope.launch { sheetState.show() }
-                        },
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(Dimen.ContentPadding)
+            else -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
                     )
-                }
-                else -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
                 }
             }
         }
     }
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showBottomSheet = false },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.background,
+        ) {
+            DateEditorBottomSheet(
+                request = request,
+                viewModel = viewModel,
+                onDismissClicked = {
+                    sheetScope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) showBottomSheet = false
+                    }
+                },
+                modifier = Modifier.navigationBarsPadding()
+            )
+        }
+    }
 }
 
+/**
+ * Содержимое формы редактирования.
+ *
+ * Включает поля названия, преподавателя, аудитории, типа занятия, подгруппы,
+ * времени начала/окончания, а также список дат с возможностью добавления/редактирования.
+ *
+ * @param editorState Локальное состояние формы редактора.
+ * @param date Текущее состояние дат пары.
+ * @param onDateEdit Обработчик редактирования выбранной даты.
+ * @param onDateNew Обработчик добавления новой даты.
+ * @param modifier Модификатор внешнего вида и расположения.
+ * @param startTimes Список допустимых начальных времен пары.
+ * @param endTimes Список допустимых конечных времен пары.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun EditorContent(

@@ -17,7 +17,7 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(SingletonComponent::class)
-@Suppress("unused")
+@Suppress("Unused")
 object RepositoryDatabaseModule {
 
     /**

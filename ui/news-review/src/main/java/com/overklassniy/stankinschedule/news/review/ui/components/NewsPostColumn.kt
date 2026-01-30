@@ -35,7 +35,7 @@ import kotlinx.coroutines.flow.Flow
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-@Suppress("unused")
+@Suppress("Unused")
 fun NewsPostColumn(
     posts: Flow<PagingData<NewsPost>>,
     onClick: (post: NewsPost) -> Unit,

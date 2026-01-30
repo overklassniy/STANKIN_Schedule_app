@@ -6,7 +6,7 @@ package com.overklassniy.stankinschedule.schedule.ical.domain.model
  * @property tag Строковое представление дня недели в формате iCal (например, "MO", "TU").
  */
 enum class ICalDayOfWeek(val tag: String) {
-    @Suppress("unused")
+    @Suppress("Unused")
     SU("SU"),
     MO("MO"),
     TU("TU"),
