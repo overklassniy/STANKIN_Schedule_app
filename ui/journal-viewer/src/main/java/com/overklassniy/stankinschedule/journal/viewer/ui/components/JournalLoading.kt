@@ -6,6 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
+/**
+ * Индикатор загрузки для экрана журнала.
+ *
+ * Отображает круговой прогресс, центрированный внутри контейнера.
+ *
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @Composable
 fun JournalLoading(
     modifier: Modifier = Modifier,

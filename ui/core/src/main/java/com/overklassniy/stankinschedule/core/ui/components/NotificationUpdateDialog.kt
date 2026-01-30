@@ -38,10 +38,21 @@ import com.overklassniy.stankinschedule.core.ui.R
 import com.overklassniy.stankinschedule.core.ui.notification.NotificationUtils
 import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 
+/**
+ * Провайдер значений для предпросмотра тёмной/светлой темы.
+ */
+/**
+ * Провайдер значений для предпросмотра тёмной/светлой темы.
+ */
 class DarkProvider : PreviewParameterProvider<Boolean> {
     override val values: Sequence<Boolean> = sequenceOf(true, false)
 }
 
+/**
+ * Предпросмотр диалога обновления уведомлений для тёмной/светлой темы.
+ *
+ * @param dark Флаг тёмной темы из [DarkProvider].
+ */
 @Preview(
     showSystemUi = true,
     showBackground = true
@@ -70,23 +81,61 @@ private fun NotificationUpdateDialogPreview(
 }
 
 
+/**
+ * Состояние диалога обновления уведомлений.
+ *
+ * Хранит текущий статус и управляет изменением разрешений/включением уведомлений.
+ */
+/**
+ * Состояние диалога обновления уведомлений.
+ *
+ * Хранит текущий статус и управляет изменением разрешений/включением уведомлений.
+ */
 class NotificationUpdateState internal constructor(
     internal val isEnabled: Boolean,
     private val onChanged: (enable: Boolean) -> Unit,
 ) {
     internal var _isShow by mutableStateOf(false)
 
+    /**
+     * Устанавливает состояние включения уведомлений.
+     *
+     * @param enable Включить, если true.
+     */
+    /**
+     * Устанавливает состояние включения уведомлений.
+     *
+     * @param enable Включить, если true.
+     */
     fun setEnabled(enable: Boolean) {
         if (isEnabled != enable) {
             onChanged(enable)
         }
     }
 
+    /**
+     * Показывает диалог.
+     */
+    /**
+     * Показывает диалог.
+     */
     fun showDialog() {
         _isShow = true
     }
 }
 
+/**
+ * Создает и запоминает [NotificationUpdateState].
+ *
+ * @param isEnabled Текущее состояние уведомлений.
+ * @param onChanged Коллбэк изменения состояния.
+ */
+/**
+ * Создает и запоминает [NotificationUpdateState].
+ *
+ * @param isEnabled Текущее состояние уведомлений.
+ * @param onChanged Коллбэк изменения состояния.
+ */
 @Composable
 fun rememberNotificationUpdateState(
     isEnabled: Boolean,
@@ -95,6 +144,26 @@ fun rememberNotificationUpdateState(
     return remember(isEnabled, onChanged) { NotificationUpdateState(isEnabled, onChanged) }
 }
 
+/**
+ * Диалог обновления настроек уведомлений.
+ *
+ * Показывает включение/выключение уведомлений, учитывая разрешение POST_NOTIFICATIONS.
+ *
+ * @param title Заголовок диалога.
+ * @param content Описание.
+ * @param state Состояние диалога.
+ * @param modifier Модификатор.
+ */
+/**
+ * Диалог обновления настроек уведомлений.
+ *
+ * Показывает включение/выключение уведомлений, учитывая разрешение POST_NOTIFICATIONS.
+ *
+ * @param title Заголовок диалога.
+ * @param content Описание.
+ * @param state Состояние диалога.
+ * @param modifier Модификатор.
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun NotificationUpdateDialog(
@@ -175,6 +244,24 @@ fun NotificationUpdateDialog(
     }
 }
 
+/**
+ * Элемент выбора с иконкой и радиокнопкой.
+ *
+ * @param title Заголовок.
+ * @param selected Выбрано ли.
+ * @param onClick Обработчик клика.
+ * @param icon Иконка.
+ * @param modifier Модификатор.
+ */
+/**
+ * Элемент выбора с иконкой и радиокнопкой.
+ *
+ * @param title Заголовок.
+ * @param selected Выбрано ли.
+ * @param onClick Обработчик клика.
+ * @param icon Иконка.
+ * @param modifier Модификатор.
+ */
 @Composable
 private fun ChooseItem(
     title: String,

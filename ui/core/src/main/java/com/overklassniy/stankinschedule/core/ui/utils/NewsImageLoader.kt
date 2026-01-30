@@ -6,6 +6,13 @@ import coil.disk.DiskCache
 import coil.imageLoader
 import com.overklassniy.stankinschedule.core.ui.R
 
+/**
+ * Создаёт ImageLoader для новостных изображений с кэшированием и плейсхолдером.
+ *
+ * @param context Контекст приложения.
+ * @param cacheName Имя директории кэша в cacheDir.
+ * @return Настроенный Coil ImageLoader.
+ */
 fun newsImageLoader(
     context: Context,
     cacheName: String = "image_cache",

@@ -4,6 +4,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 
+/**
+ * Поле выбора со стилем Outlined, использующее ExposedDropdownMenuBox.
+ *
+ * @param value Текущее выбранное значение.
+ * @param onValueChanged Коллбэк изменения значения.
+ * @param items Список доступных значений.
+ * @param menuLabel Функция, возвращающая текст для значения.
+ * @param modifier Модификатор поля.
+ * @param label Заголовок поля.
+ * @param prefix Префиксный контент.
+ * @param suffix Суффиксный контент.
+ * @param supportingText Вспомогательный текст.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> OutlinedSelectField(

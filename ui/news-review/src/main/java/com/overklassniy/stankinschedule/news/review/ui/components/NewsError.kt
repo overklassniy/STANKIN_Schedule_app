@@ -3,8 +3,8 @@ package com.overklassniy.stankinschedule.news.review.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,6 +14,16 @@ import com.overklassniy.stankinschedule.core.ui.components.LocalAnalytics
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.news.review.ui.R
 
+/**
+ * Компонент ошибки новостей.
+ *
+ * Показывает описание ошибки и кнопку «Повторить», записывает исключение
+ * в аналитику.
+ *
+ * @param error Возникшее исключение.
+ * @param onRetry Обработчик повторной попытки.
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @Composable
 fun NewsError(
     error: Throwable,
@@ -21,7 +31,7 @@ fun NewsError(
     modifier: Modifier = Modifier,
 ) {
     val analytics = LocalAnalytics.current
-    
+
     // Записываем исключение в аналитику
     analytics.recordException(error)
 

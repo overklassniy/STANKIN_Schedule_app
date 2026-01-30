@@ -21,7 +21,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
+/**
+ * Активити предсказания рейтинга.
+ *
+ * Отображает список дисциплин и панель результата, обрабатывает выбор семестра.
+ */
 @AndroidEntryPoint
 class PredictActivity : AppCompatActivity() {
 
@@ -32,6 +36,9 @@ class PredictActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPredictBinding
 
+    /**
+     * Инициализирует UI, подписки на состояния и обработчики.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -55,7 +62,6 @@ class PredictActivity : AppCompatActivity() {
             onBackPressedDispatcher.onBackPressed()
         }
         binding.toolbar.setOnClickListener { showSemesterSelector() }
-        // setSupportActionBar(binding.toolbar)
 
         setupPanel(predictedRating = 0f, showExposedMarks = false)
 
@@ -105,11 +111,21 @@ class PredictActivity : AppCompatActivity() {
         loggerAnalytics.logEvent(LoggerAnalytics.SCREEN_ENTER, "PredictActivity")
     }
 
+    /**
+     * Логирует выход с экрана.
+     */
     override fun onDestroy() {
         super.onDestroy()
         loggerAnalytics.logEvent(LoggerAnalytics.SCREEN_LEAVE, "PredictActivity")
     }
 
+    /**
+     * Управляет видимостью основных блоков экрана.
+     *
+     * @param showContent Показать контент.
+     * @param showLoading Показать индикатор загрузки.
+     * @param showEmpty Показать заглушку об отсутствии дисциплин.
+     */
     private fun showUI(
         showContent: Boolean = false,
         showLoading: Boolean = false,
@@ -120,6 +136,12 @@ class PredictActivity : AppCompatActivity() {
         binding.predictNoDisciplines.setVisibility(showEmpty)
     }
 
+    /**
+     * Настраивает Compose-панель итогового рейтинга.
+     *
+     * @param predictedRating Предсказанный рейтинг.
+     * @param showExposedMarks Флаг отображения оценок.
+     */
     private fun setupPanel(predictedRating: Float, showExposedMarks: Boolean) {
         binding.ratingPanel.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -137,6 +159,9 @@ class PredictActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Обрабатывает результат выбора семестра из диалога.
+     */
     private fun onSemesterSelectorResult(requestKey: String, result: Bundle) {
         if (requestKey == SemesterSelectorDialog.REQUEST_SEMESTER_SELECTOR) {
             val newSemester = result.getString(SemesterSelectorDialog.RESULT_SEMESTER) ?: return
@@ -145,6 +170,9 @@ class PredictActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Открывает диалог выбора семестра, если данные доступны.
+     */
     private fun showSemesterSelector() {
         val currentSemester = viewModel.currentSemester.value
         val semesters = viewModel.semesters.value

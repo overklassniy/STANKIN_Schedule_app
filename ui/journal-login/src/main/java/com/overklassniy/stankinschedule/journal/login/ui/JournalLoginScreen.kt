@@ -58,6 +58,13 @@ import com.overklassniy.stankinschedule.journal.login.ui.components.LoginError
 import com.overklassniy.stankinschedule.journal.login.ui.components.LoginToolBar
 
 
+/**
+ * Экран входа в модуль «Журнал»: поля логина/пароля, ошибки и прогресс входа.
+ *
+ * @param viewModel ViewModel экрана.
+ * @param navigateToJournal Навигация в модуль журнала после успешного входа.
+ * @param modifier Модификатор.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JournalLoginScreen(
@@ -196,6 +203,15 @@ fun JournalLoginScreen(
 }
 
 
+/**
+ * Поле ввода логина с валидацией и supportingText при пустом значении.
+ *
+ * @param login Текущее значение логина.
+ * @param onLoginChanged Коллбэк изменения логина.
+ * @param isLogging Идёт ли процесс входа (блокирует ввод).
+ * @param isLoginError Ошибка валидации для логина.
+ * @param modifier Модификатор.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginField(
@@ -232,6 +248,16 @@ fun LoginField(
     )
 }
 
+/**
+ * Поле ввода пароля с переключением видимости и валидацией.
+ *
+ * @param password Текущее значение пароля.
+ * @param onPasswordChanged Коллбэк изменения пароля.
+ * @param isLogging Идёт ли процесс входа (блокирует ввод).
+ * @param isPasswordError Ошибка валидации для пароля.
+ * @param onFormSubmit Отправка формы (IME action Done).
+ * @param modifier Модификатор.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordField(

@@ -7,6 +7,16 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.viewer.ui.view.MarksTableView
 
+/**
+ * Таблица оценок семестра.
+ *
+ * Обёртка над нативным [MarksTableView] через [AndroidView]. Обновляет цвет текста
+ * и данные таблицы при изменении параметров.
+ *
+ * @param semesterMarks Данные по дисциплинам и оценкам за семестр.
+ * @param textColor Цвет текста (ARGB) для рендера таблицы.
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @Composable
 fun MarksTable(
     semesterMarks: SemesterMarks,

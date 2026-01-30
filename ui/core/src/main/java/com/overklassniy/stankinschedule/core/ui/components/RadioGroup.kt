@@ -17,6 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 
+/**
+ * Группа радиокнопок с заголовком.
+ *
+ * @param title Заголовок группы.
+ * @param content Контент элементов внутри группы.
+ */
 @Composable
 fun RadioGroup(
     title: String,
@@ -32,6 +38,14 @@ fun RadioGroup(
     }
 }
 
+/**
+ * Элемент радиокнопки с текстом.
+ *
+ * @param title Текст элемента.
+ * @param selected Выбран ли элемент.
+ * @param onClick Обработчик нажатия.
+ * @param modifier Модификатор.
+ */
 @Composable
 fun RadioItem(
     title: String,

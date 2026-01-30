@@ -10,8 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.news.review.ui.R
 
+/**
+ * Верхняя панель раздела «Обзор новостей».
+ *
+ * Отображает заголовок и поддерживает поведение прокрутки.
+ *
+ * @param modifier Модификатор для внешнего оформления.
+ * @param title Заголовок панели.
+ * @param scrollBehavior Поведение прокрутки TopAppBar.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("unused")
 fun NewsReviewToolBar(
     modifier: Modifier = Modifier,
     title: String = stringResource(R.string.news_review_title),

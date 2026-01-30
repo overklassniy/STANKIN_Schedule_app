@@ -70,6 +70,17 @@ import com.overklassniy.stankinschedule.schedule.core.ui.toColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
 import kotlinx.coroutines.launch
 
+/**
+ * Главный экран приложения: верхняя панель, избранное расписание и вкладки новостей.
+ *
+ * @param viewModel ViewModel экрана, источник состояния UI и данных.
+ * @param navigateToSchedule Навигация к расписанию по идентификатору.
+ * @param navigateToNews Переход к полному разделу «Новости».
+ * @param navigateToNewsPost Переход к конкретной карточке новости.
+ * @param navigateToSettings Открыть экран настроек.
+ * @param modifier Модификатор для внешнего позиционирования.
+ * @param imageLoader Загрузчик изображений для карточек новостей.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
@@ -338,6 +349,12 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Заголовок секции на главном экране с текстом и стрелкой навигации.
+ *
+ * @param text Отображаемый текст заголовка.
+ * @param modifier Модификатор.
+ */
 @Composable
 private fun HomeText(
     text: String,

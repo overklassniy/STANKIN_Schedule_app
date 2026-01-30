@@ -6,7 +6,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-
+/**
+ * Схема цветов для светлой темы на основе md_theme_light_* палитры.
+ */
 private val LightColors = lightColorScheme(
     primary = md_theme_light_primary,
     onPrimary = md_theme_light_onPrimary,
@@ -37,7 +39,9 @@ private val LightColors = lightColorScheme(
     surfaceTint = md_theme_light_surfaceTint,
 )
 
-
+/**
+ * Схема цветов для тёмной темы на основе md_theme_dark_* палитры.
+ */
 private val DarkColors = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
@@ -68,7 +72,12 @@ private val DarkColors = darkColorScheme(
     surfaceTint = md_theme_dark_surfaceTint,
 )
 
-
+/**
+ * Применяет MaterialTheme со светлой/тёмной цветовой схемой.
+ *
+ * @param darkTheme Использовать тёмную тему; по умолчанию берётся системная настройка.
+ * @param content Содержимое UI, отрисовываемое внутри темы.
+ */
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

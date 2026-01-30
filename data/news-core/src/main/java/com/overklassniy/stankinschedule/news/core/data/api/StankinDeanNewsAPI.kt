@@ -91,7 +91,7 @@ interface StankinDeanNewsAPI {
          */
         @Keep
         class PostData(
-            @Suppress("unused") // Используется Gson для сериализации в JSON (отправляется на сервер)
+            // Используется Gson для сериализации в JSON (отправляется на сервер)
             @SerializedName("action") val action: String,
             @SerializedName("data") val data: Map<String, Any>,
         )

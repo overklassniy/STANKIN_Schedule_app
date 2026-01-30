@@ -2,6 +2,14 @@ package com.overklassniy.stankinschedule.core.ui.components
 
 import androidx.compose.runtime.Composable
 
+/**
+ * Рендерит содержимое по состоянию [UIState] (успех/загрузка/ошибка).
+ *
+ * @param state Состояние UI.
+ * @param onSuccess Контент при успехе.
+ * @param onLoading Контент при загрузке.
+ * @param onFailed Контент при ошибке.
+ */
 @Composable
 inline fun <T : Any> Stateful(
     state: UIState<T>,
@@ -16,6 +24,13 @@ inline fun <T : Any> Stateful(
     }
 }
 
+/**
+ * Упрощённая версия [Stateful] без обработки ошибки.
+ *
+ * @param state Состояние UI.
+ * @param onSuccess Контент при успехе.
+ * @param onLoading Контент при загрузке.
+ */
 @Composable
 inline fun <T : Any?> Stateful(
     state: UIState<T>,

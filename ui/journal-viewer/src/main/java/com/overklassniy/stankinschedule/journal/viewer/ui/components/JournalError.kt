@@ -14,6 +14,16 @@ import com.overklassniy.stankinschedule.core.ui.components.LocalAnalytics
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.journal.viewer.ui.R
 
+/**
+ * Компонент отображения ошибки журнала.
+ *
+ * Показывает текст ошибки и кнопку «Повторить». Также записывает исключение
+ * в аналитику для последующей диагностики.
+ *
+ * @param error Исключение, возникшее при загрузке/обработке данных.
+ * @param onRetry Обработчик нажатия на кнопку повторной попытки.
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @Composable
 fun JournalError(
     error: Throwable,
@@ -21,7 +31,7 @@ fun JournalError(
     modifier: Modifier = Modifier,
 ) {
     val analytics = LocalAnalytics.current
-    
+
     // Записываем исключение в аналитику
     analytics.recordException(error)
 

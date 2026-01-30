@@ -23,6 +23,12 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 
+/**
+ * Фоновый воркер обновления оценок и семестров журнала.
+ *
+ * Периодически проверяет новые семестры и изменения оценок, формирует
+ * соответствующие уведомления и выполняется в foreground режиме.
+ */
 @HiltWorker
 class JournalMarksUpdateWorker @AssistedInject constructor(
     @Assisted context: Context,
@@ -30,6 +36,12 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
     private val useCase: JournalUpdateUseCase
 ) : CoroutineWorker(context, workerParameters) {
 
+    /**
+     * Основная работа воркера: обновление семестров и оценок, отправка уведомлений.
+     *
+     * @return Result.success при успешной обработке; Result.failure при потере авторизации;
+     * Result.retry при прочих ошибках.
+     */
     override suspend fun doWork(): Result {
         try {
             val manager = NotificationManagerCompat.from(applicationContext)
@@ -50,9 +62,9 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
 
             return Result.success()
 
-        } catch (e: StudentAuthorizedException) {
+        } catch (_: StudentAuthorizedException) {
             return Result.failure()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             return Result.retry()
         }
     }
@@ -61,6 +73,9 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
         return applicationContext.getString(id, args)
     }
 
+    /**
+     * Возвращает информацию для выполнения воркера в foreground, включая уведомление.
+     */
     override suspend fun getForegroundInfo(): ForegroundInfo {
         val notification = NotificationUtils.createModuleJournalNotification(applicationContext)
             .setContentTitle(getString(R.string.journal_notification))
@@ -70,7 +85,7 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
             .setAutoCancel(true)
             .build()
 
-        val notificationId = NotificationUtils.MODULE_JOURNAL_IDS;
+        val notificationId = NotificationUtils.MODULE_JOURNAL_IDS
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ForegroundInfo(
@@ -83,6 +98,12 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
         }
     }
 
+    /**
+     * Отправляет уведомление о появлении новых семестров.
+     *
+     * @param manager Менеджер уведомлений.
+     * @param newSemesters Набор названий новых семестров.
+     */
     private fun sendSemestersNotification(
         manager: NotificationManagerCompat,
         newSemesters: Set<String>
@@ -104,6 +125,12 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
         )
     }
 
+    /**
+     * Отправляет уведомление об изменении оценок.
+     *
+     * @param manager Менеджер уведомлений.
+     * @param newMarks Набор строк с изменёнными оценками.
+     */
     private fun sendMarksNotification(
         manager: NotificationManagerCompat,
         newMarks: Set<String>
@@ -134,6 +161,10 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
 
         private const val TAG = "JournalMarksUpdateWorker"
 
+        /**
+         * Запускает периодический воркер обновления журнала.
+         * Интервал — каждые 2 часа, сеть обязательна, политика — KEEP.
+         */
         fun startWorker(context: Context) {
             val manager = WorkManager.getInstance(context)
 
@@ -151,6 +182,9 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
             manager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.KEEP, worker)
         }
 
+        /**
+         * Отменяет все задачи воркера по тегу.
+         */
         fun cancelWorker(context: Context) {
             val manager = WorkManager.getInstance(context)
             manager.cancelAllWorkByTag(TAG)

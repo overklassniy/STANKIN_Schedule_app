@@ -1,7 +1,6 @@
 package com.overklassniy.stankinschedule.journal.viewer.ui.view
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
@@ -10,7 +9,9 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.content.withStyledAttributes
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.scale
 import com.overklassniy.stankinschedule.core.ui.ext.dpToPx
 import com.overklassniy.stankinschedule.core.ui.ext.spToPx
 import com.overklassniy.stankinschedule.journal.core.domain.model.Discipline
@@ -21,7 +22,12 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
- * View таблицы с оценками.
+ * Кастомное представление таблицы оценок семестра.
+ *
+ * Рисует названия дисциплин, их оценки по типам и коэффициенты, а также
+ * строки с текущим и накопленным рейтингом. Поддерживает XML‑атрибуты
+ * из declare‑styleable MarksTableView: mt_dividerColor, mt_textColor,
+ * mt_accumulateRating, mt_rating.
  */
 class MarksTableView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttrs: Int = 0, defStyleRes: Int = 0,
@@ -30,87 +36,74 @@ class MarksTableView @JvmOverloads constructor(
     private val minCellSize = dpToPx(25F, context.resources)
     private val textCellMargin = dpToPx(4F, context.resources)
     private val markCellMargin = dpToPx(1F, context.resources)
-
-    private val bitmapNoMark = Bitmap.createScaledBitmap(
-        ContextCompat.getDrawable(context, R.drawable.no_mark)?.toBitmap()!!,
-        minCellSize.toInt(),
-        minCellSize.toInt(),
-        false
-    )
-
+    private val bitmapNoMark = ContextCompat.getDrawable(context, R.drawable.no_mark)?.toBitmap()!!
+        .scale(minCellSize.toInt(), minCellSize.toInt(), false)
     private var totalDisciplineSize = 0F
     private var totalHeaderSize = 0F
     private var maxWrapHeight = 0f
-
     private val markHeaderData = listOf("М1", "М2", "К", "З", "Э", "К")
     private var marksData = emptyData()
-
     private val disciplineLayouts = arrayListOf<StaticLayout>()
     private val ratingLayout = arrayListOf<StaticLayout>()
     private val headerLayout = arrayListOf<Float>()
     private var headerHeight = 0F
-
     private var ratingText: String = "Рейтинг"
     private var accumulateRatingText: String = "Накопленный рейтинг"
-
     private val contentPainter = TextPaint(Paint.ANTI_ALIAS_FLAG)
     private val disciplinePainter = TextPaint(Paint.ANTI_ALIAS_FLAG)
     private val ratingPainter = TextPaint(Paint.ANTI_ALIAS_FLAG)
     private val linePainter = Paint(Paint.ANTI_ALIAS_FLAG)
     private val drawablePainter = Paint(Paint.ANTI_ALIAS_FLAG)
 
-
-    /**
-     * Инициализация атрибутов таблицы с оценками.
-     */
     init {
-        val typedArray = context.obtainStyledAttributes(
-            attrs, R.styleable.MarksTable, defStyleAttrs, defStyleRes
-        )
+        context.withStyledAttributes(
+            attrs, R.styleable.MarksTableView, defStyleAttrs, defStyleRes
+        ) {
 
-        // стиль линий
-        val dividerColor = R.styleable.MarksTable_mt_dividerColor
-        if (typedArray.hasValue(dividerColor)) {
-            linePainter.color = typedArray.getColor(dividerColor, 0)
+            // Стиль линий
+            val dividerColor = R.styleable.MarksTableView_mt_dividerColor
+            if (hasValue(dividerColor)) {
+                linePainter.color = getColor(dividerColor, 0)
+            }
+            linePainter.strokeWidth = dpToPx(0.5F, context.resources)
+            linePainter.style = Paint.Style.STROKE
+
+            drawablePainter.strokeWidth = dpToPx(0.5F, context.resources)
+            drawablePainter.style = Paint.Style.STROKE
+
+            // Стиль ячеек
+            val textColor = R.styleable.MarksTableView_mt_textColor
+            if (hasValue(textColor)) {
+                val color = getColor(textColor, 0)
+                contentPainter.color = color
+                disciplinePainter.color = color
+                ratingPainter.color = color
+            }
+
+            contentPainter.textSize = spToPx(14F, context.resources)
+            disciplinePainter.textSize = spToPx(14F, context.resources)
+            ratingPainter.textSize = spToPx(14F, context.resources)
+
+            contentPainter.textAlign = Paint.Align.CENTER
+            ratingPainter.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         }
-        linePainter.strokeWidth = dpToPx(0.5F, context.resources)
-        linePainter.style = Paint.Style.STROKE
-
-        drawablePainter.strokeWidth = dpToPx(0.5F, context.resources)
-        drawablePainter.style = Paint.Style.STROKE
-
-        // стиль ячеек
-        val textColor = R.styleable.MarksTable_mt_textColor
-        if (typedArray.hasValue(textColor)) {
-            val color = typedArray.getColor(textColor, 0)
-            contentPainter.color = color
-            disciplinePainter.color = color
-            ratingPainter.color = color
-        }
-
-        contentPainter.textSize = spToPx(14F, context.resources)
-        disciplinePainter.textSize = spToPx(14F, context.resources)
-        ratingPainter.textSize = spToPx(14F, context.resources)
-
-        contentPainter.textAlign = Paint.Align.CENTER
-        ratingPainter.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-
-        // ячейки с рейтингом
-//        accumulateRatingText = typedArray.getStringOrThrow(R.styleable.MarksTable_mt_accumulateRating)
-//        ratingText = typedArray.getStringOrThrow(R.styleable.MarksTable_mt_rating)
-
-        typedArray.recycle()
     }
 
+    /**
+     * Измеряет размеры таблицы исходя из содержимого: хедера типов оценок,
+     * списка дисциплин с оценками и строк рейтинга.
+     *
+     * Рассчитывает ширины столбцов, высоту строк и конечные размеры View.
+     */
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         headerLayout.clear()
         disciplineLayouts.clear()
         ratingLayout.clear()
 
         val widthSize = resolveSize(100, widthMeasureSpec)
-        var wrapHeight = dpToPx(0.5F, context.resources) // ширина завершающей линии
+        var wrapHeight = dpToPx(0.5F, context.resources) // Толщина нижней разделительной линии
 
-        // заголовок с типами оценок
+        // Хедер с типами оценок (М1, М2, К, З, Э, К)
         val fontMetrics = contentPainter.fontMetrics
         headerHeight = fontMetrics.bottom - fontMetrics.top + fontMetrics.leading
         val verMargin = textCellMargin * 2
@@ -123,10 +116,10 @@ class MarksTableView @JvmOverloads constructor(
             headerLayout.add(headerSize)
         }
 
-        // ячейки с оценками и коэффициентом
+        // Ячейки с оценками и коэффициентом
         for (discipline in marksData) {
-            // оценки
-            for ((j, type) in MarkType.values().withIndex()) {
+            // Оценки
+            for ((j, type) in MarkType.entries.withIndex()) {
                 val mark = discipline[type]
                 if (mark != null) {
                     val markSize = contentPainter.measureText(mark.toString()) + horMarkMargin
@@ -135,7 +128,7 @@ class MarksTableView @JvmOverloads constructor(
                     }
                 }
             }
-            // коэффициент
+            // Коэффициент
             val factorHolder =
                 if (discipline.factor == Discipline.NO_FACTOR) " " else discipline.factor.toString()
             val factorSize = contentPainter.measureText(factorHolder) + horMarkMargin
@@ -145,7 +138,7 @@ class MarksTableView @JvmOverloads constructor(
         }
         totalHeaderSize = headerLayout.sum()
 
-        // заголовок с дисциплинами
+        // Заголовок с дисциплинами
         totalDisciplineSize = (widthSize - totalHeaderSize)
         val maxDisciplineTextSize = (totalDisciplineSize - horTextMargin).toInt()
 
@@ -159,7 +152,7 @@ class MarksTableView @JvmOverloads constructor(
             wrapHeight += layout.height + verMargin
         }
 
-        // рейтинг
+        // Строки рейтинга (текущий и накопленный)
         for (rating in listOf(ratingText, accumulateRatingText)) {
             val layout = StaticLayout.Builder
                 .obtain(rating, 0, rating.length, ratingPainter, maxDisciplineTextSize)
@@ -168,16 +161,20 @@ class MarksTableView @JvmOverloads constructor(
             wrapHeight += layout.height + verMargin
         }
 
-        // установка конечных размеров
+        // Установка конечных размеров
         maxWrapHeight = wrapHeight
         val heightSize = resolveSize(wrapHeight.roundToInt(), heightMeasureSpec)
         setMeasuredDimension(widthSize, heightSize)
     }
 
+    /**
+     * Отрисовывает таблицу оценок: хедер типов, строки дисциплин с оценками
+     * и коэффициентами, а также строки текущего и накопленного рейтинга.
+     */
     override fun onDraw(canvas: Canvas) {
         val fontExtra = (contentPainter.descent() + contentPainter.ascent()) / 2
 
-        // рисование заголовка таблицы
+        // Рисуем хедер типов оценок
         var offset = totalDisciplineSize
         for ((size, data) in headerLayout.zip(markHeaderData)) {
             canvas.drawText(
@@ -192,21 +189,21 @@ class MarksTableView @JvmOverloads constructor(
 
         canvas.drawLine(0F, 0F, measuredWidth.toFloat(), 0F, linePainter)
 
-        // подводящая линия заголовка таблицы
+        // Подводящая линия заголовка таблицы
         canvas.translate(0F, headerHeight + textCellMargin * 2)
         canvas.drawLine(0F, 0F, measuredWidth.toFloat(), 0F, linePainter)
         canvas.translate(textCellMargin, textCellMargin)
 
-        // рисование дисциплин, их оценок и коэффициент
+        // Рисование дисциплин, их оценок и коэффициент
         for ((layout, discipline) in disciplineLayouts.zip(marksData)) {
             layout.draw(canvas)
 
-            // оценки дисциплины
+            // Оценки дисциплины
             var markOffset = totalDisciplineSize - textCellMargin
-            for ((markType, size) in MarkType.values().zip(headerLayout)) {
+            for ((markType, size) in MarkType.entries.toTypedArray().zip(headerLayout)) {
                 val mark = discipline[markType]
                 when {
-                    // пустое значение (т.е. крестик)
+                    // Пустое значение (т.е. крестик)
                     mark == null -> {
                         val halfImageSize = minCellSize / 2
                         canvas.drawBitmap(
@@ -216,7 +213,7 @@ class MarksTableView @JvmOverloads constructor(
                             drawablePainter
                         )
                     }
-                    // есть оценка
+                    // Есть оценка
                     mark != Discipline.NO_MARK -> {
                         canvas.drawText(
                             mark.toString(),
@@ -229,7 +226,7 @@ class MarksTableView @JvmOverloads constructor(
                 markOffset += size
             }
 
-            // коэффициент дисциплины
+            // Коэффициент дисциплины
             canvas.drawText(
                 discipline.factor.toString(),
                 markOffset + headerLayout.last() / 2,
@@ -240,7 +237,7 @@ class MarksTableView @JvmOverloads constructor(
             drawLineAndMove(canvas, layout)
         }
 
-        // рейтинг
+        // Рейтинг
         for ((value, layout) in listOf(marksData.rating, marksData.accumulatedRating).zip(
             ratingLayout
         )) {
@@ -274,7 +271,11 @@ class MarksTableView @JvmOverloads constructor(
     }
 
     /**
-     * Рисует подводящую линию в таблице.
+     * Рисует горизонтальную разделительную линию под текущим блоком и
+     * смещает канву на высоту блока с отступами.
+     *
+     * @param canvas Канва для рисования.
+     * @param layout Текущий текстовый блок, определяющий высоту смещения.
      */
     private fun drawLineAndMove(canvas: Canvas, layout: StaticLayout) {
         canvas.translate(0F, layout.height + textCellMargin)
@@ -283,7 +284,9 @@ class MarksTableView @JvmOverloads constructor(
     }
 
     /**
-     * Устанавливает семестр с оценками для отображения
+     * Устанавливает данные семестра для отображения таблицы и запрашивает переразметку.
+     *
+     * @param data Данные семестра (дисциплины, оценки, рейтинги).
      */
     fun setSemesterMarks(data: SemesterMarks) {
         marksData = data
@@ -291,7 +294,9 @@ class MarksTableView @JvmOverloads constructor(
     }
 
     /**
-     * Устанавливает цвет текста.
+     * Устанавливает цвет текста для всех элементов таблицы.
+     *
+     * @param color Цвет в формате ARGB.
      */
     fun setTextColor(color: Int) {
         contentPainter.color = color
@@ -299,97 +304,5 @@ class MarksTableView @JvmOverloads constructor(
         ratingPainter.color = color
     }
 
-    /**
-     * Пустые данные.
-     */
     private fun emptyData() = SemesterMarks(arrayListOf(), null, null)
-
-
-    companion object {
-        private const val TAG = "MarksTableLog"
-
-        /**
-         * Тестовые данные для отображения.
-         */
-        fun testData() = SemesterMarks(
-            arrayListOf(
-                Discipline(
-                    "Геометрическое моделирование и компьютерная графика",
-                    linkedMapOf(
-                        MarkType.FIRST_MODULE to 50,
-                        MarkType.SECOND_MODULE to 54,
-                        MarkType.EXAM to 52
-                    ),
-                    3.5
-                ),
-                Discipline(
-                    "Информационные системы и технологии",
-                    linkedMapOf(
-                        MarkType.FIRST_MODULE to 54,
-                        MarkType.SECOND_MODULE to 52,
-                        MarkType.EXAM to 54
-                    ),
-                    3.5
-                ),
-                Discipline(
-                    "Машинное обучение и интеллектуальные системы",
-                    linkedMapOf(
-                        MarkType.FIRST_MODULE to 52,
-                        MarkType.SECOND_MODULE to 49,
-                        MarkType.COURSEWORK to 49,
-                        MarkType.EXAM to 48
-                    ),
-                    3.0
-                ),
-                Discipline(
-                    "Прикладная физическая культура",
-                    linkedMapOf(
-                        MarkType.FIRST_MODULE to 50,
-                        MarkType.SECOND_MODULE to 50,
-                        MarkType.CREDIT to 43
-                    ),
-                    1.0
-                ),
-                Discipline(
-                    "Проектирование информационных систем",
-                    linkedMapOf(
-                        MarkType.FIRST_MODULE to 52,
-                        MarkType.SECOND_MODULE to 50,
-                        MarkType.COURSEWORK to 50,
-                        MarkType.EXAM to 54
-                    ),
-                    3.0
-                ),
-                Discipline(
-                    "Проектирование человеко-машинного взаимодействия",
-                    linkedMapOf(
-                        MarkType.FIRST_MODULE to 49,
-                        MarkType.SECOND_MODULE to 45,
-                        MarkType.CREDIT to 47
-                    ),
-                    3.5
-                ),
-                Discipline(
-                    "Теория массового обслуживания",
-                    linkedMapOf(
-                        MarkType.FIRST_MODULE to 0,
-                        MarkType.SECOND_MODULE to 0,
-                        MarkType.EXAM to 0
-                    ),
-                    4.5
-                ),
-                Discipline(
-                    "Технологии архивирования и восстановления данных",
-                    linkedMapOf(
-                        MarkType.FIRST_MODULE to 38,
-                        MarkType.SECOND_MODULE to 45,
-                        MarkType.CREDIT to 41
-                    ),
-                    2.5
-                )
-            ),
-            48,
-            45
-        )
-    }
 }

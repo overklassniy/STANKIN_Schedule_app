@@ -55,6 +55,17 @@ import com.overklassniy.stankinschedule.journal.viewer.ui.components.StudentInfo
 import com.overklassniy.stankinschedule.journal.viewer.ui.worker.JournalMarksUpdateWorker
 
 
+/**
+ * Экран просмотра журнала.
+ *
+ * Содержит верхнюю панель, карточку студента, вкладки семестров и постраничный
+ * просмотр оценок, поддержку Pull-to-Refresh и управление уведомлениями.
+ *
+ * @param viewModel ViewModel экрана журнала.
+ * @param navigateToLogging Навигация к экрану авторизации при потере сессии.
+ * @param navigateToPredict Навигация к экрану предсказания рейтинга.
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @OptIn(
     ExperimentalFoundationApi::class,
     ExperimentalMaterial3Api::class,
@@ -83,11 +94,12 @@ fun JournalScreen(
 
     val semesters = viewModel.semesters.collectAsLazyPagingItems()
     val loadState = semesters.loadState
-    val semesterError: Throwable? = remember(loadState.refresh, loadState.append, loadState.prepend) {
-        listOf(loadState.append, loadState.refresh, loadState.prepend)
-            .filterIsInstance(LoadState.Error::class.java)
-            .firstOrNull()?.error
-    }
+    val semesterError: Throwable? =
+        remember(loadState.refresh, loadState.append, loadState.prepend) {
+            listOf(loadState.append, loadState.refresh, loadState.prepend)
+                .filterIsInstance<LoadState.Error>()
+                .firstOrNull()?.error
+        }
 
     val lazyCollapseState = rememberLazyListState()
     val pagerState = rememberPagerState(
@@ -247,6 +259,12 @@ fun JournalScreen(
     }
 }
 
+/**
+ * Возвращает элемент по индексу или null, если индекс вне диапазона.
+ *
+ * @param index Индекс элемента.
+ * @return Элемент типа T или null, если индекс некорректен.
+ */
 private fun <T : Any> LazyPagingItems<T>.getOrNull(index: Int): T? {
     return if (index in 0 until itemCount) get(index) else null
 }

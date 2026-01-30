@@ -16,6 +16,13 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import org.joda.time.LocalDate
 import java.util.Date
 
+/**
+ * Диалог выбора даты на основе Material3 DatePicker.
+ *
+ * @param selectedDate Текущая выбранная дата.
+ * @param onDateSelected Коллбэк при подтверждении выбора (возвращает выбранную дату).
+ * @param onDismissRequest Коллбэк закрытия диалога.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarDialog(

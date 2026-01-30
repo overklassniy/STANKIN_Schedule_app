@@ -10,6 +10,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
+/**
+ * Обертка над [Scaffold] с предустановками темы.
+ *
+ * @param modifier Модификатор контейнера.
+ * @param topBar Верхняя панель.
+ * @param bottomBar Нижняя панель.
+ * @param snackbarHost Хост для сообщений.
+ * @param floatingActionButton FAB-кнопка.
+ * @param floatingActionButtonPosition Позиция FAB.
+ * @param containerColor Цвет фона.
+ * @param contentColor Цвет контента.
+ * @param content Содержимое с [PaddingValues].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScaffold(

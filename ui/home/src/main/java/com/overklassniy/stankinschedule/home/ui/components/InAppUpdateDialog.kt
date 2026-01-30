@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,6 +33,11 @@ import com.overklassniy.stankinschedule.home.ui.data.UpdateState
 import org.joda.time.DateTime
 
 
+/**
+ * Состояние In‑App Update: хранит прогресс и операции управления обновлением.
+ *
+ * @property progress Текущее состояние обновления [UpdateState].
+ */
 class InAppUpdateState internal constructor(
     private val updateManager: InAppUpdater,
     private val updateLauncher: (info: AppUpdateInfo) -> Unit,
@@ -52,6 +56,15 @@ class InAppUpdateState internal constructor(
     }
 }
 
+/**
+ * Создаёт и запоминает состояние In‑App Update.
+ *
+ * Проводит проверку обновления и обновляет дату последнего обновления.
+ *
+ * @param saveLastUpdate Коллбэк сохранения времени последнего успешного обновления.
+ * @param currentLastUpdate Поставщик времени последнего обновления.
+ * @return [InAppUpdateState] для отображения и управления процессом.
+ */
 @Composable
 fun rememberInAppUpdater(
     saveLastUpdate: (last: DateTime) -> Unit,
@@ -106,6 +119,12 @@ fun rememberInAppUpdater(
     }
 }
 
+/**
+ * Диалог обновления приложения: отображает доступность обновления и прогресс.
+ *
+ * @param state Состояние In‑App Update.
+ * @param modifier Модификатор.
+ */
 @Composable
 fun InAppUpdateDialog(
     state: InAppUpdateState,
@@ -132,8 +151,16 @@ fun InAppUpdateDialog(
     }
 }
 
+/**
+ * Контент диалога в зависимости от состояния обновления.
+ *
+ * @param progress Текущее состояние.
+ * @param onLater Отложить обновление.
+ * @param onUpdate Запустить обновление.
+ * @param onRestart Перезапустить приложение после загрузки.
+ */
 @Composable
-private fun ColumnScope.UpdateContent(
+private fun UpdateContent(
     progress: UpdateState,
     onLater: () -> Unit,
     onUpdate: (info: AppUpdateInfo) -> Unit,
@@ -146,11 +173,13 @@ private fun ColumnScope.UpdateContent(
                 onUpdate = { onUpdate(progress.info) }
             )
         }
+
         is UpdateState.UpdateProgress -> {
             UpdateProgressContent(
                 progress = progress
             )
         }
+
         is UpdateState.UpdateRestart -> {
             UpdateRestartContent(
                 onRestart = onRestart
@@ -159,8 +188,14 @@ private fun ColumnScope.UpdateContent(
     }
 }
 
+/**
+ * Секция диалога при доступности обновления.
+ *
+ * @param onLater Отложить обновление.
+ * @param onUpdate Запустить процесс обновления.
+ */
 @Composable
-private fun ColumnScope.UpdateRequiredContent(
+private fun UpdateRequiredContent(
     onLater: () -> Unit,
     onUpdate: () -> Unit
 ) {
@@ -179,8 +214,13 @@ private fun ColumnScope.UpdateRequiredContent(
     }
 }
 
+/**
+ * Секция диалога с индикатором прогресса загрузки.
+ *
+ * @param progress Состояние прогресса.
+ */
 @Composable
-private fun ColumnScope.UpdateProgressContent(
+private fun UpdateProgressContent(
     progress: UpdateState.UpdateProgress
 ) {
     Text(
@@ -204,8 +244,13 @@ private fun ColumnScope.UpdateProgressContent(
     }
 }
 
+/**
+ * Секция диалога для завершённого обновления с предложением перезапуска.
+ *
+ * @param onRestart Действие по перезапуску.
+ */
 @Composable
-private fun ColumnScope.UpdateRestartContent(
+private fun UpdateRestartContent(
     onRestart: () -> Unit,
 ) {
     Text(text = stringResource(R.string.update_restart))

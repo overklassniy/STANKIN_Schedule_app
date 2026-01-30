@@ -24,12 +24,18 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,8 +66,15 @@ import com.overklassniy.stankinschedule.journal.predict.ui.model.PredictMark
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+/**
+ * Экран предсказания рейтинга: выбор семестра, ввод предполагаемых оценок и панель результата.
+ *
+ * @param viewModel ViewModel экрана предсказания.
+ * @param modifier Модификатор корневого контейнера.
+ * @param onBackPressed Действие «назад».
+ */
+@Suppress("unused")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PredictScreen(
     viewModel: PredictViewModel,
@@ -71,7 +84,7 @@ fun PredictScreen(
     val semesters by viewModel.semesters.collectAsState()
     val currentSemester by viewModel.currentSemester.collectAsState()
 
-    val bottomState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val bottomState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
     AppScaffold(
@@ -85,9 +98,13 @@ fun PredictScreen(
         modifier = modifier
     ) { innerPadding ->
 
-        ModalBottomSheetLayout(
-            sheetState = bottomState,
-            sheetContent = {
+        if (bottomState.isVisible) {
+            ModalBottomSheet(
+                onDismissRequest = { scope.launch { bottomState.hide() } },
+                sheetState = bottomState,
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                containerColor = MaterialTheme.colorScheme.background,
+            ) {
                 SemesterSelectorBottomSheet(
                     currentSemester = currentSemester,
                     semesters = semesters,
@@ -97,53 +114,49 @@ fun PredictScreen(
                     },
                     modifier = Modifier
                         .padding(vertical = Dimen.ContentPadding * 2)
-                    // .imePadding()
                 )
-            },
-            sheetShape = RoundedCornerShape(
-                topStart = 16.0.dp,
-                topEnd = 16.0.dp,
-                bottomEnd = 0.0.dp,
-                bottomStart = 0.0.dp
-            ),
-            sheetBackgroundColor = MaterialTheme.colorScheme.background,
+            }
+        }
+
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .imePadding()
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
+            val predictMarks by viewModel.predictMarks.collectAsState()
+            val predictedRating by viewModel.predictedRating.collectAsState()
+            val showExposedMarks by viewModel.showExposedMarks.collectAsState()
 
-                val predictMarks by viewModel.predictMarks.collectAsState()
-                val predictedRating by viewModel.predictedRating.collectAsState()
-                val showExposedMarks by viewModel.showExposedMarks.collectAsState()
+            PredictDisciplines(
+                predictMarks = predictMarks,
+                onPredictMarkChanged = { item, value ->
+                    viewModel.updatePredictMark(item, value)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
 
-                PredictDisciplines(
-                    predictMarks = predictMarks,
-                    onPredictMarkChanged = { item, value ->
-                        viewModel.updatePredictMark(item, value)
-                    },
-                    // contentPadding = PaddingValues(bottom = maxHeight * 0.25f),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
-
-                PredictRatingPanel(
-                    predictedRating = predictedRating,
-                    showExposedMarks = showExposedMarks,
-                    onChangeSemester = { scope.launch { bottomState.show() } },
-                    onShowExposedMarks = { viewModel.toggleShowExposedMarks() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-            }
+            PredictRatingPanel(
+                predictedRating = predictedRating,
+                showExposedMarks = showExposedMarks,
+                onChangeSemester = { scope.launch { bottomState.show() } },
+                onShowExposedMarks = { viewModel.toggleShowExposedMarks() },
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
         }
     }
 }
 
+/**
+ * Верхняя панель экрана предсказания с заголовком и подзаголовком семестра.
+ *
+ * @param subTitle Текущий выбранный семестр.
+ * @param onTitleClicked Обработчик клика по заголовку (открыть выбор семестра).
+ * @param onBackPressed Действие «назад».
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PredictToolBar(
@@ -185,7 +198,14 @@ fun PredictToolBar(
     )
 }
 
-
+/**
+ * Контент листа выбора семестра.
+ *
+ * @param currentSemester Текущий семестр.
+ * @param semesters Список доступных семестров.
+ * @param onSemesterSelected Коллбэк выбора семестра.
+ * @param modifier Модификатор контейнера.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SemesterSelectorBottomSheet(
@@ -221,7 +241,7 @@ fun SemesterSelectorBottomSheet(
                     )
                     .padding(Dimen.ContentPadding)
             ) {
-                androidx.compose.material3.RadioButton(
+                RadioButton(
                     selected = semester == currentSemester,
                     onClick = null
                 )
@@ -235,9 +255,18 @@ fun SemesterSelectorBottomSheet(
     }
 }
 
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class,
-    ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+/**
+ * Список дисциплин с вводом предполагаемых оценок.
+ *
+ * @param predictMarks Карта «заголовок → список оценок».
+ * @param onPredictMarkChanged Коллбэк изменения значения оценки.
+ * @param modifier Модификатор списка.
+ * @param contentPadding Внутренние отступы списка.
+ */
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class
+)
 @Composable
 fun PredictDisciplines(
     predictMarks: Map<String, List<PredictMark>>,
@@ -321,6 +350,15 @@ fun PredictDisciplines(
     }
 }
 
+/**
+ * Панель итогового рейтинга и действий.
+ *
+ * @param predictedRating Предсказанный рейтинг.
+ * @param showExposedMarks Флаг отображения открытых оценок.
+ * @param onChangeSemester Действие смены семестра.
+ * @param onShowExposedMarks Переключение видимости оценок.
+ * @param modifier Модификатор панели.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PredictRatingPanel(
@@ -345,7 +383,7 @@ fun PredictRatingPanel(
                 .fillMaxWidth()
                 .padding(Dimen.ContentPadding)
         ) {
-            androidx.compose.material3.IconButton(
+            IconButton(
                 onClick = onChangeSemester
             ) {
                 Icon(
@@ -373,15 +411,17 @@ fun PredictRatingPanel(
                 )
             }
 
-            androidx.compose.material3.IconButton(
+            IconButton(
                 onClick = onShowExposedMarks
             ) {
                 Icon(
-                    painter = painterResource(if (showExposedMarks) {
-                        R.drawable.ic_discipline_visibility
-                    } else {
-                        R.drawable.ic_discipline_visibility_off
-                    }),
+                    painter = painterResource(
+                        if (showExposedMarks) {
+                            R.drawable.ic_discipline_visibility
+                        } else {
+                            R.drawable.ic_discipline_visibility_off
+                        }
+                    ),
                     contentDescription = null
                 )
             }

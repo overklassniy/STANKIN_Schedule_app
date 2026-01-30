@@ -20,6 +20,20 @@ import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.journal.viewer.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
+/**
+ * Верхняя панель экрана журнала.
+ *
+ * Содержит заголовок, действия: переход к предсказанию рейтинга, включение/выключение
+ * уведомлений и выход из аккаунта. При нажатии на кнопку «Ещё» открывает меню с пунктом «Выйти».
+ *
+ * @param onPredictAction Действие при нажатии на кнопку предсказания рейтинга.
+ * @param isNotification Текущее состояние уведомлений (включены/выключены).
+ * @param onNotificationAction Обработчик переключения уведомлений.
+ * @param onSignOutAction Действие выхода из аккаунта.
+ * @param modifier Модификатор для внешнего оформления панели.
+ * @param title Заголовок панели.
+ * @param scrollBehavior Поведение прокрутки для TopAppBar (опционально).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JournalToolBar(

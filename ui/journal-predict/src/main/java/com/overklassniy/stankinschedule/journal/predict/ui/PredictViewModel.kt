@@ -79,9 +79,6 @@ class PredictViewModel @Inject constructor(
             marks.updateMark(item.discipline, item.type, value)
             updatePredictRating()
 
-            // Compose: _predictMarks.value = createContent(marks)
-
-            // For views:
             _predictMarks.value[item.discipline]?.find { it.type == item.type }?.value = value
         }
     }

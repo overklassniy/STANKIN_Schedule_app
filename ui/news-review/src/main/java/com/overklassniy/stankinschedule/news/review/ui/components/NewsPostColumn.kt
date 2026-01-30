@@ -21,22 +21,32 @@ import com.overklassniy.stankinschedule.core.ui.utils.newsImageLoader
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
 import kotlinx.coroutines.flow.Flow
 
-
+/**
+ * Колонка с постами новостей на основе Paging.
+ *
+ * Показывает список карточек новостей с обработкой состояний загрузки
+ * и ошибок (initial/append). Клик по карточке передаёт модель вовне.
+ *
+ * @param posts Поток постраничных данных новостей.
+ * @param onClick Обработчик клика по карточке новости.
+ * @param modifier Модификатор для внешнего оформления.
+ * @param imageLoader Загрузчик изображений.
+ * @param columnState Состояние списка для прокрутки.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+@Suppress("unused")
 fun NewsPostColumn(
     posts: Flow<PagingData<NewsPost>>,
     onClick: (post: NewsPost) -> Unit,
-    isNewsRefreshing: Boolean,
-    onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     imageLoader: ImageLoader = newsImageLoader(LocalContext.current),
     columnState: LazyListState = rememberLazyListState()
 ) {
     val lazyPostItems: LazyPagingItems<NewsPost> = posts.collectAsLazyPagingItems()
 
-    // Removed pull-to-refresh to fix horizontal swipe gesture conflict with HorizontalPager
-    // Refresh is triggered automatically when switching tabs or on initial load
+    // Обновление списка выполняется автоматически при начальной загрузке данных и при переключении вкладок.
+    // Явный Pull-to-Refresh здесь не используется, чтобы избежать конфликтов с горизонтальными жестами.
     PagingLazyColumn(
         state = columnState,
         pagingItems = lazyPostItems,

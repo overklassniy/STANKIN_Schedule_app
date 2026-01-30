@@ -12,10 +12,20 @@ import androidx.compose.ui.platform.ComposeView
 import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 
+/**
+ * ViewHolder для заголовка раздела дисциплины в списке предсказаний.
+ *
+ * Использует Compose внутри RecyclerView через [ComposeView] и [AppTheme].
+ */
 class PredictHeaderHolder(
     composeView: ComposeView,
 ) : ComposeRecyclerHolder(composeView) {
 
+    /**
+     * Привязывает данные заголовка к Compose-содержимому.
+     *
+     * @param data Модель заголовка с названием дисциплины.
+     */
     fun bind(data: PredictAdapter.HeaderItem) {
         composeView.setContent {
             AppTheme {

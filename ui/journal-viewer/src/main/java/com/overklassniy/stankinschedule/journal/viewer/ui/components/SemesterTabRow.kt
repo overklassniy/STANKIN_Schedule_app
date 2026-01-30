@@ -9,6 +9,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
+/**
+ * Полоса вкладок семестров.
+ *
+ * Отображает список семестров с возможностью прокрутки и выбора активной вкладки.
+ * По клику запускает прокрутку на выбранный индекс, вызывая [onPageScrolled].
+ *
+ * @param semesters Список названий семестров.
+ * @param currentPage Индекс текущей активной вкладки.
+ * @param onPageScrolled Суспенд‑обработчик прокрутки на выбранный индекс.
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @Composable
 fun SemesterTabRow(
     semesters: List<String>,

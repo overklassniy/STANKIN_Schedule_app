@@ -27,6 +27,12 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана просмотра журнала.
+ *
+ * Управляет авторизацией, состоянием студента, текущим и предсказанным рейтингом,
+ * постраничной загрузкой оценок по семестрам и настройками уведомлений.
+ */
 @HiltViewModel
 class JournalViewModel @Inject constructor(
     private val journal: JournalUseCase,
@@ -53,6 +59,12 @@ class JournalViewModel @Inject constructor(
     val isForceRefreshing = _isForceRefreshing.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
+            /**
+             * Поток постраничных данных по оценкам семестров.
+             *
+             * Генерируется при успешной загрузке данных студента и
+             * кэшируется в пределах [viewModelScope].
+             */
     val semesters: Flow<PagingData<SemesterMarks>> = _student.flatMapLatest { state ->
         if (state is UIState.Success) createPager(state.data).flow else emptyFlow()
     }.flowOn(Dispatchers.IO).cachedIn(viewModelScope)
@@ -62,6 +74,14 @@ class JournalViewModel @Inject constructor(
         updateStudentInfo()
     }
 
+    /**
+     * Инициализирует состояние экрана на основе данных студента.
+     *
+     * Устанавливает успешное состояние, сбрасывает флаг принудительного
+     * обновления и запускает вычисление текущего и предсказанного рейтинга.
+     *
+     * @param student Загруженные данные студента.
+     */
     private fun setupStudent(student: Student) {
         _student.value = UIState.success(student)
         _isForceRefreshing.value = false
@@ -70,6 +90,15 @@ class JournalViewModel @Inject constructor(
         updatePredictRating(student)
     }
 
+    /**
+     * Создаёт пейджер для постраничной загрузки оценок по семестрам.
+     *
+     * Конфигурация: размер страницы — 1, начальный ключ — первый семестр студента.
+     * Источник данных предоставляет [JournalUseCase.semesterSource].
+     *
+     * @param data Данные студента.
+     * @return Pager для получения [SemesterMarks].
+     */
     private fun createPager(data: Student): Pager<String, SemesterMarks> {
         return Pager(
             config = PagingConfig(pageSize = 1),
@@ -78,6 +107,14 @@ class JournalViewModel @Inject constructor(
         )
     }
 
+    /**
+     * Загружает информацию о студенте и обновляет состояние экрана.
+     *
+     * При потере авторизации переводит флаг isSignIn в false; при прочих ошибках
+     * устанавливает состояние ошибки. В случае успеха вызывает [setupStudent].
+     *
+     * @param useCache Если true — допускается использование кеша и показ Loading.
+     */
     private fun updateStudentInfo(useCache: Boolean = true) {
         viewModelScope.launch {
             journal.student(useCache = useCache)
@@ -98,6 +135,14 @@ class JournalViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Обновляет текущий рейтинг студента.
+     *
+     * Запрашивает рейтинг из [PredictUseCase.rating]. При ошибке сбрасывает значение
+     * в null; при успехе устанавливает полученное значение в [_rating].
+     *
+     * @param student Студент, для которого вычисляется текущий рейтинг.
+     */
     private fun updateRating(student: Student) {
         viewModelScope.launch {
             predict.rating(student)
@@ -110,6 +155,14 @@ class JournalViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Обновляет предсказанный рейтинг студента.
+     *
+     * Запрашивает значение из [PredictUseCase.predictRating]. При ошибке сбрасывает
+     * значение в null; при успехе устанавливает полученное значение в [_predictedRating].
+     *
+     * @param student Студент, для которого вычисляется предсказанный рейтинг.
+     */
     private fun updatePredictRating(student: Student) {
         viewModelScope.launch {
             predict.predictRating(student)
@@ -122,6 +175,11 @@ class JournalViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Обновляет информацию о студенте.
+     *
+     * @param useCache Если true — перед обновлением показывает состояние Loading.
+     */
     fun refreshStudentInfo(useCache: Boolean) {
         if (_student.value !is UIState.Loading) {
 
@@ -134,12 +192,21 @@ class JournalViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Включает/выключает фоновые обновления оценок и уведомления.
+     *
+     * @param allow Разрешение на обновление оценок в фоне.
+     */
     fun setUpdateMarksAllow(allow: Boolean) {
         viewModelScope.launch {
             journal.setUpdateMarksAllow(allow)
         }
     }
 
+    /**
+     * Выполняет выход из аккаунта и переводит состояние авторизации в false.
+     * При ошибке записывает исключение в аналитику.
+     */
     fun signOut() {
         viewModelScope.launch {
             try {

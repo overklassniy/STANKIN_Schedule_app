@@ -13,6 +13,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/**
+ * Индикатор текущей страницы для Pager: рисует линию под активной карточкой.
+ *
+ * @param state Состояние пейджера.
+ * @param itemsCount Количество элементов.
+ * @param modifier Модификатор.
+ * @param indicatorHeight Высота линии индикатора.
+ * @param indicatorColor Цвет индикатора.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SchedulePagerIndicator(

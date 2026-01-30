@@ -9,6 +9,22 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 
 
+/**
+ * Обёртка над [LazyColumn] для отображения данных из [LazyPagingItems].
+ *
+ * Управляет состояниями загрузки/ошибки как для refresh, так и для append.
+ *
+ * @param state Состояние списка.
+ * @param pagingItems Элементы пагинации.
+ * @param modifier Модификатор.
+ * @param key Ключ элемента.
+ * @param contentType Тип контента.
+ * @param onContent Контент элемента по индексу.
+ * @param onContentLoading Контент для состояния начальной загрузки.
+ * @param onContentError Контент для ошибки начальной загрузки.
+ * @param onAppendLoading Контент для состояния дозагрузки.
+ * @param onAppendError Контент для ошибки дозагрузки.
+ */
 @Composable
 fun <T : Any> PagingLazyColumn(
     state: LazyListState,
@@ -40,16 +56,19 @@ fun <T : Any> PagingLazyColumn(
                     onContentLoading()
                 }
             }
+
             loadState.refresh is LoadState.Error -> {
                 item {
                     onContentError((loadState.refresh as LoadState.Error).error)
                 }
             }
+
             loadState.append is LoadState.Loading -> {
                 item {
                     onAppendLoading()
                 }
             }
+
             loadState.append is LoadState.Error -> {
                 item {
                     onAppendError((loadState.append as LoadState.Error).error)

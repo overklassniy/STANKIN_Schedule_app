@@ -16,6 +16,17 @@ import com.overklassniy.stankinschedule.journal.core.domain.model.Student
 import com.overklassniy.stankinschedule.journal.viewer.ui.R
 
 
+/**
+ * Карточка информации о студенте.
+ *
+ * Отображает имя и группу студента, а также текущий и предсказанный рейтинг.
+ * Значения рейтинга могут быть отсутствовать — в этом случае выводится «--».
+ *
+ * @param student Модель студента.
+ * @param rating Текущий рейтинг студента (строка или null).
+ * @param predictRating Предсказанный рейтинг (строка или null).
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentInfo(

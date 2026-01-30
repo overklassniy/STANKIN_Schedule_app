@@ -12,12 +12,14 @@ import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import javax.net.ssl.SSLException
 import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLException
 
 /**
- * Возвращает человекочитаемое описание исключения для показа пользователю.
- * Если исключение не распознано, возвращает fallback-сообщение.
+ * Возвращает локализованное описание исключения через ресурсы.
+ *
+ * @param t Исключение.
+ * @return Текстовое описание для пользователя.
  */
 fun Context.exceptionDescription(t: Throwable): String {
     val descriptionRes = exceptionDescriptionRes(t)
@@ -29,8 +31,10 @@ fun Context.exceptionDescription(t: Throwable): String {
 }
 
 /**
- * Возвращает человекочитаемое описание исключения для Compose.
- * Если исключение не распознано, возвращает fallback-сообщение.
+ * Возвращает локализованное описание исключения для Composable-контекста.
+ *
+ * @param t Исключение.
+ * @return Текстовое описание из stringResource.
  */
 @Composable
 fun exceptionDescription(t: Throwable): String {
@@ -43,30 +47,32 @@ fun exceptionDescription(t: Throwable): String {
 }
 
 /**
- * Возвращает строковый ресурс для описания исключения,
- * или null если требуется форматирование с параметрами.
+ * Подбирает идентификатор строкового ресурса для исключения.
+ *
+ * @param t Исключение.
+ * @return Идентификатор ресурса или null, если нет подходящего.
  */
 @StringRes
 private fun exceptionDescriptionRes(t: Throwable): Int? {
     return when (t) {
         // Время ожидания сокета истекло
         is SocketTimeoutException -> R.string.ex_socket_timeout
-        
+
         // Не удалось подключиться к хосту
         is UnknownHostException -> R.string.ex_unknown_host
-        
+
         // Соединение отклонено
         is ConnectException -> R.string.ex_connection_refused
-        
+
         // Ошибка SSL/TLS
         is SSLException -> R.string.ex_ssl_error
-        
+
         // Файл не найден
         is FileNotFoundException -> R.string.ex_file_not_found
-        
+
         // Ошибка парсинга JSON
         is JSONException -> R.string.ex_parse_error
-        
+
         // HTTP ошибка (retrofit2)
         is HttpException -> {
             when (t.code()) {
@@ -78,10 +84,10 @@ private fun exceptionDescriptionRes(t: Throwable): Int? {
                 else -> null
             }
         }
-        
+
         // Общая ошибка ввода-вывода (после более специфичных)
         is IOException -> R.string.ex_io_error
-        
+
         else -> null
     }
 }

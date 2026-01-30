@@ -15,8 +15,16 @@ import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.journal.predict.ui.components.SemesterSelectorBottomSheet
 
+/**
+ * Диалог выбора семестра на базе BottomSheetDialogFragment.
+ *
+ * Возвращает выбранный семестр через FragmentResult API.
+ */
 class SemesterSelectorDialog : BottomSheetDialogFragment() {
 
+    /**
+     * Создаёт ComposeView и отображает лист выбора семестра.
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -44,6 +52,11 @@ class SemesterSelectorDialog : BottomSheetDialogFragment() {
         }
     }
 
+    /**
+     * Обрабатывает выбор семестра и отправляет результат.
+     *
+     * @param semester Выбранный семестр.
+     */
     private fun semesterSelected(semester: String) {
         setFragmentResult(REQUEST_SEMESTER_SELECTOR, bundleOf(RESULT_SEMESTER to semester))
         dismiss()
@@ -57,6 +70,12 @@ class SemesterSelectorDialog : BottomSheetDialogFragment() {
         const val REQUEST_SEMESTER_SELECTOR = "request_semester_selector"
         const val RESULT_SEMESTER = "result_semester"
 
+        /**
+         * Создаёт новый экземпляр диалога с аргументами.
+         *
+         * @param semesters Список доступных семестров.
+         * @param currentSemester Текущий выбранный семестр.
+         */
         fun newInstance(semesters: List<String>, currentSemester: String): SemesterSelectorDialog {
             return SemesterSelectorDialog().apply {
                 arguments = bundleOf(

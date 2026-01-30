@@ -15,13 +15,19 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.journal.login.ui.R
 
+/**
+ * Отображает ошибку входа: иконка и локализованное описание.
+ *
+ * @param error Исключение, полученное при попытке входа.
+ * @param modifier Модификатор.
+ */
 @Composable
 fun LoginError(
     error: Throwable,
     modifier: Modifier = Modifier,
 ) {
     val analytics = LocalAnalytics.current
-    
+
     // Записываем исключение в аналитику
     analytics.recordException(error)
 

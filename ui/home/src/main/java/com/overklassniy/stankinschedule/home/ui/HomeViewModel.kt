@@ -1,5 +1,7 @@
 package com.overklassniy.stankinschedule.home.ui
 
+import android.content.Context
+import android.content.pm.ApplicationInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.core.domain.ext.subHours
@@ -17,6 +19,7 @@ import com.overklassniy.stankinschedule.schedule.settings.domain.usecase.Schedul
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewDay
 import com.overklassniy.stankinschedule.schedule.viewer.domain.usecase.ScheduleViewerUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +42,8 @@ class HomeViewModel @Inject constructor(
     private val scheduleSettingsUseCase: ScheduleSettingsUseCase,
     private val newsUseCase: NewsReviewUseCase,
     private val applicationPreference: ApplicationPreference,
-    private val updateRepository: UpdateRepository
+    private val updateRepository: UpdateRepository,
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     val pairColorGroup: Flow<PairColorGroup> = scheduleSettingsUseCase.pairColorGroup()
@@ -61,6 +65,17 @@ class HomeViewModel @Inject constructor(
 
     private val _deanNews = MutableStateFlow<List<NewsPost>>(emptyList())
     val deanNews = _deanNews.asStateFlow()
+
+    private val isDebug = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
+    private fun appVersion(): String {
+        return try {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            pInfo.versionName ?: "0.0.0"
+        } catch (_: Exception) {
+            "0.0.0"
+        }
+    }
 
     private data class DaysKey(
         val scheduleId: Long,
@@ -128,17 +143,23 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Проверяет наличие обновлений через GitHub Releases и обновляет кеш.
+     *
+     * Выполняется не чаще, чем раз в 24 часа. В режиме отладки пропускается.
+     */
     private suspend fun checkForUpdates() {
         val lastCheck = applicationPreference.lastUpdateCheck
         val shouldCheck = lastCheck == null || (lastCheck subHours DateTime.now()) > 24
 
         if (shouldCheck) {
             try {
-                val currentVersion = BuildConfig.APP_VERSION
+                if (isDebug) return
+                val currentVersion = appVersion()
                 val update = updateRepository.checkForUpdate(currentVersion)
-                
+
                 applicationPreference.lastUpdateCheck = DateTime.now()
-                
+
                 if (update != null) {
                     applicationPreference.availableUpdateVersion = update.latestVersion
                     applicationPreference.availableUpdateChangelog = update.changelog
@@ -154,14 +175,30 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Сохраняет момент завершения In‑App Update.
+     *
+     * @param last Время последнего обновления.
+     */
     fun saveLastUpdate(last: DateTime) {
         applicationPreference.lastInAppUpdate = last
     }
 
+    /**
+     * Возвращает момент последнего In‑App Update.
+     *
+     * @return Дата/время последнего обновления или null.
+     */
     fun currentLastUpdate(): DateTime? {
         return applicationPreference.lastInAppUpdate
     }
 
+    /**
+     * Обновляет блок расписания вокруг текущей даты и кэширует результат.
+     *
+     * @param model Модель расписания.
+     * @param delta Число дней до/после текущей даты.
+     */
     private suspend fun updateScheduleBlock(model: ScheduleModel?, delta: Int) {
         if (model == null) {
             _favorite.value = null
@@ -197,6 +234,10 @@ class HomeViewModel @Inject constructor(
         _days.value = UIState.success(days)
     }
 
+    /**
+     * Константы для главного экрана.
+     * NEWS_COUNT — количество карточек новостей.
+     */
     companion object {
         const val NEWS_COUNT = 12
     }

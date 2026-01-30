@@ -11,12 +11,27 @@ import kotlinx.coroutines.flow.first
 import org.joda.time.LocalDate
 import javax.inject.Inject
 
+/**
+ * UseCase для получения данных, необходимых виджету расписания.
+ *
+ * Формирует список дней/пар для выбранного расписания и подгруппы,
+ * предоставляет цвета пар из настроек и загружает конфигурацию виджета.
+ */
 class ScheduleWidgetUseCase @Inject constructor(
     private val storage: ScheduleStorage,
     private val widgetPreference: ScheduleWidgetPreference,
     private val schedulePreference: SchedulePreference
 ) {
 
+    /**
+     * Формирует список дней с отфильтрованными парами по подгруппе.
+     *
+     * @param scheduleId ID расписания.
+     * @param subgroup Подгруппа для фильтрации.
+     * @param from Начальная дата (включительно).
+     * @param to Конечная дата (не включительно).
+     * @return Список списков пар по дням.
+     */
     suspend fun scheduleDays(
         scheduleId: Long,
         subgroup: Subgroup,
@@ -36,10 +51,21 @@ class ScheduleWidgetUseCase @Inject constructor(
         return days
     }
 
+    /**
+     * Возвращает текущую цветовую схему пар из настроек.
+     *
+     * @return [PairColorGroup] с HEX-цветами.
+     */
     suspend fun pairColors(): PairColorGroup {
         return schedulePreference.scheduleColorGroup().first()
     }
 
+    /**
+     * Загружает сохранённые данные конфигурации виджета.
+     *
+     * @param appWidgetId Идентификатор виджета.
+     * @return [ScheduleWidgetData] или null, если данных нет.
+     */
     fun loadWidgetData(appWidgetId: Int): ScheduleWidgetData? =
         widgetPreference.loadData(appWidgetId)
 

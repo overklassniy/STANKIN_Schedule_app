@@ -46,6 +46,16 @@ fun NewsPostPreview() {
     }
 }
 
+/**
+ * Карточка новости.
+ *
+ * Показывает превью изображения, заголовок и дату. При отсутствии данных рендерит холдер-заглушку.
+ *
+ * @param post Модель новости или null для отображения заглушки.
+ * @param imageLoader Загрузчик изображений.
+ * @param onClick Обработчик клика по карточке новости.
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @Composable
 fun NewsPost(
     post: NewsPost?,
@@ -65,6 +75,11 @@ fun NewsPost(
     }
 }
 
+/**
+ * Заглушка карточки новости, используемая, когда данных ещё нет.
+ *
+ * @param modifier Модификатор.
+ */
 @Composable
 private fun NewsPostHolder(
     modifier: Modifier = Modifier
@@ -88,6 +103,14 @@ private fun NewsPostHolder(
     }
 }
 
+/**
+ * Содержимое карточки новости.
+ *
+ * @param post Модель новости.
+ * @param imageLoader Загрузчик изображений.
+ * @param onClick Обработчик клика по карточке.
+ * @param modifier Модификатор.
+ */
 @Composable
 private fun NewsPostContent(
     post: NewsPost,

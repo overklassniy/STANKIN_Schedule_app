@@ -7,10 +7,20 @@ import com.overklassniy.stankinschedule.core.domain.repository.ConsoleLoggerAnal
 import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
 
 
+/**
+ * CompositionLocal для доступа к реализации [LoggerAnalytics] в UI.
+ *
+ * По умолчанию используется [ConsoleLoggerAnalytics].
+ */
 val LocalAnalytics = staticCompositionLocalOf<LoggerAnalytics> {
     ConsoleLoggerAnalytics()
 }
 
+/**
+ * Отслеживает вход/выход на экран и отправляет события аналитики.
+ *
+ * @param screen Имя текущего экрана.
+ */
 @Composable
 fun TrackCurrentScreen(screen: String) {
     val analytics = LocalAnalytics.current

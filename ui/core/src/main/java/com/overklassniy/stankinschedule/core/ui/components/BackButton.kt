@@ -11,6 +11,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.overklassniy.stankinschedule.core.ui.R
 
+/**
+ * Кнопка «Назад» с авто-зеркалированием для RTL.
+ *
+ * @param onClick Обработчик нажатия.
+ * @param modifier Модификатор кнопки.
+ * @param color Цвет иконки.
+ */
 @Composable
 fun BackButton(
     onClick: () -> Unit,

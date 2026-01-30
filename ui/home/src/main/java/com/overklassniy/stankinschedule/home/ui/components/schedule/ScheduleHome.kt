@@ -32,6 +32,14 @@ import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleVie
 import kotlinx.coroutines.launch
 
 
+/**
+ * Домашний вид расписания: индикатор и пагинированные карточки дней.
+ *
+ * @param days Список дней расписания.
+ * @param onLinkClicked Обработчик нажатий на ссылки в карточке пары.
+ * @param modifier Модификатор.
+ * @param colors Цветовая схема пар.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ScheduleHome(
@@ -91,6 +99,15 @@ fun ScheduleHome(
 }
 
 
+/**
+ * Регулирует высоту элемента в Pager: для текущей страницы или при прокрутке — wrapContent,
+ * иначе ограничивает максимальную высоту.
+ *
+ * @param page Номер страницы текущего элемента.
+ * @param pagerState Состояние пейджера.
+ * @param isScrolling Флаг активности прокрутки.
+ * @return Модификатор с корректировкой высоты.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 private fun Modifier.wrapPagerHeight(
     page: Int,

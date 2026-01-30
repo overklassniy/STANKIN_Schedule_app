@@ -10,6 +10,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel экрана входа в журнал.
+ *
+ * Обрабатывает событие входа, управляет состояниями: процесс входа, ошибка и факт успешного входа.
+ */
 @HiltViewModel
 class JournalLoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
@@ -25,6 +30,12 @@ class JournalLoginViewModel @Inject constructor(
     val loginError = _loginError.asStateFlow()
 
 
+    /**
+     * Запускает процесс входа через [LoginUseCase].
+     *
+     * @param login Логин пользователя.
+     * @param password Пароль пользователя.
+     */
     fun login(login: String, password: String) {
         viewModelScope.launch {
             _loginError.value = null

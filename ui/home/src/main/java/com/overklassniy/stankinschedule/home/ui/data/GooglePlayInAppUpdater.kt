@@ -22,7 +22,15 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class GooglePlayInAppUpdater constructor(
+/**
+ * Реализация In‑App Update через Google Play Core.
+ *
+ * Регистрирует слушатель состояния установки и предоставляет методы
+ * проверки, запуска и завершения обновления.
+ *
+ * @param context Контекст приложения для создания [AppUpdateManagerFactory].
+ */
+class GooglePlayInAppUpdater(
     context: Context,
 ) : InAppUpdater, InstallStateUpdatedListener {
 
@@ -35,6 +43,12 @@ class GooglePlayInAppUpdater constructor(
         appUpdater.registerListener(this)
     }
 
+    /**
+     * Проверяет доступность обновления и обновляет [updateState].
+     *
+     * Устанавливает UpdateRequired при наличии подходящего обновления,
+     * иначе — UpToDate.
+     */
     override suspend fun checkUpdate() {
         try {
             val updateResult = appUpdater.appUpdateInfo.await()
@@ -44,13 +58,20 @@ class GooglePlayInAppUpdater constructor(
                 _updateState.value = UpdateState.UpdateRequired(updateResult)
                 return
             }
-        } catch (ignored: Exception) {
+        } catch (_: Exception) {
 
         }
 
         _updateState.value = UpdateState.UpToDate
     }
 
+    /**
+     * Запускает процесс обновления через ActivityResult.
+     *
+     * @param info Информация об обновлении [AppUpdateInfo].
+     * @param launcher Лаунчер для запуска IntentSender.
+     * @param options Опции типа обновления [AppUpdateOptions].
+     */
     override fun startUpdate(
         info: AppUpdateInfo,
         launcher: ActivityResultLauncher<IntentSenderRequest>,
@@ -59,6 +80,11 @@ class GooglePlayInAppUpdater constructor(
         appUpdater.startUpdateFlowForResult(info, launcher, options)
     }
 
+    /**
+     * Обработчик состояния установки: обновляет прогресс и флаг перезапуска.
+     *
+     * @param state Текущее состояние установки.
+     */
     override fun onStateUpdate(state: InstallState) {
         if (state.installStatus == InstallStatus.DOWNLOADING) {
             val progress = state.bytesDownloaded / state.totalBytesToDownload.toFloat()
@@ -69,18 +95,33 @@ class GooglePlayInAppUpdater constructor(
         }
     }
 
+    /**
+     * Откладывает обновление: переводит состояние в UpToDate.
+     */
     override fun later() {
         _updateState.value = UpdateState.UpToDate
     }
 
+    /**
+     * Завершает установку скачанного обновления.
+     */
     override fun completeUpdate() {
         appUpdater.completeUpdate()
     }
 
+    /**
+     * Освобождает ресурсы: снимает регистрацию слушателя.
+     */
     override fun onDestroy() {
         appUpdater.unregisterListener(this)
     }
 
+    /**
+     * Проверяет, подходит ли обновление для гибкого сценария.
+     *
+     * @param stalenessDays Кол-во дней устаревания установленной версии.
+     * @return true, если обновление доступно и разрешён Flexible тип.
+     */
     private fun AppUpdateInfo.isUpdateAvailability(stalenessDays: Int?): Boolean {
         return updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
                 isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
@@ -88,6 +129,12 @@ class GooglePlayInAppUpdater constructor(
                 && stalenessDays >= DAYS_FOR_FLEXIBLE_UPDATE
     }
 
+    /**
+     * Ожидает завершения [Task] и возвращает результат или бросает исключение.
+     *
+     * @return Результат задачи.
+     * @throws Exception если задача завершилась с ошибкой.
+     */
     private suspend fun <T> Task<T>.await(): T {
         return suspendCoroutine { continuation ->
             addOnSuccessListener { result ->
@@ -100,7 +147,10 @@ class GooglePlayInAppUpdater constructor(
     }
 
     companion object {
-        const val UPDATE_REQUEST = 1
+
+        /**
+         * Минимальное количество дней устаревания для гибкого обновления.
+         */
         const val DAYS_FOR_FLEXIBLE_UPDATE = 7
     }
 }

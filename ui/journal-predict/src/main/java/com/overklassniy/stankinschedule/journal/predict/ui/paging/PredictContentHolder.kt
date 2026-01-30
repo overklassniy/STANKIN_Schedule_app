@@ -19,11 +19,22 @@ import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.journal.predict.ui.model.PredictMark
 
+/**
+ * ViewHolder для элемента ввода оценки.
+ *
+ * @param onMarkChange Коллбэк изменения значения оценки.
+ * @param composeView ComposeView для размещения Composable.
+ */
 class PredictContentHolder(
     private val onMarkChange: (mark: PredictMark, value: Int) -> Unit,
     composeView: ComposeView,
 ) : ComposeRecyclerHolder(composeView) {
 
+    /**
+     * Привязывает модель элемента и настраивает поле ввода.
+     *
+     * @param data Элемент контента с моделью [PredictMark].
+     */
     @OptIn(ExperimentalMaterial3Api::class)
     fun bind(data: PredictAdapter.ContentItem) {
         composeView.setContent {
