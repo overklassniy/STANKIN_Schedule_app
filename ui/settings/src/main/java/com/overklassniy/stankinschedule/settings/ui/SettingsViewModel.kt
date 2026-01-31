@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.core.domain.ext.subHours
 import com.overklassniy.stankinschedule.core.domain.model.AppUpdate
+import com.overklassniy.stankinschedule.core.domain.repository.GooglePlayAvailabilityRepository
 import com.overklassniy.stankinschedule.core.domain.repository.UpdateRepository
 import com.overklassniy.stankinschedule.core.domain.settings.AppLanguage
 import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
@@ -30,6 +31,7 @@ class SettingsViewModel @Inject constructor(
     private val applicationPreference: ApplicationPreference,
     private val schedulePreference: SchedulePreference,
     private val updateRepository: UpdateRepository,
+    private val googlePlayAvailabilityRepository: GooglePlayAvailabilityRepository,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _nightMode = MutableStateFlow(value = applicationPreference.currentDarkMode())
@@ -80,8 +82,12 @@ class SettingsViewModel @Inject constructor(
     private val _availableUpdate = MutableStateFlow<AppUpdate?>(null)
     val availableUpdate: StateFlow<AppUpdate?> = _availableUpdate.asStateFlow()
 
+    private val _googlePlayAvailable = MutableStateFlow(applicationPreference.isGooglePlayAvailable == true)
+    val googlePlayAvailable: StateFlow<Boolean> = _googlePlayAvailable.asStateFlow()
+
     init {
         loadCachedUpdateState()
+        loadCachedGooglePlayAvailability()
         checkForUpdates()
     }
 
@@ -98,6 +104,10 @@ class SettingsViewModel @Inject constructor(
                 releaseName = "v$version"
             )
         }
+    }
+
+    private fun loadCachedGooglePlayAvailability() {
+        _googlePlayAvailable.value = applicationPreference.isGooglePlayAvailable == true
     }
 
     fun checkForUpdates(force: Boolean = false) {
@@ -120,6 +130,22 @@ class SettingsViewModel @Inject constructor(
                     applicationPreference.clearUpdate()
                     _availableUpdate.value = null
                 }
+
+                checkGooglePlayAvailability()
+            }
+        }
+    }
+
+    private fun checkGooglePlayAvailability() {
+        viewModelScope.launch {
+            val lastCheck = applicationPreference.lastGooglePlayCheck
+            val shouldCheck = lastCheck == null || (lastCheck subHours DateTime.now()) > 24
+
+            if (shouldCheck) {
+                val available = googlePlayAvailabilityRepository.isAppAvailableOnPlayStore()
+                applicationPreference.isGooglePlayAvailable = available
+                applicationPreference.lastGooglePlayCheck = DateTime.now()
+                _googlePlayAvailable.value = available
             }
         }
     }

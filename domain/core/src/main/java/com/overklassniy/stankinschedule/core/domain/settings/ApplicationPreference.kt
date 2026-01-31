@@ -87,6 +87,25 @@ class ApplicationPreference @Inject constructor(
     }
 
     /**
+     * Результат последней проверки доступности приложения в Google Play.
+     * `null` — проверка ещё не выполнялась.
+     */
+    var isGooglePlayAvailable: Boolean?
+        get() = manager.getString(GOOGLE_PLAY_AVAILABLE)?.takeIf { it.isNotEmpty() }?.toBooleanStrictOrNull()
+        set(value) = manager.saveString(GOOGLE_PLAY_AVAILABLE, value?.toString() ?: "")
+
+    /**
+     * Время последней проверки доступности приложения в Google Play.
+     */
+    var lastGooglePlayCheck: DateTime?
+        get() = manager.getDateTime(LAST_GOOGLE_PLAY_CHECK)
+        set(value) {
+            if (value != null) {
+                manager.saveDateTime(LAST_GOOGLE_PLAY_CHECK, value)
+            }
+        }
+
+    /**
      * Возвращает текущий режим темы оформления.
      *
      * @return Текущий [DarkMode] или [DarkMode.Default], если значение не установлено.
@@ -131,5 +150,7 @@ class ApplicationPreference @Inject constructor(
         private const val AVAILABLE_UPDATE_VERSION = "available_update_version"
         private const val AVAILABLE_UPDATE_CHANGELOG = "available_update_changelog"
         private const val AVAILABLE_UPDATE_URL = "available_update_url"
+        private const val GOOGLE_PLAY_AVAILABLE = "google_play_available"
+        private const val LAST_GOOGLE_PLAY_CHECK = "last_google_play_check"
     }
 }

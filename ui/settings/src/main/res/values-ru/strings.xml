@@ -56,6 +56,7 @@
     <string name="version">Версия: </string>
     <string name="changelog">История изменений</string>
     <string name="update_available_title">Доступно обновление: %s</string>
+    <string name="update_google_play">Google Play</string>
     <string name="update_rustore">RuStore</string>
     <string name="update_github">GitHub</string>
 

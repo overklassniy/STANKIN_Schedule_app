@@ -55,6 +55,7 @@
     <string name="version">Version: </string>
     <string name="changelog">Changelog</string>
     <string name="update_available_title">Update available: %s</string>
+    <string name="update_google_play">Google Play</string>
     <string name="update_rustore">RuStore</string>
     <string name="update_github">GitHub</string>
 

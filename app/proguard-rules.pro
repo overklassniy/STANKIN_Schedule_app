@@ -54,6 +54,9 @@
     @retrofit2.http.* <methods>;
 }
 
+# GitHub API model: field names must match JSON (tag_name, html_url, etc.) for Gson
+-keep class com.overklassniy.stankinschedule.core.data.api.GitHubRelease { *; }
+
 #===================================================================================================
 # Joda Time
 # All the resources are retrieved via reflection, so we need to make sure we keep them

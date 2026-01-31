@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import com.overklassniy.stankinschedule.core.data.api.GitHubApi
 import com.overklassniy.stankinschedule.core.data.preference.PreferenceManager
+import com.overklassniy.stankinschedule.core.data.repository.GooglePlayAvailabilityRepositoryImpl
 import com.overklassniy.stankinschedule.core.data.repository.UpdateRepositoryImpl
+import com.overklassniy.stankinschedule.core.domain.repository.GooglePlayAvailabilityRepository
 import com.overklassniy.stankinschedule.core.domain.repository.UpdateRepository
 import com.overklassniy.stankinschedule.core.domain.settings.PreferenceRepository
 import dagger.Module
@@ -114,4 +116,8 @@ object CoreModule {
     @Provides
     @Singleton
     fun provideUpdateRepository(impl: UpdateRepositoryImpl): UpdateRepository = impl
+
+    @Provides
+    @Singleton
+    fun provideGooglePlayAvailabilityRepository(impl: GooglePlayAvailabilityRepositoryImpl): GooglePlayAvailabilityRepository = impl
 }

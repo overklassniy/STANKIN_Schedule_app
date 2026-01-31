@@ -4,7 +4,7 @@
 
 **Unofficial application for MSTU "STANKIN" students**
 
-[![Version](https://img.shields.io/badge/version-3.1.1-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.2.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -35,6 +35,7 @@ This project is a fork of [ProjectPepega](https://github.com/Nikololoshka/Projec
 
 <div align="center">
 
+[<img src="https://img.shields.io/badge/Google%20Play-Download-8cf041?style=for-the-badge&labelColor=grey&logo=googleplay" height="60">](https://play.google.com/store/apps/details?id=com.overklassniy.stankinschedule)
 [<img src="https://img.shields.io/badge/RuStore-Download-red?style=for-the-badge&logo=android" height="60">](https://www.rustore.ru/catalog/app/com.overklassniy.stankinschedule)
 [<img src="https://img.shields.io/badge/GitHub-Release-blue?style=for-the-badge&logo=github" height="60">](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 
@@ -79,7 +80,6 @@ The application is built on modern Android development technologies:
 - JDK 21
 - Android SDK 36
 - Minimum Android version: 8.0 (API 26)
-- Target Android version: 15 (API 35)
 
 ### Building the Project
 
@@ -102,8 +102,9 @@ Full changelog is available in [CHANGELOG.md](changelog_en.md).
 
 ### Recent Updates
 
-**Version 3.1.1 (27.01.26)**
-- Fixed a crash on some devices when attempting to import the schedule from Moodle.
+**Version 3.2.0 (31.01.26)**
+-Added an "Announcements" tab to the news section.
+-Added tracking of the latest version.
 
 ## Authors
 

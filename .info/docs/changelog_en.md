@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 3.2.0 (31.01.26)
+-Added an "Announcements" tab to the news section.
+-Added tracking of the latest version.
+
 ## Version 3.1.1 (27.01.26)
 - Fixed a crash on some devices when attempting to import the schedule from Moodle;
 - Manual app language switching has been added.

@@ -199,6 +199,70 @@ fun RootSettingsScreen(
         PreferenceSpacer()
 
         val availableUpdate by viewModel.availableUpdate.collectAsState()
+        val googlePlayAvailable by viewModel.googlePlayAvailable.collectAsState()
+        val showFakeUpdateCard = BuildConfig.DEBUG && availableUpdate == null
+
+        if (showFakeUpdateCard) {
+            ElevatedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = stringResource(R.string.update_available_title, "99.0.0 (тест)"),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Карточка для проверки кнопок (только debug).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        TextButton(
+                            onClick = {
+                                BrowserUtils.openLink(
+                                    context,
+                                    "https://play.google.com/store/apps/details?id=com.overklassniy.stankinschedule"
+                                )
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.update_google_play))
+                        }
+                        TextButton(
+                            onClick = {
+                                BrowserUtils.openLink(
+                                    context,
+                                    "https://apps.rustore.ru/app/com.overklassniy.stankinschedule"
+                                )
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.update_rustore))
+                        }
+                        TextButton(
+                            onClick = {
+                                BrowserUtils.openLink(
+                                    context,
+                                    "https://github.com/overklassniy/STANKIN_Schedule_app/releases"
+                                )
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.update_github))
+                        }
+                    }
+                }
+            }
+        }
+
         availableUpdate?.let { update ->
             ElevatedCard(
                 modifier = Modifier
@@ -250,6 +314,19 @@ fun RootSettingsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
+                        if (googlePlayAvailable || BuildConfig.DEBUG) {
+                            TextButton(
+                                onClick = {
+                                    BrowserUtils.openLink(
+                                        context,
+                                        "https://play.google.com/store/apps/details?id=com.overklassniy.stankinschedule"
+                                    )
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.update_google_play))
+                            }
+                        }
                         TextButton(
                             onClick = {
                                 BrowserUtils.openLink(

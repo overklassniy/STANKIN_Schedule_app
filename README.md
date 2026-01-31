@@ -4,7 +4,7 @@
 
 **Неофициальное приложение для студентов МГТУ «СТАНКИН»**
 
-[![Version](https://img.shields.io/badge/version-3.1.1-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.2.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -35,6 +35,7 @@
 
 <div align="center">
 
+[<img src="https://img.shields.io/badge/Google%20Play-Скачать-8cf041?style=for-the-badge&labelColor=grey&logo=googleplay" height="60">](https://play.google.com/store/apps/details?id=com.overklassniy.stankinschedule)
 [<img src="https://img.shields.io/badge/RuStore-Скачать-red?style=for-the-badge&logo=android" height="60">](https://www.rustore.ru/catalog/app/com.overklassniy.stankinschedule)
 [<img src="https://img.shields.io/badge/GitHub-Release-blue?style=for-the-badge&logo=github" height="60">](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 
@@ -79,7 +80,6 @@
 - JDK 21
 - Android SDK 36
 - Минимальная версия Android: 8.0 (API 26)
-- Целевая версия Android: 15 (API 35)
 
 ### Сборка проекта
 
@@ -102,8 +102,9 @@ cd STANKIN_Schedule_app
 
 ### Последнее обновление
 
-**Version 3.1.1 (27.01.26)**
-- Исправлен вылет на некоторых устройствах при попытке импорта расписания из ЭОС.
+**Версия 3.2.0 (31.01.26)**
+- Добавлена вкладка "Анонсы" в новостях.
+- Добавлено отслеживание последней версии.
 
 ## Авторы
 

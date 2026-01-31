@@ -27,9 +27,11 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "APP_VERSION", "\"$appVersionName\"")
+            buildConfigField("boolean", "DEBUG", "true")
         }
         release {
             buildConfigField("String", "APP_VERSION", "\"$appVersionName\"")
+            buildConfigField("boolean", "DEBUG", "false")
 
             isMinifyEnabled = false
             proguardFiles(
