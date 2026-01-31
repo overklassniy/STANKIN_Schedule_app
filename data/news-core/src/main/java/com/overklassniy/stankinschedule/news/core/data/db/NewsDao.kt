@@ -37,7 +37,7 @@ interface NewsDao {
         SELECT 
             id as id, 
             title as title, 
-            logo as previewImageUrl, 
+            CASE WHEN logo = '' THEN NULL ELSE logo END as previewImageUrl, 
             date as date,
             relative_url as relativeUrl
         FROM news_posts WHERE news_subdivision = :newsSubdivision ORDER BY index_order ASC

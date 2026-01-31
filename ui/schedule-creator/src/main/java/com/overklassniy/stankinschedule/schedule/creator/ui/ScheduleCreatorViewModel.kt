@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.schedule.creator.ui
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.schedule.core.domain.usecase.ScheduleDeviceUseCase
@@ -14,6 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val TAG = "ScheduleCreatorVM"
 
 /**
  * ViewModel создания расписания.
@@ -40,6 +43,14 @@ class ScheduleCreatorViewModel @Inject constructor(
      */
     private val _importState = MutableStateFlow<ImportState?>(null)
     val importState = _importState.asStateFlow()
+
+    /**
+     * Сбрасывает состояние импорта.
+     * Вызывается после обработки результата импорта в UI.
+     */
+    fun clearImportState() {
+        _importState.value = null
+    }
 
     /**
      * Обрабатывает событие запуска или отмены создания расписания.
@@ -88,15 +99,18 @@ class ScheduleCreatorViewModel @Inject constructor(
      * @param uri Ссылка на документ.
      */
     fun importSchedule(uri: Uri) {
+        Log.d(TAG, "importSchedule: uri=$uri")
         viewModelScope.launch {
             scheduleDeviceUseCase.loadFromDevice(uri.toString())
                 // Ошибки чтения файла транслируем в состояние Failed
                 .catch { e ->
+                    Log.e(TAG, "importSchedule: error", e)
                     _importState.value = ImportState.Failed(e)
                 }
-                .collect {
+                .collect { scheduleName ->
+                    Log.d(TAG, "importSchedule: success, scheduleName=$scheduleName")
                     // При успехе передаем загруженную модель в состояние Success
-                    _importState.value = ImportState.Success(it)
+                    _importState.value = ImportState.Success(scheduleName)
                 }
         }
     }

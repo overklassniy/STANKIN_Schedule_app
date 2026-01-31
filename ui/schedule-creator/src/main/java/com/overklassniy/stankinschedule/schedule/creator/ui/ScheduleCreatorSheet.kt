@@ -99,21 +99,24 @@ fun ScheduleCreatorSheet(
 
     val importState by viewModel.importState.collectAsState()
     // Готовим локализованные сообщения для snackbar из состояния импорта
-    val successMessage = if (importState is ImportState.Success) stringResource(
-        R.string.schedule_added,
-        (importState as ImportState.Success).scheduleName
-    ) else null
-    val errorMessage =
-        if (importState is ImportState.Failed) stringResource(R.string.import_error) else null
-    // Запускаем побочный эффект при изменении сообщений: показать уведомление и вернуться назад
-    LaunchedEffect(successMessage, errorMessage) {
-        successMessage?.let {
-            onShowSnackBar(it)
-            onNavigateBack()
-        }
-        errorMessage?.let {
-            onShowSnackBar(it)
-            onNavigateBack()
+    // Используем ресурсы только когда состояние не null, чтобы избежать лишних вычислений
+    val successMessageTemplate = stringResource(R.string.schedule_added, "%s")
+    val errorMessageText = stringResource(R.string.import_error)
+    // Запускаем побочный эффект при изменении состояния импорта
+    LaunchedEffect(importState) {
+        when (val state = importState) {
+            is ImportState.Success -> {
+                val message = successMessageTemplate.replace("%s", state.scheduleName)
+                onShowSnackBar(message)
+                viewModel.clearImportState()
+                onNavigateBack()
+            }
+            is ImportState.Failed -> {
+                // Показываем ошибку и остаемся на экране для повторной попытки
+                onShowSnackBar(errorMessageText)
+                viewModel.clearImportState()
+            }
+            null -> { /* Игнорируем начальное состояние */ }
         }
     }
 
@@ -134,12 +137,17 @@ fun ScheduleCreatorSheet(
         }
     )
 
+    // Поддерживаемые MIME типы для JSON файлов
+    // application/json - стандартный, но не все файл-менеджеры его распознают
+    // */* - fallback для всех файлов (пользователь сам выберет .json)
+    val jsonMimeTypes = arrayOf("application/json", "*/*")
+
     // Разрешение на чтение внешнего хранилища для SDK ниже 33 (TIRAMISU)
     val readStoragePermission = rememberPermissionState(
         permission = android.Manifest.permission.READ_EXTERNAL_STORAGE,
         onPermissionResult = { isGranted ->
             if (isGranted) {
-                openScheduleLauncher.launch(arrayOf("application/json"))
+                openScheduleLauncher.launch(jsonMimeTypes)
             } else {
                 readDeniedDialog = true
             }
@@ -158,7 +166,7 @@ fun ScheduleCreatorSheet(
             icon = R.drawable.ic_schedule_from_device,
             onItemClicked = {
                 if (readStoragePermission.status.isGranted || Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    openScheduleLauncher.launch(arrayOf("application/json"))
+                    openScheduleLauncher.launch(jsonMimeTypes)
                 } else {
                     readStoragePermission.launchPermissionRequest()
                 }

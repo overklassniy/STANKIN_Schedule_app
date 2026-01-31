@@ -44,7 +44,7 @@ class UniversityNewsRepositoryImpl @Inject constructor(
     ): List<NewsPost> {
         return when (newsSubdivision) {
             NewsSubdivision.Dean.id -> loadDeanNews(page, count)
-            NewsSubdivision.Announcements.id -> loadAnnouncements(page)
+            NewsSubdivision.Announcements.id -> loadAnnouncementsPage(page)
             else -> loadUniversityNews(page)
         }
     }
@@ -133,8 +133,23 @@ class UniversityNewsRepositoryImpl @Inject constructor(
 
     /**
      * Загружает анонсы с сайта stankin.ru/ads/.
+     * Для первой страницы загружает также вторую (PAGEN_1=2), чтобы на главном экране было больше анонсов.
      *
-     * @param page Номер страницы.
+     * @param page Номер страницы (1-based).
+     * @return Список анонсов.
+     */
+    private suspend fun loadAnnouncementsPage(page: Int): List<NewsPost> {
+        return if (page == 1) {
+            loadAnnouncements(1) + loadAnnouncements(2)
+        } else {
+            loadAnnouncements(page)
+        }
+    }
+
+    /**
+     * Загружает одну страницу анонсов с сайта stankin.ru/ads/.
+     *
+     * @param page Номер страницы (PAGEN_1).
      * @return Список анонсов.
      */
     private suspend fun loadAnnouncements(page: Int): List<NewsPost> {

@@ -124,15 +124,18 @@ private fun NewsPostContent(
             .then(modifier),
         horizontalArrangement = Arrangement.spacedBy(Dimen.ContentPadding)
     ) {
-        AsyncImage(
-            model = post.previewImageUrl,
-            imageLoader = imageLoader,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(100.dp, 56.dp)
-                .align(Alignment.CenterVertically)
-        )
+        // Показываем изображение только если URL не пустой
+        if (!post.previewImageUrl.isNullOrEmpty()) {
+            AsyncImage(
+                model = post.previewImageUrl,
+                imageLoader = imageLoader,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(100.dp, 56.dp)
+                    .align(Alignment.CenterVertically)
+            )
+        }
         Column(
             modifier = Modifier
                 .weight(weight = 1f)

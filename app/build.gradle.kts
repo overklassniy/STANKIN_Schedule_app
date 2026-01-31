@@ -103,6 +103,14 @@ android {
             listOf(
                 "META-INF/LICENSE.md",
                 "META-INF/NOTICE.md",
+                "META-INF/INDEX.LIST",
+                "META-INF/DEPENDENCIES",
+                "META-INF/groovy-release-info.properties",
+            )
+        )
+        resources.merges.addAll(
+            listOf(
+                "META-INF/groovy/org.codehaus.groovy.runtime.ExtensionModule",
             )
         )
     }

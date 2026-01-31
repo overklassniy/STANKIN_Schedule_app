@@ -58,7 +58,8 @@ fun NewsEntity.toPost(): NewsPost {
     return NewsPost(
         id = id,
         title = title,
-        previewImageUrl = logo,
+        // Пустая строка означает отсутствие изображения
+        previewImageUrl = logo.ifEmpty { null },
         date = date,
         relativeUrl = relativeUrl
     )

@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import androidx.core.net.toUri
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -17,6 +18,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.FileNotFoundException
 import javax.inject.Inject
 
+private const val TAG = "ScheduleDeviceRepo"
+
 /**
  * Реализация репозитория для работы с файлами расписания на устройстве.
  * Позволяет сохранять и загружать расписание из файловой системы.
@@ -24,7 +27,7 @@ import javax.inject.Inject
  * @property context Контекст приложения.
  */
 class ScheduleDeviceRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ScheduleDeviceRepository {
 
     /**
@@ -56,26 +59,37 @@ class ScheduleDeviceRepositoryImpl @Inject constructor(
      * @throws IllegalAccessException Если не удалось открыть поток чтения.
      */
     override suspend fun loadFromDevice(path: String): ScheduleModel {
+        Log.d(TAG, "loadFromDevice: path=$path")
         val contentResolver = context.contentResolver
 
         val uri = path.toUri()
         val scheduleName = uri.extractFileName(contentResolver)?.substringBeforeLast('.')
-            ?: throw FileNotFoundException("Failed to get file descriptor")
+            ?: throw FileNotFoundException("Failed to get file name from URI")
+        Log.d(TAG, "loadFromDevice: scheduleName=$scheduleName")
 
-        val json: List<PairJson> = contentResolver.openInputStream(uri).use { stream ->
-            if (stream == null) throw IllegalAccessException("Failed to get file descriptor")
+        // Читаем содержимое файла
+        val content = contentResolver.openInputStream(uri)?.use { stream ->
+            stream.bufferedReader().readText()
+        } ?: throw IllegalAccessException("Failed to open input stream")
+        
+        Log.d(TAG, "loadFromDevice: content length=${content.length}")
 
-            stream.bufferedReader().use { reader ->
-                Gson().fromJson(reader, object : TypeToken<List<PairJson>>() {}.type)
-            }
+        // Парсим JSON отдельно от чтения файла для избежания проблем с вложенными use блоками
+        val json: List<PairJson> = try {
+            Gson().fromJson(content, object : TypeToken<List<PairJson>>() {}.type)
+        } catch (e: Exception) {
+            Log.e(TAG, "loadFromDevice: JSON parse error", e)
+            throw e
         }
 
+        Log.d(TAG, "loadFromDevice: parsed ${json.size} pairs")
         val pairs = json.map { it.toPairModel() }
 
         val info = ScheduleInfo(scheduleName)
         val model = ScheduleModel(info)
         pairs.forEach { model.add(it) }
 
+        Log.d(TAG, "loadFromDevice: success, schedule=$scheduleName, pairs=${pairs.size}")
         return model
     }
 

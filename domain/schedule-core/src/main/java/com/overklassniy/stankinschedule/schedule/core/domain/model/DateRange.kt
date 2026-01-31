@@ -58,23 +58,17 @@ class DateRange : DateItem {
     /**
      * Конструктор из строки диапазона (например "date1/date2" или "date1-date2") и периодичности.
      *
+     * Поддерживает форматы:
+     * - "date1/date2" (разделитель /)
+     * - "yyyy-MM-dd-yyyy-MM-dd" (две ISO-даты через один дефис)
+     *
      * @param text Строка с диапазоном дат.
      * @param frequencyDate Периодичность.
      * @param pattern Формат даты.
      * @throws DateParseException Если строка не соответствует формату диапазона.
      */
     constructor(text: String, frequencyDate: Frequency, pattern: String = JSON_DATE_PATTERN_V2) {
-        var dates = text.split('/')
-        if (dates.size != 2) {
-            dates = text.split('-')
-            if (dates.size != 2) {
-                throw DateParseException(
-                    "Invalid date text: $text, $dates, frequency: $frequencyDate"
-                )
-            }
-        }
-
-        val (firstText, secondText) = dates
+        val (firstText, secondText) = parseRangeString(text)
 
         try {
             val (parseStart, parseEnd) = parseDates(firstText, secondText, pattern)
@@ -90,6 +84,30 @@ class DateRange : DateItem {
         }
 
         init()
+    }
+
+    /**
+     * Разбирает строку диапазона на две даты.
+     * Поддерживает "date1/date2" и "yyyy-MM-dd-yyyy-MM-dd" (две ISO-даты через дефис).
+     */
+    private fun parseRangeString(text: String): Pair<String, String> {
+        val dates = text.split('/')
+        if (dates.size == 2) {
+            return dates[0].trim() to dates[1].trim()
+        }
+        val parts = text.split('-')
+        // Формат "yyyy-MM-dd-yyyy-MM-dd" даёт 6 частей
+        if (parts.size == 6) {
+            val firstText = "${parts[0]}-${parts[1]}-${parts[2]}"
+            val secondText = "${parts[3]}-${parts[4]}-${parts[5]}"
+            return firstText to secondText
+        }
+        if (parts.size == 2) {
+            return parts[0].trim() to parts[1].trim()
+        }
+        throw DateParseException(
+            "Invalid date text: $text, $parts, frequency: (unknown)"
+        )
     }
 
     /**

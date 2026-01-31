@@ -19,8 +19,15 @@ import javax.inject.Inject
  * @property context Контекст приложения.
  */
 class AndroidPublicProviderImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : AndroidPublicProvider {
+
+    /**
+     * Получает authority для FileProvider на основе applicationId приложения.
+     * Это важно для корректной работы в debug/release сборках.
+     */
+    private val fileProviderAuthority: String
+        get() = "${context.packageName}.provider"
 
     /**
      * Создает URI для переданного изображения (Bitmap).
@@ -39,7 +46,7 @@ class AndroidPublicProviderImpl @Inject constructor(
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
         }
 
-        return FileProvider.getUriForFile(context, APP_PROVIDER_AUTHOR, file)
+        return FileProvider.getUriForFile(context, fileProviderAuthority, file)
     }
 
     /**
@@ -59,7 +66,7 @@ class AndroidPublicProviderImpl @Inject constructor(
             pdf.writeTo(stream)
         }
 
-        return FileProvider.getUriForFile(context, APP_PROVIDER_AUTHOR, file)
+        return FileProvider.getUriForFile(context, fileProviderAuthority, file)
     }
 
     /**
@@ -111,7 +118,4 @@ class AndroidPublicProviderImpl @Inject constructor(
         return folder
     }
 
-    companion object {
-        private const val APP_PROVIDER_AUTHOR = "com.overklassniy.stankinschedule.provider"
-    }
 }

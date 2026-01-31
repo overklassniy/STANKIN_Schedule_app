@@ -10,10 +10,7 @@ import com.overklassniy.stankinschedule.schedule.ical.domain.repository.ICalExpo
 import dagger.hilt.android.qualifiers.ApplicationContext
 import net.fortuna.ical4j.model.Calendar
 import net.fortuna.ical4j.model.ParameterList
-import net.fortuna.ical4j.model.Property
-import net.fortuna.ical4j.model.PropertyList
 import net.fortuna.ical4j.model.Recur
-import net.fortuna.ical4j.model.UtcOffset
 import net.fortuna.ical4j.model.component.Standard
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.component.VTimeZone
@@ -39,14 +36,13 @@ import net.fortuna.ical4j.model.property.XProperty
 import net.fortuna.ical4j.util.RandomUidGenerator
 import javax.inject.Inject
 
-
 /**
  * Репозиторий для работы с экспортом расписания в формат iCal (.ics).
  *
  * @param context Контекст приложения для доступа к ContentResolver
  */
 class ICalRepository @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ICalExporter {
 
     /**
@@ -75,17 +71,18 @@ class ICalRepository @Inject constructor(
                 add(XProperty("X-WR-TIMEZONE", calendar.timeZone))
             }
 
-
             components.apply {
                 add(
                     VTimeZone().apply {
                         observances.apply {
-                            add(Standard(PropertyList<Property>().apply {
-                                add(TzName(calendar.timeZoneName))
-                                add(TzOffsetFrom(UtcOffset(calendar.timeZoneOffset)))
-                                add(TzOffsetTo(UtcOffset(calendar.timeZoneOffset)))
-                                add(DtStart("19700101T000000"))
-                            }))
+                            add(Standard().apply {
+                                properties.apply {
+                                    add(TzName(calendar.timeZoneName))
+                                    add(TzOffsetFrom(calendar.timeZoneOffset))
+                                    add(TzOffsetTo(calendar.timeZoneOffset))
+                                    add(DtStart("19700101T000000"))
+                                }
+                            })
                         }
                         properties.apply {
                             add(TzId(calendar.timeZone))

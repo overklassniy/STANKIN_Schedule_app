@@ -306,7 +306,15 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(0.dp)
                         ) {
-                            repeat(HomeViewModel.NEWS_COUNT) { index ->
+                            // Показываем либо NEWS_COUNT элементов, либо сколько есть (с placeholder'ами для загрузки)
+                            val itemCount = if (currentNews.isEmpty()) {
+                                // Если данные еще загружаются, показываем placeholder'ы
+                                HomeViewModel.NEWS_COUNT
+                            } else {
+                                // Показываем только реальные данные
+                                currentNews.size.coerceAtMost(HomeViewModel.NEWS_COUNT)
+                            }
+                            repeat(itemCount) { index ->
                                 val post = currentNews.getOrNull(index)
                                 val itemModifier = if (index == 0) {
                                     Modifier.padding(
