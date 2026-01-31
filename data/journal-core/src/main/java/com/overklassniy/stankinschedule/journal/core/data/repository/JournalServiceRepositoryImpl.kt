@@ -25,7 +25,7 @@ class JournalServiceRepositoryImpl @Inject constructor(
      * Загружает список семестров и информацию о студенте.
      *
      * Алгоритм:
-     * 1. Выполняет запрос к API [api.getSemesters] с переданными учетными данными.
+     * 1. Выполняет запрос к API `api.getSemesters` с переданными учетными данными.
      * 2. Ожидает ответ сервера.
      * 3. Преобразует ответ (DTO) в доменную модель [Student] с помощью маппера [toStudent].
      *
@@ -44,7 +44,7 @@ class JournalServiceRepositoryImpl @Inject constructor(
      * Загружает оценки за конкретный семестр.
      *
      * Алгоритм:
-     * 1. Выполняет запрос к API [api.getMarks] с учетными данными и ID семестра.
+     * 1. Выполняет запрос к API `api.getMarks` с учетными данными и ID семестра.
      * 2. Ожидает ответ сервера.
      * 3. Преобразует ответ (DTO) в доменную модель [SemesterMarks] с помощью маппера [toSemesterMarks].
      *

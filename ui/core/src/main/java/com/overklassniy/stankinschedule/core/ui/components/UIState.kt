@@ -40,6 +40,7 @@ fun UIState<*>.isSuccess(): Boolean {
 /**
  * Возвращает данные из [UIState.Success] или null для остальных состояний.
  */
+@Suppress("unused")
 fun <T> UIState<T>.getOrNull(): T? {
     if (this is UIState.Success) {
         return data

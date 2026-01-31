@@ -33,7 +33,7 @@ import javax.inject.Inject
  * @property parserUseCase UseCase для парсинга PDF-файлов.
  */
 class MoodleLoaderService @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val parserUseCase: ParserUseCase
 ) : ScheduleLoaderService {
 

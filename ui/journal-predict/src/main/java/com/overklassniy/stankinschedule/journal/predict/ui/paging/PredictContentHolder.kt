@@ -7,7 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -36,11 +36,12 @@ class PredictContentHolder(
      * @param data Элемент контента с моделью [PredictMark].
      */
     @OptIn(ExperimentalMaterial3Api::class)
+    @Suppress("AssignedValueIsNeverRead")
     fun bind(data: PredictAdapter.ContentItem) {
         composeView.setContent {
             AppTheme {
 
-                var currentValue by remember { mutableStateOf(data.mark.value) }
+                var currentValue by remember { mutableIntStateOf(data.mark.value) }
 
                 OutlinedTextField(
                     value = if (currentValue == 0) "" else currentValue.toString(),

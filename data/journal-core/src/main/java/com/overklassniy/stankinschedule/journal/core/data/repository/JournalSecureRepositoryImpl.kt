@@ -31,7 +31,7 @@ private val Context.journalSecureStore by preferencesDataStore(
  * @param context Контекст приложения, необходимый для доступа к DataStore.
  */
 class JournalSecureRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) : JournalSecureRepository {
 
     private var cachedCredentials: StudentCredentials? = null
@@ -70,7 +70,7 @@ class JournalSecureRepositoryImpl @Inject constructor(
      * Алгоритм:
      * 1. Инициализирует шифр в режиме шифрования.
      * 2. Шифрует данные.
-     * 3. Формирует выходной массив: [размер IV (1 байт)] + [IV] + [зашифрованные данные].
+     * 3. Формирует выходной массив: &#91;размер IV (1 байт)&#93; + &#91;IV&#93; + &#91;зашифрованные данные&#93;.
      * 4. Кодирует результат в Base64.
      *
      * @param plainText Исходная строка для шифрования.

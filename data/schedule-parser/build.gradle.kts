@@ -1,7 +1,5 @@
 plugins {
     id("com.android.library")
-    // id("org.jetbrains.kotlin.android")
-
     id("dagger.hilt.android.plugin")
     alias(libs.plugins.ksp)
 }
@@ -17,8 +15,6 @@ android {
 
     defaultConfig {
         minSdk = appMinSdkVersion
-
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -46,11 +42,11 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.documentfile)
 
-    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    implementation(libs.pdfbox.android)
 
-    androidTestImplementation("androidx.test:runner:1.5.2")
-    androidTestImplementation("androidx.test:rules:1.5.0")
-    testImplementation("junit:junit:4.12")
+    androidTestImplementation(libs.androidx.runner)
+    androidTestImplementation(libs.androidx.rules)
+    testImplementation(libs.junit)
 
     // DI
     implementation(libs.hilt.android)

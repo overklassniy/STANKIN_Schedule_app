@@ -253,7 +253,7 @@ fun HomeScreen(
                         selectedTabIndex = pagerState.currentPage,
                         indicator = {
                             AppTabIndicator(
-                                modifier = pagerTabIndicatorOffset(pagerState)
+                                modifier = Modifier.pagerTabIndicatorOffset(this, pagerState)
                             )
                         },
                         divider = {},

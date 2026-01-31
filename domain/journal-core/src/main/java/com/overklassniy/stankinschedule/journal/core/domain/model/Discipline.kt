@@ -33,10 +33,7 @@ data class Discipline(
                 return false
             }
         }
-        if (factor == NO_FACTOR) {
-            return false
-        }
-        return true
+        return factor != NO_FACTOR
     }
 
     /**

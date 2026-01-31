@@ -23,6 +23,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.overklassniy.stankinschedule.core.ui.R
+import androidx.core.net.toUri
 
 
 /**
@@ -43,12 +44,6 @@ class FileSaveState internal constructor(
     internal val showDeniedDialog: MutableState<Boolean>,
     internal val showRationaleDialog: MutableState<Boolean>
 ) {
-    /**
-     * Запускает процесс сохранения файла.
-     *
-     * @param fileName Имя файла (без расширения).
-     * @param fileType MIME-тип (например, "application/pdf").
-     */
     /**
      * Запускает процесс сохранения файла.
      *
@@ -103,12 +98,6 @@ private class CreateDocument : ActivityResultContracts.CreateDocument("*/*") {
  * @param onPickerResult Коллбэк с URI результата из системного пикера.
  * @return Состояние [FileSaveState].
  */
-/**
- * Создает и запоминает [FileSaveState] для управления сохранением файла.
- *
- * @param onPickerResult Коллбэк с URI результата из системного пикера.
- * @return Состояние [FileSaveState].
- */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun rememberFileSaveState(
@@ -148,11 +137,6 @@ fun rememberFileSaveState(
  *
  * @param state Состояние [FileSaveState].
  */
-/**
- * Отображает диалоги объяснения и отказа для разрешения записи.
- *
- * @param state Состояние [FileSaveState].
- */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun FileSaveDialogs(
@@ -186,7 +170,7 @@ fun FileSaveDialogs(
                 TextButton(
                     onClick = {
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = Uri.parse("package:" + context.packageName)
+                            data = ("package:" + context.packageName).toUri()
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             addCategory(Intent.CATEGORY_DEFAULT)
                         }

@@ -23,7 +23,6 @@
     <string name="ex_file_not_found">File not found.</string>
     <string name="ex_parse_error">Data format error. The server returned unexpected data.</string>
     <string name="ex_unknown">An unexpected error occurred. Please try again.</string>
-    <string name="ex_server_error">Server error (%d). Please try again later.</string>
     <string name="ex_not_found">Resource not found (404).</string>
     <string name="ex_forbidden">Access denied (403).</string>
 

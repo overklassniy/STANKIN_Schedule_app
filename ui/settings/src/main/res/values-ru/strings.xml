@@ -66,4 +66,5 @@
     <string name="support_email">s.kiani@stankin.ru</string>
     <string name="email_copied_to_clipboard">Email скопирован в буфер обмена</string>
 
+    <string name="retry">Повторить</string>
 </resources>

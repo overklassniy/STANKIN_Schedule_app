@@ -101,11 +101,11 @@ class PredictAdapter(
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val oldItem = oldList[oldItemPosition]
             val newItem = newList[newItemPosition]
-            return when {
-                oldItem is HeaderItem && newItem is HeaderItem ->
+            return when (oldItem) {
+                is HeaderItem if newItem is HeaderItem ->
                     oldItem.discipline == newItem.discipline
 
-                oldItem is ContentItem && newItem is ContentItem ->
+                is ContentItem if newItem is ContentItem ->
                     oldItem.mark.discipline == newItem.mark.discipline &&
                             oldItem.mark.type == newItem.mark.type
 
@@ -120,11 +120,11 @@ class PredictAdapter(
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val oldItem = oldList[oldItemPosition]
             val newItem = newList[newItemPosition]
-            return when {
-                oldItem is HeaderItem && newItem is HeaderItem ->
+            return when (oldItem) {
+                is HeaderItem if newItem is HeaderItem ->
                     oldItem.discipline == newItem.discipline
 
-                oldItem is ContentItem && newItem is ContentItem ->
+                is ContentItem if newItem is ContentItem ->
                     oldItem.mark == newItem.mark
 
                 else -> false
@@ -156,12 +156,12 @@ class PredictAdapter(
      */
     override fun onBindViewHolder(holder: ComposeRecyclerHolder, position: Int) {
         val item = data[position]
-        when {
-            holder is PredictContentHolder && item is ContentItem -> {
+        when (holder) {
+            is PredictContentHolder if item is ContentItem -> {
                 holder.bind(item)
             }
 
-            holder is PredictHeaderHolder && item is HeaderItem -> {
+            is PredictHeaderHolder if item is HeaderItem -> {
                 holder.bind(item)
             }
         }

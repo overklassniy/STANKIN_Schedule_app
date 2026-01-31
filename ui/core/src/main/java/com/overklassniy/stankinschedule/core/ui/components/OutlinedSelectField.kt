@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
  * @param suffix Суффиксный контент.
  * @param supportingText Вспомогательный текст.
  */
+@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> OutlinedSelectField(
@@ -48,7 +49,7 @@ fun <T> OutlinedSelectField(
             supportingText = supportingText,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExposed) },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-            modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+            modifier = modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
         )
 
         ExposedDropdownMenu(

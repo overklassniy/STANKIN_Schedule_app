@@ -23,7 +23,6 @@
     <string name="ex_file_not_found">Файл не найден.</string>
     <string name="ex_parse_error">Ошибка формата данных. Сервер вернул неожиданные данные.</string>
     <string name="ex_unknown">Произошла непредвиденная ошибка. Попробуйте ещё раз.</string>
-    <string name="ex_server_error">Ошибка сервера (%d). Попробуйте позже.</string>
     <string name="ex_not_found">Ресурс не найден (404).</string>
     <string name="ex_forbidden">Доступ запрещён (403).</string>
 

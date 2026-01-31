@@ -64,6 +64,7 @@ import com.overklassniy.stankinschedule.schedule.creator.ui.components.ScheduleC
  * @param viewModel ViewModel, управляющая логикой создания/импорта.
  * @param modifier Внешний модификатор.
  */
+@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ScheduleCreatorSheet(

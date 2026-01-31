@@ -17,7 +17,7 @@ sealed interface RenameState {
     /** Ошибка переименования.
      * @property error Причина ошибки. Поле может не использоваться напрямую в UI.
      */
-    class Error(@Suppress("unused") val error: Throwable) : RenameState
+    class Error(val error: Throwable) : RenameState
 
     /** Конфликт имен: расписание с таким именем уже существует. */
     class AlreadyExist : RenameState

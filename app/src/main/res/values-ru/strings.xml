@@ -5,7 +5,6 @@
     <string name="nav_home">Главная</string>
     <string name="nav_schedule">Расписания</string>
     <string name="nav_journal">Мод. журнал</string>
-    <string name="nav_news">Новости</string>
 
     <string name="section_favorite_schedule">Избранное расписание</string>
     <string name="favorite_not_selected">Не выбрано избранное расписание</string>

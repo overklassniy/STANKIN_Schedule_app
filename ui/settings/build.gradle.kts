@@ -81,10 +81,10 @@ dependencies {
     implementation(libs.ui.material)
     implementation(libs.ui.swiperefreshlayout)
 
-    implementation("com.godaddy.android.colorpicker:compose-color-picker-android:0.7.0")
+    implementation(libs.compose.color.picker.android)
 
     // Network
-    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+    implementation(libs.okhttp)
     implementation(libs.androidx.webkit)
 
     // DI

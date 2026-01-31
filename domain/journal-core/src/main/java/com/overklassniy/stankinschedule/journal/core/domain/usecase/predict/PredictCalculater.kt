@@ -19,7 +19,7 @@ object PredictCalculater {
     private fun ratingForDiscipline(discipline: Discipline): Double {
         var disciplineSum = 0.0
         var disciplineCount = 0.0
-        for (type in MarkType.values()) {
+        for (type in MarkType.entries) {
             discipline[type]?.let { mark ->
                 disciplineSum += mark * type.weight
                 disciplineCount += type.weight
@@ -113,7 +113,7 @@ object PredictCalculater {
     private fun predictedRatingForDiscipline(discipline: Discipline, averageRating: Int): Double {
         var disciplineSum = 0.0
         var disciplineCount = 0.0
-        for (type in MarkType.values()) {
+        for (type in MarkType.entries) {
             discipline[type]?.let { mark ->
                 disciplineSum += if (mark == Discipline.NO_MARK) {
                     averageRating * type.weight

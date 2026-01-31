@@ -5,7 +5,6 @@
     <string name="nav_home">Home</string>
     <string name="nav_schedule">Schedule</string>
     <string name="nav_journal">Journal</string>
-    <string name="nav_news">News</string>
 
     <string name="section_favorite_schedule">Favorite schedule</string>
     <string name="favorite_not_selected">No favorite schedule selected</string>

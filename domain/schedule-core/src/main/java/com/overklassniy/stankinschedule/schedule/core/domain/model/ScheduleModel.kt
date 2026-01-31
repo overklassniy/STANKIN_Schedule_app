@@ -21,7 +21,7 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
      * Добавляет пару в расписание.
      *
      * @param pair Пара для добавления.
-     * @throws PairIntersectException Если пара пересекается с существующими.
+     * @throws `PairIntersectException` Если пара пересекается с существующими.
      */
     fun add(pair: PairModel) {
         dayFor(pair).add(pair)
@@ -149,7 +149,7 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
      *
      * @param old Старая пара (если есть).
      * @param new Новая пара.
-     * @throws PairIntersectException Если новая пара создает конфликт.
+     * @throws `PairIntersectException` Если новая пара создает конфликт.
      */
     fun possibleChangePair(old: PairModel?, new: PairModel) {
         dayFor(new).possibleChangePair(old, new)

@@ -258,6 +258,7 @@ fun LoginField(
  * @param onFormSubmit Отправка формы (IME action Done).
  * @param modifier Модификатор.
  */
+@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordField(

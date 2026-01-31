@@ -16,13 +16,13 @@ private val Context.dataStore by preferencesDataStore(name = JOURNAL_PREFERENCE)
 
 /**
  * Реализация интерфейса [JournalPreference] для управления настройками журнала.
- * Использует [DataStore] для сохранения и получения предпочтений пользователя,
+ * Использует `DataStore` для сохранения и получения предпочтений пользователя,
  * связанных с функционалом журнала (например, разрешение на обновление оценок).
  *
  * @param context Контекст приложения, необходимый для доступа к DataStore.
  */
 class JournalPreferenceImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) : JournalPreference {
 
     /**

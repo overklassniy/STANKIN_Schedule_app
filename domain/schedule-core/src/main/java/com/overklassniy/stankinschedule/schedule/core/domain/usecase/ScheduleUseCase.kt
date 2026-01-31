@@ -73,16 +73,6 @@ class ScheduleUseCase @Inject constructor(
             .flowOn(Dispatchers.IO)
 
     /**
-     * Возвращает информацию о расписании по ID.
-     *
-     * @param scheduleId ID расписания
-     * @return Flow с информацией о расписании или null
-     */
-    fun scheduleInfo(scheduleId: Long): Flow<ScheduleInfo?> =
-        storage.schedule(scheduleId)
-            .flowOn(Dispatchers.IO)
-
-    /**
      * Возвращает полную модель расписания по ID.
      *
      * @param scheduleId ID расписания

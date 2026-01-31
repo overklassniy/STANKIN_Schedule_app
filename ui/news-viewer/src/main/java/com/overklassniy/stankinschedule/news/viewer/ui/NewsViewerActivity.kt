@@ -63,7 +63,7 @@ class NewsViewerActivity : AppCompatActivity() {
      * Алгоритм:
      * 1. Инициализирует binding и тулбар.
      * 2. Читает аргументы из intent.
-     * 3. Настраивает WebView и подписки на состояние [newsContent].
+     * 3. Настраивает WebView и подписки на состояние `newsContent`.
      * 4. Запускает первичную загрузку данных.
      *
      * @param savedInstanceState Сохраненное состояние activity.
