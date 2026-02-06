@@ -25,7 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -63,9 +63,7 @@ import com.overklassniy.stankinschedule.home.ui.components.rememberInAppUpdater
 import com.overklassniy.stankinschedule.home.ui.components.schedule.ScheduleHome
 import com.overklassniy.stankinschedule.home.ui.data.UpdateState
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
-import com.overklassniy.stankinschedule.news.review.ui.components.AppTabIndicator
 import com.overklassniy.stankinschedule.news.review.ui.components.NewsPost
-import com.overklassniy.stankinschedule.news.review.ui.components.pagerTabIndicatorOffset
 import com.overklassniy.stankinschedule.schedule.core.ui.toColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
 import kotlinx.coroutines.launch
@@ -159,14 +157,23 @@ fun HomeScreen(
         val universityNews by viewModel.universityNews.collectAsStateWithLifecycle(emptyList())
         val announcementsNews by viewModel.announcementsNews.collectAsStateWithLifecycle(emptyList())
         val deanNews by viewModel.deanNews.collectAsStateWithLifecycle(emptyList())
+        val exchangeNews by viewModel.exchangeNews.collectAsStateWithLifecycle(emptyList())
+        val PhDNews by viewModel.PhDNews.collectAsStateWithLifecycle(emptyList())
+        val tabCount = 5
 
         val pagerState = rememberPagerState(
-            pageCount = { 3 } // Университет, Анонсы, Деканат
+            pageCount = { tabCount }
         )
         val pagerScope = rememberCoroutineScope()
         val tabRowHeight = 48.dp
 
-        val newsLists = listOf(universityNews, announcementsNews, deanNews)
+        val newsLists = listOf(
+            universityNews,
+            announcementsNews,
+            deanNews,
+            exchangeNews,
+            PhDNews
+        )
 
         LazyColumn(
             state = columnState,
@@ -249,70 +256,66 @@ fun HomeScreen(
                             bottom = Dimen.ContentPadding
                         )
                     )
-                    PrimaryTabRow(
+
+                    val tabTitles = listOf(
+                        R.string.news_university,
+                        R.string.news_announcements,
+                        R.string.news_dean,
+                        R.string.news_exchange,
+                        R.string.news_PhD,
+                    )
+
+                    PrimaryScrollableTabRow(
                         selectedTabIndex = pagerState.currentPage,
-                        indicator = {
-                            AppTabIndicator(
-                                modifier = Modifier.pagerTabIndicatorOffset(this, pagerState)
-                            )
-                        },
                         divider = {},
+                        edgePadding = 0.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .defaultMinSize(minHeight = tabRowHeight)
                     ) {
-                        Tab(
-                            selected = pagerState.currentPage == 0,
-                            onClick = {
-                                pagerScope.launch {
-                                    pagerState.animateScrollToPage(0)
+                        tabTitles.forEachIndexed { index, titleRes ->
+                            Tab(
+                                selected = pagerState.currentPage == index,
+                                onClick = {
+                                    pagerScope.launch {
+                                        pagerState.animateScrollToPage(index)
+                                    }
+                                },
+                                text = {
+                                    Text(
+                                        text = stringResource(titleRes),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                 }
-                            },
-                            text = { Text(stringResource(R.string.news_university)) }
-                        )
-                        Tab(
-                            selected = pagerState.currentPage == 1,
-                            onClick = {
-                                pagerScope.launch {
-                                    pagerState.animateScrollToPage(1)
-                                }
-                            },
-                            text = { Text(stringResource(R.string.news_announcements)) }
-                        )
-                        Tab(
-                            selected = pagerState.currentPage == 2,
-                            onClick = {
-                                pagerScope.launch {
-                                    pagerState.animateScrollToPage(2)
-                                }
-                            },
-                            text = { Text(stringResource(R.string.news_dean)) }
-                        )
+                            )
+                        }
                     }
 
                     // Pager is placed directly under TabRow to avoid layout gaps
                     HorizontalPager(
                         state = pagerState,
                         key = { it },
-                        beyondViewportPageCount = 1,
+                        beyondViewportPageCount = 0,
                         pageSpacing = 0.dp,
                         contentPadding = PaddingValues(0.dp),
                         verticalAlignment = Alignment.Top,
                         userScrollEnabled = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateContentSize()
                     ) { page ->
                         val currentNews = newsLists[page]
+
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(0.dp)
                         ) {
-                            // Показываем либо NEWS_COUNT элементов, либо сколько есть (с placeholder'ами для загрузки)
+                            val maxCount = HomeViewModel.NEWS_COUNT
                             val itemCount = if (currentNews.isEmpty()) {
-                                // Если данные еще загружаются, показываем placeholder'ы
-                                HomeViewModel.NEWS_COUNT
+                                maxCount
                             } else {
-                                // Показываем только реальные данные
-                                currentNews.size.coerceAtMost(HomeViewModel.NEWS_COUNT)
+                                currentNews.size.coerceAtMost(maxCount)
                             }
                             repeat(itemCount) { index ->
                                 val post = currentNews.getOrNull(index)
@@ -336,20 +339,19 @@ fun HomeScreen(
                                 )
                                 HorizontalDivider()
                             }
-                        }
-                    }
-                }
-            }
 
-            item(key = "more_news") {
-                Box(
-                    modifier = Modifier.fillParentMaxWidth()
-                ) {
-                    TextButton(
-                        onClick = navigateToNews,
-                        modifier = Modifier.align(Alignment.Center)
-                    ) {
-                        Text(text = stringResource(R.string.more_news))
+                            // Кнопка «Больше новостей» сразу после карточек
+                            Box(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                TextButton(
+                                    onClick = navigateToNews,
+                                    modifier = Modifier.align(Alignment.Center)
+                                ) {
+                                    Text(text = stringResource(R.string.more_news))
+                                }
+                            }
+                        }
                     }
                 }
             }

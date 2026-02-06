@@ -3,7 +3,7 @@ package com.overklassniy.stankinschedule.news.core.data.di
 import com.google.gson.GsonBuilder
 import com.overklassniy.stankinschedule.news.core.data.api.PostResponse
 import com.overklassniy.stankinschedule.news.core.data.api.StankinDeanNewsAPI
-import com.overklassniy.stankinschedule.news.core.data.api.StankinUniversityNewsAPI
+import com.overklassniy.stankinschedule.news.core.data.api.StankinRSS
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsPostRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsPreferenceRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsStorageRepositoryImpl
@@ -35,26 +35,27 @@ import javax.inject.Singleton
 object NewsNetworkModule {
 
     /**
-     * Предоставляет сервис API для основного сайта университета (stankin.ru).
-     * Использует [ScalarsConverterFactory], так как сервер возвращает HTML строку.
+     * Предоставляет сервис API для RSS-лент сайта stankin.ru.
+     * Используется для загрузки новостей, анонсов, мероприятий и международных новостей.
      *
      * @param client OkHttpClient для выполнения запросов.
-     * @return Экземпляр [StankinUniversityNewsAPI].
+     * @return Экземпляр [StankinRSS].
      */
     @Provides
     @Singleton
-    fun provideUniversityNewsService(client: OkHttpClient): StankinUniversityNewsAPI {
+    fun provideRssApiService(client: OkHttpClient): StankinRSS {
         return Retrofit.Builder()
-            .baseUrl(StankinUniversityNewsAPI.BASE_URL)
+            .baseUrl(StankinRSS.BASE_URL)
             .addConverterFactory(ScalarsConverterFactory.create())
             .client(client)
             .build()
-            .create(StankinUniversityNewsAPI::class.java)
+            .create(StankinRSS::class.java)
     }
 
     /**
      * Предоставляет сервис API для сайта деканата (old.stankin.ru).
-     * Использует [GsonConverterFactory] с кастомным десериализатором для [PostResponse.NewsPost].
+     * Используется [GsonConverterFactory] с кастомным десериализатором для [PostResponse.NewsPost].
+     * Сохранён для просмотра полного содержимого новостей деканата.
      *
      * @param client OkHttpClient для выполнения запросов.
      * @return Экземпляр [StankinDeanNewsAPI].
@@ -102,7 +103,7 @@ object NewsModule {
     ): NewsStorageRepository = repository
 
     /**
-     * Предоставляет реализацию репозитория для работы с удаленными данными (сеть).
+     * Предоставляет реализацию репозитория для работы с удаленными данными (RSS).
      *
      * @param repository Реализация [UniversityNewsRepositoryImpl].
      * @return Интерфейс [NewsRemoteRepository].

@@ -11,6 +11,7 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
 import com.overklassniy.stankinschedule.schedule.core.domain.usecase.ScheduleUseCase
 import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParseResult
+import com.overklassniy.stankinschedule.schedule.settings.domain.usecase.ScheduleSettingsUseCase
 import com.overklassniy.stankinschedule.schedule.parser.domain.model.ParserSettings
 import com.overklassniy.stankinschedule.schedule.parser.domain.usecase.ParserUseCase
 import com.overklassniy.stankinschedule.schedule.parser.ui.model.ParsedFile
@@ -37,7 +38,8 @@ class ScheduleParserViewModel @Inject constructor(
     private val deviceUseCase: DeviceUseCase,
     private val parserUseCase: ParserUseCase,
     private val loggerAnalytics: LoggerAnalytics,
-    private val scheduleUseCase: ScheduleUseCase
+    private val scheduleUseCase: ScheduleUseCase,
+    private val scheduleSettingsUseCase: ScheduleSettingsUseCase
 ) : ViewModel() {
 
     private val _parserState = MutableStateFlow<ParserState>(ParserState.SelectFile())
@@ -162,8 +164,9 @@ class ScheduleParserViewModel @Inject constructor(
                 .catch { e ->
                     _parserState.value = ParserState.ImportFinish(state = UIState.failed(e))
                 }
-                .collectLatest { isCreated ->
-                    if (isCreated) {
+                .collectLatest { scheduleId ->
+                    if (scheduleId != null) {
+                        scheduleSettingsUseCase.setFavorite(scheduleId)
                         _parserState.value = ParserState.ImportFinish(
                             state = UIState.success(Unit)
                         )

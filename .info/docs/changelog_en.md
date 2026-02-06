@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 3.2.1 (06.02.26)
+- Fixed schedule loading from the EOS.
+- Added news tabs for the Center for International Activities and the Graduate School.
+
 ## Version 3.2.0 (31.01.26)
 -Added an "Announcements" tab to the news section.
 -Added tracking of the latest version.
@@ -96,7 +100,7 @@
 - Updated schedule (on 05.10.20).
 
 ## Version 1.0.7 (29.09.20)
-- Added schedule for postgraduates.
+- Added schedule for PhDs.
 
 ## Version 1.0.6 (25.09.20)
 - Fixed app translation;

@@ -23,16 +23,16 @@ class ScheduleUseCase @Inject constructor(
      * Создает новое расписание, если расписание с таким именем не существует.
      *
      * @param schedule Модель расписания для создания
-     * @return Flow с true, если расписание создано, false если уже существует
+     * @return Flow с id созданного расписания или null, если уже существует
      */
-    fun createSchedule(schedule: ScheduleModel): Flow<Boolean> = flow {
+    fun createSchedule(schedule: ScheduleModel): Flow<Long?> = flow {
         if (storage.isScheduleExist(schedule.info.scheduleName)) {
-            emit(false)
+            emit(null)
             return@flow
         }
 
-        storage.saveSchedule(schedule)
-        emit(true)
+        val id = storage.saveSchedule(schedule)
+        emit(id)
     }.flowOn(Dispatchers.IO)
 
     /**

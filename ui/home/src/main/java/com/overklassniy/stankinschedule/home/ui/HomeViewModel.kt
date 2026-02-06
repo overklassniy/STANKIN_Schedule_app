@@ -66,6 +66,12 @@ class HomeViewModel @Inject constructor(
     private val _deanNews = MutableStateFlow<List<NewsPost>>(emptyList())
     val deanNews = _deanNews.asStateFlow()
 
+    private val _exchangeNews = MutableStateFlow<List<NewsPost>>(emptyList())
+    val exchangeNews = _exchangeNews.asStateFlow()
+
+    private val _PhDNews = MutableStateFlow<List<NewsPost>>(emptyList())
+    val PhDNews = _PhDNews.asStateFlow()
+
     private val isDebug = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
     private fun appVersion(): String {
@@ -126,12 +132,34 @@ class HomeViewModel @Inject constructor(
             }
         }
 
+        // Загрузка международных новостей
+        viewModelScope.launch {
+            newsUseCase.lastNews(
+                newsSubdivision = NewsSubdivision.Exchange.id,
+                newsCount = NEWS_COUNT
+            ).collectLatest {
+                _exchangeNews.value = it
+            }
+        }
+
+        // Загрузка новостей аспирантуры
+        viewModelScope.launch {
+            newsUseCase.lastNews(
+                newsSubdivision = NewsSubdivision.PhD.id,
+                newsCount = NEWS_COUNT
+            ).collectLatest {
+                _PhDNews.value = it
+            }
+        }
+
         viewModelScope.launch {
             kotlinx.coroutines.delay(500)
             try {
                 newsUseCase.refreshNews(NewsSubdivision.University.id, force = false)
                 newsUseCase.refreshNews(NewsSubdivision.Announcements.id, force = false)
                 newsUseCase.refreshNews(NewsSubdivision.Dean.id, force = false)
+                newsUseCase.refreshNews(NewsSubdivision.Exchange.id, force = false)
+                newsUseCase.refreshNews(NewsSubdivision.PhD.id, force = false)
             } catch (_: Exception) {
                 // Silent fail
             }

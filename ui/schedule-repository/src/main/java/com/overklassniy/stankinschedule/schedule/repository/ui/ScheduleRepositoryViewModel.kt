@@ -1,5 +1,6 @@
 package com.overklassniy.stankinschedule.schedule.repository.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.core.ui.components.UIState
@@ -8,17 +9,29 @@ import com.overklassniy.stankinschedule.schedule.repository.domain.model.Grade
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryCategory
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryDescription
 import com.overklassniy.stankinschedule.schedule.repository.domain.model.RepositoryItem
+import com.overklassniy.stankinschedule.schedule.repository.domain.usecase.RepositoryLoaderUseCase
 import com.overklassniy.stankinschedule.schedule.repository.domain.usecase.RepositoryUseCase
 import com.overklassniy.stankinschedule.schedule.repository.ui.components.DownloadEvent
 import com.overklassniy.stankinschedule.schedule.repository.ui.components.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+/**
+ * Состояние загрузки файла расписания.
+ */
+sealed class FileDownloadState {
+    data class Loading(val scheduleName: String) : FileDownloadState()
+    data class Success(val scheduleName: String, val filePath: String) : FileDownloadState()
+    data class Failed(val error: String) : FileDownloadState()
+}
 
 /**
  * ViewModel экрана репозитория расписаний.
@@ -28,6 +41,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ScheduleRepositoryViewModel @Inject constructor(
     private val useCase: RepositoryUseCase,
+    private val loaderUseCase: RepositoryLoaderUseCase,
 ) : ViewModel() {
 
     private val _description = MutableStateFlow<UIState<RepositoryDescription>>(UIState.loading())
@@ -40,6 +54,9 @@ class ScheduleRepositoryViewModel @Inject constructor(
 
     private val _download = MutableSharedFlow<DownloadState?>()
     val download = _download.asSharedFlow()
+
+    private val _fileDownload = MutableStateFlow<FileDownloadState?>(null)
+    val fileDownload = _fileDownload.asStateFlow()
 
     private val _category = MutableStateFlow<RepositoryCategory?>(null)
 
@@ -102,7 +119,7 @@ class ScheduleRepositoryViewModel @Inject constructor(
         val part = item.name.split('-').getOrNull(0) ?: return true
 
         if (part.equals("АСП", ignoreCase = true)) {
-            return currentGrade == Grade.Postgraduate
+            return currentGrade == Grade.PhD
         }
 
         val itemGrade = when (part.last().uppercaseChar()) {
@@ -227,11 +244,41 @@ class ScheduleRepositoryViewModel @Inject constructor(
                     if (isExist) {
                         _download.emit(DownloadState.RequiredName(event.scheduleName, event.item))
                     } else {
-                        _download.emit(DownloadState.StartDownload(event.scheduleName, event.item))
+                        performDownload(event.scheduleName, event.item)
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Скачивает файл расписания напрямую в корутине ViewModel.
+     *
+     * @param scheduleName Имя расписания.
+     * @param item Элемент репозитория (путь и категория).
+     */
+    private fun performDownload(scheduleName: String, item: RepositoryItem) {
+        viewModelScope.launch {
+            _fileDownload.value = FileDownloadState.Loading(scheduleName)
+            try {
+                val filePath = withContext(Dispatchers.IO) {
+                    loaderUseCase.downloadScheduleFile(item.category, item.path, scheduleName)
+                }
+                _fileDownload.value = FileDownloadState.Success(scheduleName, filePath)
+            } catch (e: Exception) {
+                Log.e("ScheduleRepoVM", "Download failed", e)
+                _fileDownload.value = FileDownloadState.Failed(
+                    e.message ?: "Download failed"
+                )
+            }
+        }
+    }
+
+    /**
+     * Сбрасывает состояние загрузки файла.
+     */
+    fun clearFileDownload() {
+        _fileDownload.value = null
     }
 
     /**
@@ -273,7 +320,7 @@ class ScheduleRepositoryViewModel @Inject constructor(
         val currentYear = _category.value?.year
         val currentQuery = _searchQuery.value
 
-        viewModelScope.launch(kotlinx.coroutines.Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Default) {
             val filterItems = cache
                 .asSequence()
                 .filter { item ->

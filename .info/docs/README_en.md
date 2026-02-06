@@ -4,7 +4,7 @@
 
 **Unofficial application for MSTU "STANKIN" students**
 
-[![Version](https://img.shields.io/badge/version-3.2.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.2.1-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -94,6 +94,15 @@ cd STANKIN_Schedule_app
 # Or open in Android Studio
 ```
 
+### News (RSS)
+
+```bash
+cp stankin.secret.example stankin.secret
+# Edit stankin.secret with your RSS URLs (the file is in .gitignore)
+```
+
+Without `stankin.secret`, the app builds and runs; the news section will simply be empty.
+
 ---
 
 ## Changelog
@@ -102,9 +111,9 @@ Full changelog is available in [CHANGELOG.md](changelog_en.md).
 
 ### Recent Updates
 
-**Version 3.2.0 (31.01.26)**
--Added an "Announcements" tab to the news section.
--Added tracking of the latest version.
+**Version 3.2.1 (06.02.26)**
+- Fixed schedule loading from the EOS.
+- Added news tabs for the Center for International Activities and the Graduate School.
 
 ## Authors
 

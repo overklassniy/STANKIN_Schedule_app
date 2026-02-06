@@ -55,6 +55,7 @@ dependencies {
     implementation(project(":domain:core"))
     implementation(project(":domain:schedule-core"))
     implementation(project(":domain:schedule-parser"))
+    implementation(project(":domain:schedule-settings"))
     implementation(project(":domain:schedule-table"))
 
     // Kotlin

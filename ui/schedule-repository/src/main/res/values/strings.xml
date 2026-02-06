@@ -8,7 +8,7 @@
     <string name="repository_bachelor">Bachelor</string>
     <string name="repository_magistracy">Magistracy</string>
     <string name="repository_specialist">Specialist</string>
-    <string name="repository_postgraduate">Postgraduate</string>
+    <string name="repository_PhD">PhD</string>
     <string name="repository_course">%1$s course</string>
     <string name="repository_schedules_filter">Schedules: %1$s</string>
     <string name="repository_no_schedules_found">No schedules found</string>

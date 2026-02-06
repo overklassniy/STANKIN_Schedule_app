@@ -9,6 +9,7 @@
 # Общие настройки, которые можно хранить в репозитории
 !.idea/codeStyles/
 !.idea/runConfigurations/
+stankin.secret
 
 # Gradle
 .gradle/

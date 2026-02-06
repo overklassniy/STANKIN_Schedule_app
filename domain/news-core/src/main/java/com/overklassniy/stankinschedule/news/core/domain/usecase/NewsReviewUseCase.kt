@@ -66,6 +66,7 @@ class NewsReviewUseCase @Inject constructor(
 
         // Проверяем условия обновления: отладка, принудительно, нет данных или устарели (>30 мин)
         if (isDebug || force || lastRefresh == null || lastRefresh subMinutes DateTime.now() > 30) {
+            if (force) remoteRepository.invalidateCache()
             // Загружаем первую страницу из сети
             val posts = remoteRepository.loadPage(subdivision, page = 1)
             // Сохраняем в локальную БД с заменой старых данных (isRefresh = true)

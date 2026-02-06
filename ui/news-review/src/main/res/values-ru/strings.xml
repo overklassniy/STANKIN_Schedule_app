@@ -5,6 +5,8 @@
     <string name="news_university">Университет</string>
     <string name="news_dean">Деканат</string>
     <string name="news_announcements">Анонсы</string>
+    <string name="news_exchange">Межд. деят.</string>
+    <string name="news_PhD">Аспирантура</string>
     <string name="news_preview">Превью новости</string>
     <string name="news_retry">Повторить</string>
 </resources>

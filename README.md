@@ -4,7 +4,7 @@
 
 **Неофициальное приложение для студентов МГТУ «СТАНКИН»**
 
-[![Version](https://img.shields.io/badge/version-3.2.0-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.2.1-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -94,6 +94,15 @@ cd STANKIN_Schedule_app
 # Или открыть в Android Studio
 ```
 
+### Новости (RSS)
+
+```bash
+cp stankin.secret.example stankin.secret
+# Отредактируйте stankin.secret и укажите реальные URL (файл уже в .gitignore)
+```
+
+Без `stankin.secret` приложение собирается и запускается, раздел новостей будет пустым.
+
 ---
 
 ## История изменений
@@ -102,9 +111,9 @@ cd STANKIN_Schedule_app
 
 ### Последнее обновление
 
-**Версия 3.2.0 (31.01.26)**
-- Добавлена вкладка "Анонсы" в новостях.
-- Добавлено отслеживание последней версии.
+**Версия 3.2.1 (06.02.26)**
+- Исправлена загрузка расписаний из ЭОС.
+- Добавлены вкладки новостей центра международной деятельности, аспирантуры.
 
 ## Авторы
 

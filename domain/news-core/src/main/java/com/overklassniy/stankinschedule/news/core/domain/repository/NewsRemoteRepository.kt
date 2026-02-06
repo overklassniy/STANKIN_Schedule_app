@@ -16,4 +16,9 @@ interface NewsRemoteRepository {
      * @return Список загруженных [NewsPost].
      */
     suspend fun loadPage(newsSubdivision: Int, page: Int, count: Int = 40): List<NewsPost>
+
+    /**
+     * Сбрасывает in-memory кэш (например, при принудительном обновлении).
+     */
+    fun invalidateCache()
 }

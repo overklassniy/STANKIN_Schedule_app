@@ -10,24 +10,18 @@ import com.overklassniy.stankinschedule.schedule.repository.domain.repository.Sc
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.Cookie
-import okhttp3.CookieJar
-import okhttp3.FormBody
-import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.joda.time.DateTime
+import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.File
 import java.io.FileOutputStream
-import java.net.Proxy
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /**
  * Сервис для загрузки расписания из Moodle.
  *
  * Отвечает за скачивание PDF-файлов расписания и их парсинг.
+ * Использует Jsoup для HTTP-запросов и управления cookies (аналогично MoodleRemoteService).
  *
  * @property context Контекст приложения.
  * @property parserUseCase UseCase для парсинга PDF-файлов.
@@ -41,51 +35,13 @@ class MoodleLoaderService @Inject constructor(
     private val USER_AGENT =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     private val LOGIN_URL = "https://edu.stankin.ru/login/index.php"
-
-    private val cookieStore = mutableMapOf<String, MutableList<Cookie>>()
-
-    private val cookieJar = object : CookieJar {
-        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-            val host = url.host
-            cookieStore.getOrPut(host) { mutableListOf() }.apply {
-                cookies.forEach { newCookie ->
-                    removeAll { it.name == newCookie.name }
-                }
-                addAll(cookies)
-            }
-        }
-
-        override fun loadForRequest(url: HttpUrl): List<Cookie> {
-            return cookieStore[url.host] ?: emptyList()
-        }
-    }
-
-    private val client = OkHttpClient.Builder()
-        .cookieJar(cookieJar)
-        .proxy(Proxy.NO_PROXY)
-        .followRedirects(true)
-        .followSslRedirects(true)
-        .connectTimeout(60, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
-        .addNetworkInterceptor { chain ->
-            val request = chain.request()
-            val response = chain.proceed(request)
-
-            if (response.code == 407) {
-                return@addNetworkInterceptor response.newBuilder()
-                    .code(401)
-                    .message("Unauthorized (Rewritten from 407)")
-                    .build()
-            }
-            response
-        }
-        .build()
+    private val COURSE_URL = "https://edu.stankin.ru/course/view.php?id=11557"
+    private val TIMEOUT_MS = 60_000
 
     /**
      * Загружает и парсит расписание для указанной категории.
      *
-     * @param category Категория расписания (не используется в текущей реализации, но может быть полезна в будущем).
+     * @param category Категория расписания.
      * @param schedule URL или путь к файлу расписания для скачивания.
      * @return Список пар [PairModel], полученных в результате парсинга.
      */
@@ -130,114 +86,160 @@ class MoodleLoaderService @Inject constructor(
         return@withContext file.absolutePath
     }
 
-    private fun performGuestLogin(): Boolean {
+    /**
+     * Выполняет гостевой вход на Moodle через Jsoup.
+     *
+     * @param cookies Карта cookies для сессии (обновляется на месте).
+     * @return true если логин успешен.
+     */
+    private fun performGuestLogin(cookies: MutableMap<String, String>): Boolean {
         try {
-            Log.d(TAG, "Starting guest login...")
+            Log.d(TAG, "Starting guest login via Jsoup...")
 
-            val loginPageRequest = Request.Builder()
-                .url(LOGIN_URL)
-                .header("User-Agent", USER_AGENT)
-                .build()
+            // Шаг 1: Загрузить страницу логина
+            val loginPageResponse = Jsoup.connect(LOGIN_URL)
+                .userAgent(USER_AGENT)
+                .timeout(TIMEOUT_MS)
+                .execute()
 
-            val loginPageResponse = client.newCall(loginPageRequest).execute()
-            val loginPageHtml = loginPageResponse.body.string()
-            loginPageResponse.close()
+            cookies.putAll(loginPageResponse.cookies())
+            val loginDoc = loginPageResponse.parse()
 
-            val doc = Jsoup.parse(loginPageHtml)
-            val loginToken = doc.select("input[name=logintoken]").attr("value")
-            val loginAction = doc.select("form[action*='login/index.php']").attr("action")
+            val loginToken = loginDoc.select("input[name=logintoken]").attr("value")
+            val loginAction = loginDoc.select("form[action*='login/index.php']").attr("action")
                 .ifEmpty { LOGIN_URL }
 
             Log.d(TAG, "Login token found: ${loginToken.isNotEmpty()}, action: $loginAction")
 
-            val formBody = FormBody.Builder()
-                .add("username", "guest")
-                .add("password", "guest")
-                .apply {
-                    if (loginToken.isNotEmpty()) {
-                        add("logintoken", loginToken)
-                    }
+            // Шаг 2: POST гостевой логин БЕЗ автоматического следования редиректам
+            val loginConnection = Jsoup.connect(loginAction)
+                .userAgent(USER_AGENT)
+                .timeout(TIMEOUT_MS)
+                .data("username", "guest")
+                .data("password", "guest")
+                .cookies(cookies)
+                .method(Connection.Method.POST)
+                .followRedirects(false)
+
+            if (loginToken.isNotEmpty()) {
+                loginConnection.data("logintoken", loginToken)
+            }
+
+            val loginResponse = loginConnection.execute()
+            cookies.putAll(loginResponse.cookies())
+            Log.d(TAG, "Login POST response code: ${loginResponse.statusCode()}")
+
+            // Шаг 3: Следовать по редиректу вручную
+            if (loginResponse.statusCode() in listOf(302, 303)) {
+                val location = loginResponse.header("Location")
+                if (location != null) {
+                    Log.d(TAG, "Login redirect to: $location")
+
+                    val redirectResponse = Jsoup.connect(location)
+                        .userAgent(USER_AGENT)
+                        .timeout(TIMEOUT_MS)
+                        .cookies(cookies)
+                        .execute()
+                    cookies.putAll(redirectResponse.cookies())
+                    Log.d(TAG, "Redirect response code: ${redirectResponse.statusCode()}")
+
+                    // Шаг 4: Посетить страницу курса для установки контекста сессии
+                    val courseResponse = Jsoup.connect(COURSE_URL)
+                        .userAgent(USER_AGENT)
+                        .timeout(TIMEOUT_MS)
+                        .cookies(cookies)
+                        .execute()
+                    cookies.putAll(courseResponse.cookies())
+                    Log.d(TAG, "Course page response code: ${courseResponse.statusCode()}")
+                    Log.d(TAG, "Cookies after login: ${cookies.keys}")
+
+                    return true
+                } else {
+                    Log.e(TAG, "Login redirect failed: Location header is null")
                 }
-                .build()
+            } else {
+                Log.e(TAG, "Login failed with code: ${loginResponse.statusCode()} (expected 303)")
+            }
 
-            val loginRequest = Request.Builder()
-                .url(loginAction)
-                .header("User-Agent", USER_AGENT)
-                .header("Referer", LOGIN_URL)
-                .post(formBody)
-                .build()
-
-            val loginResponse = client.newCall(loginRequest).execute()
-            val loginSuccess = loginResponse.isSuccessful ||
-                    loginResponse.code == 303 ||
-                    loginResponse.code == 302
-            Log.d(TAG, "Login response code: ${loginResponse.code}, success: $loginSuccess")
-            Log.d(TAG, "Cookies after login: ${cookieStore.values.flatten().map { it.name }}")
-            loginResponse.close()
-
-            return loginSuccess
+            return false
         } catch (e: Exception) {
             Log.e(TAG, "Login failed with exception", e)
             return false
         }
     }
 
+    /**
+     * Скачивает файл из Moodle с гостевой авторизацией через Jsoup.
+     *
+     * Алгоритм:
+     *  1. Гостевой логин → получение cookies.
+     *  2. Скачивание файла с этими cookies.
+     *  3. При неудаче – повторный логин и попытка.
+     *
+     * @param url URL файла для скачивания.
+     * @param fileName Имя для сохранения файла (без расширения).
+     * @return Скачанный файл.
+     */
     private suspend fun downloadFileInternal(url: String, fileName: String): File =
         withContext(Dispatchers.IO) {
-            cookieStore.clear()
             Log.d(TAG, "Starting download for: $url")
 
-            val loginSuccess = performGuestLogin()
+            val cookies = mutableMapOf<String, String>()
+            val loginSuccess = performGuestLogin(cookies)
             Log.d(TAG, "Guest login result: $loginSuccess")
 
-            val request = Request.Builder()
-                .url(url)
-                .header("User-Agent", USER_AGENT)
-                .header("Referer", "https://edu.stankin.ru/")
-                .build()
-
-            var response = client.newCall(request).execute()
-            Log.d(
-                TAG,
-                "First download attempt - code: ${response.code}, url: ${response.request.url}"
-            )
-
-            val finalUrl = response.request.url.toString()
-            val contentType = response.header("Content-Type") ?: ""
-
-            if (finalUrl.contains("/login/") || contentType.contains("text/html")) {
-                Log.d(TAG, "Got HTML or login redirect, trying again after fresh login...")
-                response.close()
-
-                cookieStore.clear()
-                performGuestLogin()
-
-                val retryRequest = Request.Builder()
-                    .url(url)
-                    .header("User-Agent", USER_AGENT)
+            // Первая попытка скачивания
+            var downloadResponse = try {
+                Jsoup.connect(url)
+                    .userAgent(USER_AGENT)
+                    .timeout(TIMEOUT_MS)
+                    .cookies(cookies)
                     .header("Referer", "https://edu.stankin.ru/")
-                    .build()
-
-                response = client.newCall(retryRequest).execute()
-                Log.d(TAG, "Retry download - code: ${response.code}, url: ${response.request.url}")
+                    .ignoreContentType(true)
+                    .maxBodySize(50 * 1024 * 1024) // 50 MB
+                    .execute()
+            } catch (e: Exception) {
+                Log.w(TAG, "First download attempt failed with exception: ${e.message}")
+                null
             }
 
-            if (!response.isSuccessful) {
-                val errorBody = response.body.string().take(500)
-                Log.e(TAG, "Download failed. Code: ${response.code}, Body preview: $errorBody")
-                response.close()
-                throw Exception("Failed to download schedule. Response code: ${response.code}")
+            Log.d(TAG, "First attempt - code: ${downloadResponse?.statusCode()}, type: ${downloadResponse?.contentType()}")
+
+            // Повторная попытка при ошибке или HTML-ответе
+            if (downloadResponse == null
+                || downloadResponse.statusCode() != 200
+                || downloadResponse.contentType()?.contains("text/html") == true
+            ) {
+                Log.d(TAG, "First attempt failed. Retrying with fresh login...")
+                cookies.clear()
+                performGuestLogin(cookies)
+
+                downloadResponse = Jsoup.connect(url)
+                    .userAgent(USER_AGENT)
+                    .timeout(TIMEOUT_MS)
+                    .cookies(cookies)
+                    .header("Referer", "https://edu.stankin.ru/")
+                    .ignoreContentType(true)
+                    .maxBodySize(50 * 1024 * 1024)
+                    .execute()
+
+                Log.d(TAG, "Retry - code: ${downloadResponse.statusCode()}, type: ${downloadResponse.contentType()}")
             }
 
-            val body = response.body
+            if (downloadResponse.statusCode() != 200) {
+                val bodyPreview = try { downloadResponse.body().take(500) } catch (_: Exception) { "N/A" }
+                Log.e(TAG, "Download failed. Code: ${downloadResponse.statusCode()}, Body: $bodyPreview")
+                throw Exception("Failed to download schedule. Response code: ${downloadResponse.statusCode()}")
+            }
 
-            val responseContentType = response.header("Content-Type") ?: ""
-            if (responseContentType.contains("text/html")) {
-                val htmlPreview = body.string().take(500)
-                Log.e(TAG, "Got HTML instead of PDF: $htmlPreview")
+            val ct = downloadResponse.contentType() ?: ""
+            if (ct.contains("text/html")) {
+                val bodyPreview = try { downloadResponse.body().take(500) } catch (_: Exception) { "N/A" }
+                Log.e(TAG, "Got HTML instead of PDF: $bodyPreview")
                 throw Exception("Server returned HTML instead of PDF file. Login may have failed.")
             }
 
+            // Сохраняем файл
             val downloadsDir = File(context.filesDir, "schedule_downloads")
             if (!downloadsDir.exists()) {
                 downloadsDir.mkdirs()
@@ -245,12 +247,10 @@ class MoodleLoaderService @Inject constructor(
 
             val file = File(downloadsDir, "${fileName}.pdf")
             FileOutputStream(file).use { output ->
-                body.byteStream().use { input ->
-                    input.copyTo(output)
-                }
+                output.write(downloadResponse.bodyAsBytes())
             }
 
-            Log.d(TAG, "File downloaded successfully: ${file.absolutePath}")
+            Log.d(TAG, "File downloaded successfully: ${file.absolutePath} (${file.length()} bytes)")
             return@withContext file
         }
 }

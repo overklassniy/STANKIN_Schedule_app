@@ -6,6 +6,18 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Загрузка RSS URL из stankin.secret (вне android {}, чтобы не путать receiver в defaultConfig)
+val rssSecrets: Map<String, String> = run {
+    val secretFile = rootProject.file("stankin.secret")
+    if (!secretFile.exists()) return@run emptyMap<String, String>()
+    secretFile.readLines()
+        .mapNotNull { line ->
+            val parts = line.split("=", limit = 2)
+            if (parts.size == 2) parts[0].trim() to parts[1].trim() else null
+        }
+        .toMap()
+}
+
 android {
     buildFeatures { buildConfig = true }
     val appCompileSdkVersion: Int by rootProject.extra
@@ -18,6 +30,15 @@ android {
     defaultConfig {
         minSdk = appMinSdkVersion
 
+        if (rssSecrets.isNotEmpty()) {
+            buildConfigField("String", "NEWS_RSS_URL", "\"${rssSecrets["NEWS_RSS_URL"] ?: ""}&LIMIT=100\"")
+            buildConfigField("String", "ADS_RSS_URL", "\"${rssSecrets["ADS_RSS_URL"] ?: ""}&LIMIT=12\"")
+            buildConfigField("String", "EXCHANGE_RSS_URL", "\"${rssSecrets["EXCHANGE_RSS_URL"] ?: ""}&LIMIT=12\"")
+        } else {
+            buildConfigField("String", "NEWS_RSS_URL", "\"\"")
+            buildConfigField("String", "ADS_RSS_URL", "\"\"")
+            buildConfigField("String", "EXCHANGE_RSS_URL", "\"\"")
+        }
 
         javaCompileOptions {
             annotationProcessorOptions {

@@ -14,5 +14,5 @@ enum class Grade {
     Specialist,
 
     /** Аспирантура */
-    Postgraduate
+    PhD
 }

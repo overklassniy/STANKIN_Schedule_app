@@ -123,10 +123,10 @@ class PairExtractor {
             title = extractTitle(pairMatch.groupValues[1]),
             lecturer = extractLecturer(pairMatch.groupValues[2]),
             type = extractType(pairMatch.groupValues[4]),
-            subgroup = extractSubgroup(pairMatch.groupValues[6]),
-            classroom = extractClassroom(pairMatch.groupValues[7]),
+            subgroup = extractSubgroup(pairMatch.groupValues[5]),
+            classroom = extractClassroom(pairMatch.groupValues[6]),
             time = time,
-            date = extractDate(pairMatch.groupValues[8])
+            date = extractDate(pairMatch.groupValues[7])
         )
     }
 
@@ -163,7 +163,8 @@ class PairExtractor {
      * Определяет тип занятия (лекция, семинар, лаб. работа).
      */
     private fun extractType(type: String): Type {
-        return when (type.dropLast(1).trim().lowercase()) {
+        val normalized = type.trim().removeSuffix(".").lowercase()
+        return when (normalized) {
             "семинар" -> Type.SEMINAR
             "лекции", "лекция" -> Type.LECTURE
             "лабораторные занятия", "лабораторная" -> Type.LABORATORY
@@ -180,7 +181,10 @@ class PairExtractor {
             return Subgroup.COMMON
         }
 
-        return when (subgroup.dropLast(1).trim().uppercase()) {
+        val normalized = subgroup.dropLast(1).trim().uppercase()
+            .replace("(A)", "(А)")
+            .replace("(B)", "(Б)")
+        return when (normalized) {
             "(А)" -> Subgroup.A
             "(Б)" -> Subgroup.B
             else -> throw IllegalArgumentException("Unknown subgroup: '$subgroup'")
@@ -267,13 +271,13 @@ class PairExtractor {
 
     object ParserPatterns {
         const val TITLE = "([а-яА-ЯёЁa-zA-Z0-9\\.\\s\\,\\-\\(\\)\\/\\:]+?\\.)"
-        const val LECTURER = "([а-яА-ЯёЁae\\s\\_]+\\s([а-яА-я]\\.?){1,2})?"
+        const val LECTURER = "([а-яА-ЯёЁa-zA-Z0-9 \\t\\_\\.]+?\\s*)?"
         const val TYPE =
             "((лабораторные занятия|Лабораторные занятия|Лабораторная|семинар|Семинар|лекции|Лекции|лекция|Лекция)\\.|(?<=\\s)\\.)"
-        const val SUBGROUP = "(\\([абАБ]\\)\\.)?"
+        const val SUBGROUP = "(\\([абАБaAbB]\\)\\.)?"
         const val CLASSROOM = "([^\\[\\]]+?\\.)"
         const val DATE =
-            "(\\[((\\,)|(\\s?(\\d{2}\\.\\d{2})\\-(\\d{2}\\.\\d{2})\\s*?([чкЧК]\\.[нН]\\.{1,2})|(\\s?(\\d{2}\\.\\d{2}))))+\\])"
+            "(\\[(?:(?:\\,)|(?:\\s?\\d{2}\\.\\d{2}\\-\\d{2}\\.\\d{2}\\s*?[чкЧК]\\.[нН]\\.{1,2})|(?:\\s?\\d{2}\\.\\d{2}))+\\])"
         const val DATE_RANGE = "\\s?(\\d{2}\\.\\d{2})-(\\d{2}\\.\\d{2})\\s*?([чк]\\.[н]\\.)"
         const val DATE_SINGLE = "\\s?(\\d{2}\\.\\d{2})"
         val COMMON = listOf(TITLE, LECTURER, TYPE, SUBGROUP, CLASSROOM, DATE)

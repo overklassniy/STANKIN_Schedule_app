@@ -67,7 +67,7 @@ fun BackLayerContent(
                     Grade.Bachelor -> R.string.repository_bachelor
                     Grade.Magistracy -> R.string.repository_magistracy
                     Grade.Specialist -> R.string.repository_specialist
-                    Grade.Postgraduate -> R.string.repository_postgraduate
+                    Grade.PhD -> R.string.repository_PhD
                 }
                 stringResource(res)
             },
@@ -89,7 +89,7 @@ fun BackLayerContent(
             Grade.Bachelor -> Course.entries.take(4)
             Grade.Specialist -> Course.entries.take(5)
             Grade.Magistracy -> Course.entries.take(2)
-            Grade.Postgraduate -> Course.entries.take(3)
+            Grade.PhD -> Course.entries.take(3)
             null -> Course.entries
         }
 

@@ -1,6 +1,8 @@
 package com.overklassniy.stankinschedule.schedule.repository.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,21 +15,23 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.rememberBackdropScaffoldState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
+import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.Stateful
 import com.overklassniy.stankinschedule.core.ui.components.TrackCurrentScreen
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
@@ -41,7 +45,6 @@ import com.overklassniy.stankinschedule.schedule.repository.ui.components.Reposi
 import com.overklassniy.stankinschedule.schedule.repository.ui.components.RepositoryLoading
 import com.overklassniy.stankinschedule.schedule.repository.ui.components.RepositoryToolBar
 import com.overklassniy.stankinschedule.schedule.repository.ui.components.RequiredNameDialog
-import com.overklassniy.stankinschedule.schedule.repository.ui.worker.ScheduleDownloadWorker
 import kotlinx.coroutines.launch
 
 /**
@@ -72,67 +75,65 @@ fun ScheduleRepositoryScreen(
 
     var isRequiredName by remember { mutableStateOf<DownloadState.RequiredName?>(null) }
     var isChooseName by remember { mutableStateOf<DownloadState.RequiredName?>(null) }
-    var currentWorkerName by remember { mutableStateOf<String?>(null) }
 
     val downloadFailedMessage = stringResource(R.string.repository_download_failed)
-    val startDownloadMessage = stringResource(R.string.repository_start_download)
 
     val scope = rememberCoroutineScope()
     BackHandler(scaffoldState.isRevealed) {
         scope.launch { scaffoldState.conceal() }
     }
 
-    currentWorkerName?.let { workerName ->
-        val workManager = WorkManager.getInstance(context)
-        val workInfoLiveData = workManager.getWorkInfosForUniqueWorkLiveData(workerName)
-        val workInfos by workInfoLiveData.observeAsState(initial = emptyList())
+    // Наблюдаем за состоянием загрузки файла из ViewModel
+    val fileDownloadState by viewModel.fileDownload.collectAsState()
 
-        LaunchedEffect(workInfos, workerName) {
-            val workInfo = workInfos.firstOrNull()
-            when (workInfo?.state) {
-                WorkInfo.State.SUCCEEDED -> {
-                    val filePath =
-                        workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_FILE_PATH)
-                    val scheduleName =
-                        workInfo.outputData.getString(ScheduleDownloadWorker.OUTPUT_SCHEDULE_NAME)
-
-                    if (filePath != null && scheduleName != null) {
-                        currentWorkerName = null
-                        val intent =
-                            ScheduleParserActivity.createIntent(context, filePath, scheduleName)
-                        context.startActivity(intent)
-                    }
-                }
-
-                WorkInfo.State.FAILED -> {
-                    currentWorkerName = null
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message = downloadFailedMessage,
-                        duration = SnackbarDuration.Short
+    // Диалог загрузки
+    if (fileDownloadState is FileDownloadState.Loading) {
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {},
+            text = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = stringResource(
+                            R.string.repository_start_download,
+                            (fileDownloadState as FileDownloadState.Loading).scheduleName
+                        )
                     )
                 }
-
-                else -> {}
             }
+        )
+    }
+
+    // Обработка успешной загрузки — открываем визард ScheduleParserActivity
+    LaunchedEffect(fileDownloadState) {
+        when (val state = fileDownloadState) {
+            is FileDownloadState.Success -> {
+                val intent = ScheduleParserActivity.createIntent(
+                    context, state.filePath, state.scheduleName
+                )
+                context.startActivity(intent)
+                viewModel.clearFileDownload()
+            }
+
+            is FileDownloadState.Failed -> {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = downloadFailedMessage,
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.clearFileDownload()
+            }
+
+            else -> {}
         }
     }
 
+    // Обработка RequiredName из SharedFlow
     LaunchedEffect(download.value) {
         when (val state = download.value) {
-            is DownloadState.StartDownload -> {
-                val workerName = ScheduleDownloadWorker.startWorker(
-                    context = context,
-                    scheduleName = state.scheduleName,
-                    item = state.item,
-                    downloadOnly = true
-                )
-                currentWorkerName = workerName
-                scaffoldState.snackbarHostState.showSnackbar(
-                    message = String.format(startDownloadMessage, state.scheduleName),
-                    duration = SnackbarDuration.Short
-                )
-            }
-
             is DownloadState.RequiredName -> {
                 isRequiredName = state
             }
