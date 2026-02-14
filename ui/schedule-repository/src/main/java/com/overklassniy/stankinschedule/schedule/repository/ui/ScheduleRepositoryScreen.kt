@@ -15,10 +15,11 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.rememberBackdropScaffoldState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -88,11 +89,14 @@ fun ScheduleRepositoryScreen(
 
     // Диалог загрузки
     if (fileDownloadState is FileDownloadState.Loading) {
-        AlertDialog(
-            onDismissRequest = {},
-            confirmButton = {},
-            text = {
+        Dialog(onDismissRequest = {}) {
+            Surface(
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 6.dp
+            ) {
                 Row(
+                    modifier = Modifier.padding(24.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -105,7 +109,7 @@ fun ScheduleRepositoryScreen(
                     )
                 }
             }
-        )
+        }
     }
 
     // Обработка успешной загрузки — открываем визард ScheduleParserActivity

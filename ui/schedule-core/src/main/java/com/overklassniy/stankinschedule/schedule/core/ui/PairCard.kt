@@ -13,12 +13,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -38,6 +42,7 @@ import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
 import com.overklassniy.stankinschedule.schedule.core.ui.components.LongClickableText
+import com.overklassniy.stankinschedule.schedule.viewer.domain.model.CLASSROOM_ONLINE_PLACEHOLDER
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.LinkContent
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewPair
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.TextContent
@@ -119,14 +124,45 @@ fun PairCard(
                             fontSize = 14.sp,
                             modifier = Modifier.padding(end = itemSpacing)
                         )
-                        ClassroomText(
-                            classroom = pair.classroom,
-                            fontSize = 14.sp,
-                            onLinkClicked = onLinkClicked,
-                            onLinkCopied = onLinkCopied,
-                            onClicked = onClicked,
-                            interactionSource = interactionSource
-                        )
+                        if (pair.link.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.clickable(
+                                    interactionSource = interactionSource,
+                                    indication = LocalIndication.current
+                                ) {
+                                    onLinkClicked(pair.link)
+                                },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_laptop),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                ClassroomText(
+                                    classroom = pair.classroom,
+                                    pairLink = pair.link,
+                                    fontSize = 14.sp,
+                                    onLinkClicked = onLinkClicked,
+                                    onLinkCopied = onLinkCopied,
+                                    onClicked = onClicked,
+                                    interactionSource = interactionSource,
+                                    clickHandledByParent = true
+                                )
+                            }
+                        } else {
+                            ClassroomText(
+                                classroom = pair.classroom,
+                                pairLink = pair.link,
+                                fontSize = 14.sp,
+                                onLinkClicked = onLinkClicked,
+                                onLinkCopied = onLinkCopied,
+                                onClicked = onClicked,
+                                interactionSource = interactionSource
+                            )
+                        }
                     }
                 }
 
@@ -152,59 +188,97 @@ fun PairCard(
 /**
  * Отображает аудиторию: текст или кликабельную ссылку.
  *
+ * Если указана [pairLink], аудитория становится кликабельной и при нажатии открывает ссылку.
+ *
  * @param classroom Контент аудитории (текст или набор ссылок).
+ * @param pairLink Ссылка на занятие (из поля «Ссылка на занятие»). Если не пуста, при клике открывается.
  * @param fontSize Размер шрифта.
  * @param onClicked Обработчик клика по тексту (если это не ссылка).
  * @param onLinkClicked Обработчик клика по ссылке.
  * @param onLinkCopied Обработчик долгого нажатия по ссылке (копирование).
  * @param interactionSource Источник взаимодействий для индикации.
+ * @param clickHandledByParent Если true, клик обрабатывается родителем (Row со ссылкой), текст только отображается.
  * @param modifier Внешний модификатор.
  */
 @Composable
 private fun ClassroomText(
     classroom: ViewContent,
+    pairLink: String,
     fontSize: TextUnit,
     onClicked: () -> Unit,
     onLinkClicked: (link: String) -> Unit,
     onLinkCopied: (link: String) -> Unit,
     interactionSource: MutableInteractionSource,
+    clickHandledByParent: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    // Цвет ссылок зависит от темы системы; значения подобраны под читаемость
+    val linkColor = if (isSystemInDarkTheme()) {
+        Color(113, 170, 235)
+    } else {
+        Color(51, 102, 204)
+    }
+
     when (classroom) {
         is LinkContent -> {
-            // Цвет ссылок зависит от темы системы; значения подобраны под читаемость
-            val linkColor = if (isSystemInDarkTheme()) {
-                Color(113, 170, 235)
+            if (pairLink.isNotEmpty()) {
+                Text(
+                    text = classroom.name,
+                    fontSize = fontSize,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = if (clickHandledByParent) modifier else modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = LocalIndication.current
+                    ) {
+                        onLinkClicked(pairLink)
+                    }
+                )
             } else {
-                Color(51, 102, 204)
+                LongClickableText(
+                    text = classroom.toAnnotatedString(fontSize, linkColor),
+                    onClick = { annotation ->
+                        if (annotation?.tag == "URL") {
+                            onLinkClicked(annotation.item)
+                        } else {
+                            onClicked()
+                        }
+                    },
+                    onLongClick = { annotation ->
+                        if (annotation?.tag == "URL") {
+                            onLinkCopied(annotation.item)
+                        }
+                    },
+                    interactionSource = interactionSource,
+                    modifier = modifier
+                )
             }
-
-            // Используем LongClickableText, чтобы различать обычный клик по тексту и клик по ссылке
-            LongClickableText(
-                text = classroom.toAnnotatedString(fontSize, linkColor),
-                onClick = { annotation ->
-                    if (annotation?.tag == "URL") {
-                        onLinkClicked(annotation.item)
-                    } else {
-                        onClicked()
-                    }
-                },
-                onLongClick = { annotation ->
-                    if (annotation?.tag == "URL") {
-                        onLinkCopied(annotation.item)
-                    }
-                },
-                interactionSource = interactionSource,
-                modifier = modifier
-            )
         }
 
         is TextContent -> {
-            Text(
-                text = classroom.content,
-                fontSize = fontSize,
-                modifier = modifier
-            )
+            val displayText = if (classroom.content == CLASSROOM_ONLINE_PLACEHOLDER) {
+                stringResource(R.string.classroom_online)
+            } else {
+                classroom.content
+            }
+            if (pairLink.isNotEmpty()) {
+                Text(
+                    text = displayText,
+                    fontSize = fontSize,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = if (clickHandledByParent) modifier else modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = LocalIndication.current
+                    ) {
+                        onLinkClicked(pairLink)
+                    }
+                )
+            } else {
+                Text(
+                    text = displayText,
+                    fontSize = fontSize,
+                    modifier = modifier
+                )
+            }
         }
     }
 }

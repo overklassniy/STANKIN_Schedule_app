@@ -14,6 +14,7 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
  * @property type Тип занятия.
  * @property startTime Время начала.
  * @property endTime Время окончания.
+ * @property link Ссылка на занятие (необязательная).
  */
 data class ScheduleViewPair(
     val id: Long,
@@ -23,5 +24,6 @@ data class ScheduleViewPair(
     val subgroup: Subgroup,
     val type: Type,
     val startTime: String,
-    val endTime: String
+    val endTime: String,
+    val link: String = ""
 )

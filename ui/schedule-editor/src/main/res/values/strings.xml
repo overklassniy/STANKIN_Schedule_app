@@ -5,6 +5,7 @@
     <string name="editor_title_label">Title</string>
     <string name="editor_lecturer_label">Lecturer</string>
     <string name="editor_classroom_label">Classroom</string>
+    <string name="editor_link_label">Lesson link</string>
     <string name="editor_type_label">Type</string>
     <string name="editor_type_lecture">Lecture</string>
     <string name="editor_type_seminar">Seminar</string>

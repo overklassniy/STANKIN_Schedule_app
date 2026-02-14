@@ -25,7 +25,8 @@ fun PairJson.toPairModel(): PairModel {
         type = Type.of(type),
         subgroup = Subgroup.of(subgroup),
         time = Time(time.start, time.end),
-        date = DateModel().apply { date.forEach { add(it.toDateItem()) } }
+        date = DateModel().apply { date.forEach { add(it.toDateItem()) } },
+        link = link
     )
 }
 
@@ -66,7 +67,8 @@ fun PairModel.toJson(): PairJson {
         type = type.tag,
         subgroup = subgroup.tag,
         time = PairJson.TimeJson(time.startString(), time.endString()),
-        date = date.toJson()
+        date = date.toJson(),
+        link = link
     )
 }
 

@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.schedule.viewer.ui
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,6 +17,7 @@ import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.usecase.ScheduleSettingsUseCase
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewDay
 import com.overklassniy.stankinschedule.schedule.viewer.domain.usecase.ScheduleViewerUseCase
+import com.overklassniy.stankinschedule.schedule.viewer.ui.components.CalendarDayData
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ExportFormat
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ExportProgress
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.RenameEvent
@@ -39,6 +41,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
+import java.net.URL
 import javax.inject.Inject
 
 /**
@@ -334,6 +337,80 @@ class ScheduleViewerViewModel @Inject constructor(
                         RenameState.AlreadyExist()
                     }
                 }
+        }
+    }
+
+    private val _calendarDayData = MutableStateFlow<Map<LocalDate, CalendarDayData>>(emptyMap())
+
+    /** Данные для отображения в календаре (точки пар, выходные). */
+    val calendarDayData = _calendarDayData.asStateFlow()
+
+    /** Кэш данных isdayoff: "year-month" -> Set<Int> (номера выходных дней). */
+    private val dayOffCache = mutableMapOf<String, Set<Int>>()
+
+    /**
+     * Загружает данные календаря для указанного месяца.
+     *
+     * Вычисляет пары по датам из модели расписания и загружает информацию
+     * о выходных днях из isdayoff.ru.
+     *
+     * @param year Год.
+     * @param month Месяц (1-12).
+     */
+    fun loadCalendarMonth(year: Int, month: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val schedule = _schedule.value
+            val firstDay = LocalDate(year, month, 1)
+            val daysInMonth = firstDay.dayOfMonth().maximumValue
+
+            // Загружаем данные о выходных
+            val dayOffSet = loadDayOff(year, month)
+
+            val dataMap = mutableMapOf<LocalDate, CalendarDayData>()
+            for (day in 1..daysInMonth) {
+                val date = LocalDate(year, month, day)
+                val pairs = schedule?.pairsByDate(date) ?: emptyList()
+                val pairTypes = pairs.map { it.type }
+                val isDayOff = dayOffSet.contains(day)
+
+                dataMap[date] = CalendarDayData(
+                    pairTypes = pairTypes,
+                    isDayOff = isDayOff
+                )
+            }
+
+            _calendarDayData.value = dataMap
+        }
+    }
+
+    /**
+     * Загружает данные о выходных днях из isdayoff.ru.
+     *
+     * @param year Год.
+     * @param month Месяц (1-12).
+     * @return Множество номеров выходных дней в месяце.
+     */
+    private fun loadDayOff(year: Int, month: Int): Set<Int> {
+        val cacheKey = "$year-$month"
+        dayOffCache[cacheKey]?.let { return it }
+
+        return try {
+            val monthStr = month.toString().padStart(2, '0')
+            val url = "https://isdayoff.ru/api/getdata?cc=ru&sd=1&year=$year&month=$monthStr"
+            val response = URL(url).readText()
+
+            val dayOffDays = mutableSetOf<Int>()
+            response.forEachIndexed { index, char ->
+                if (char == '1') {
+                    dayOffDays.add(index + 1) // Дни нумеруются с 1
+                }
+            }
+
+            dayOffCache[cacheKey] = dayOffDays
+            dayOffDays
+        } catch (e: Exception) {
+            Log.e("ScheduleViewerVM", "Failed to load day off data", e)
+            emptySet()
         }
     }
 

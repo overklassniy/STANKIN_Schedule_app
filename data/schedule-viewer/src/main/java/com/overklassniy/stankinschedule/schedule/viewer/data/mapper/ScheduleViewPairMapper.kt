@@ -2,6 +2,7 @@ package com.overklassniy.stankinschedule.schedule.viewer.data.mapper
 
 import android.util.Patterns
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
+import com.overklassniy.stankinschedule.schedule.viewer.domain.model.CLASSROOM_ONLINE_PLACEHOLDER
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.LinkContent
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewPair
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.TextContent
@@ -13,15 +14,17 @@ import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ViewContent
  * @return Объект [ScheduleViewPair] с отформатированными данными для UI.
  */
 fun PairModel.toViewPair(): ScheduleViewPair {
+    val classroomText = classroom.ifEmpty { CLASSROOM_ONLINE_PLACEHOLDER }
     return ScheduleViewPair(
         id = info.id,
         title = title,
         lecturer = lecturer,
-        classroom = classroomViewContent(classroom),
+        classroom = classroomViewContent(classroomText),
         subgroup = subgroup,
         type = type,
         startTime = time.startString(),
-        endTime = time.endString()
+        endTime = time.endString(),
+        link = link
     )
 }
 

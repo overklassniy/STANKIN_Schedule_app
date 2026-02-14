@@ -4,7 +4,7 @@
 
 **Unofficial application for MSTU "STANKIN" students**
 
-[![Version](https://img.shields.io/badge/version-3.2.1-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.2.2-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \

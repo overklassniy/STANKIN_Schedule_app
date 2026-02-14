@@ -17,6 +17,7 @@ import androidx.room.PrimaryKey
  * @property subgroup Подгруппа (например, "A", "B" или пустая строка).
  * @property time Время проведения занятия (строковое представление JSON объекта TimeJson).
  * @property date Информация о датах проведения (строковое представление JSON массива DateJson).
+ * @property link Ссылка на занятие (необязательная).
  */
 @Entity(
     tableName = "schedule_pair_entities",
@@ -47,6 +48,8 @@ data class PairEntity(
     val time: String,
     @ColumnInfo(name = "date")
     val date: String,
+    @ColumnInfo(name = "link", defaultValue = "")
+    val link: String = "",
 ) {
 
     /**

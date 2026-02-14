@@ -1,5 +1,6 @@
 package com.overklassniy.stankinschedule.news.core.data.repository
 
+import android.util.Base64
 import android.util.Log
 import com.overklassniy.stankinschedule.news.core.data.BuildConfig
 import com.overklassniy.stankinschedule.news.core.data.api.StankinRSS
@@ -25,6 +26,16 @@ class UniversityNewsRepositoryImpl @Inject constructor(
     private val TAG = "UniversityNewsRepo"
 
     /**
+     * Деобфусцирует строку, закодированную через XOR + Base64 на этапе сборки.
+     * Должна соответствовать функции obfuscate() из build.gradle.kts.
+     */
+    private fun deobfuscate(input: String, key: Int = 0x5A): String {
+        if (input.isBlank()) return ""
+        val decoded = Base64.decode(input, Base64.DEFAULT)
+        return String(decoded.map { (it.toInt() xor key).toByte() }.toByteArray(), Charsets.UTF_8)
+    }
+
+    /**
      * Кэш распарсенных RSS-элементов новостей (NEWS feed).
      * Используется повторно для University, Dean и PhD,
      * чтобы не загружать один и тот же фид три раза.
@@ -48,8 +59,8 @@ class UniversityNewsRepositoryImpl @Inject constructor(
             NewsSubdivision.University.id -> loadFromNewsFeed("Главные новости")
             NewsSubdivision.Dean.id -> loadFromNewsFeed("Деканат")
             NewsSubdivision.PhD.id -> loadFromNewsFeed("Аспирантура")
-            NewsSubdivision.Announcements.id -> loadRssFeed(BuildConfig.ADS_RSS_URL, null)
-            NewsSubdivision.Exchange.id -> loadRssFeed(BuildConfig.EXCHANGE_RSS_URL, null)
+            NewsSubdivision.Announcements.id -> loadRssFeed(deobfuscate(BuildConfig.ADS_RSS_URL), null)
+            NewsSubdivision.Exchange.id -> loadRssFeed(deobfuscate(BuildConfig.EXCHANGE_RSS_URL), null)
             else -> emptyList()
         }
     }
@@ -80,7 +91,7 @@ class UniversityNewsRepositoryImpl @Inject constructor(
     private suspend fun getNewsFeedItems(): List<RssItem> {
         newsFeedCache?.let { return it }
 
-        val url = BuildConfig.NEWS_RSS_URL
+        val url = deobfuscate(BuildConfig.NEWS_RSS_URL)
         if (url.isBlank()) {
             Log.e(TAG, "NEWS_RSS_URL is empty, stankin.secret may be missing")
             return emptyList()

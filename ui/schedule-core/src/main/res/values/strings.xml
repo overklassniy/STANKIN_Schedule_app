@@ -2,6 +2,7 @@
 <resources>
 
     <string name="schedule_no_pairs">No pairs</string>
+    <string name="classroom_online">Online</string>
 
     <string name="type_lecture">Lecture</string>
     <string name="type_seminar">Seminar</string>

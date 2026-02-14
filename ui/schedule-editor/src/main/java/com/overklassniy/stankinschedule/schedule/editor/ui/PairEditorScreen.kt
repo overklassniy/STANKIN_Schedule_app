@@ -314,6 +314,13 @@ private fun EditorContent(
             modifier = Modifier.fillMaxWidth()
         )
 
+        OutlinedTextField(
+            value = editorState.link,
+            onValueChange = { editorState.link = it },
+            label = { Text(text = stringResource(R.string.editor_link_label)) },
+            modifier = Modifier.fillMaxWidth()
+        )
+
         OutlinedSelectField(
             value = editorState.type,
             onValueChanged = { editorState.type = it },
@@ -434,6 +441,7 @@ class EditorState(
     titleField: MutableState<String>,
     lecturerField: MutableState<String>,
     classroomField: MutableState<String>,
+    linkField: MutableState<String>,
     typeField: MutableState<Type>,
     subgroupField: MutableState<Subgroup>,
     startTimeField: MutableState<String>,
@@ -442,6 +450,7 @@ class EditorState(
     var title by titleField
     var lecturer by lecturerField
     var classroom by classroomField
+    var link by linkField
     var type by typeField
     var subgroup by subgroupField
     var startTime by startTimeField
@@ -457,6 +466,7 @@ class EditorState(
             subgroup = subgroup,
             time = Time(startTime, endTime),
             date = date,
+            link = link,
         )
     }
 }
@@ -469,6 +479,7 @@ fun rememberEditorState(
     val title = rememberSaveable { mutableStateOf("") }
     val lecturer = rememberSaveable { mutableStateOf("") }
     val classroom = rememberSaveable { mutableStateOf("") }
+    val link = rememberSaveable { mutableStateOf("") }
 
     val type = rememberSaveable(
         stateSaver = Saver(save = { it.tag }, restore = { Type.of(it) })
@@ -486,6 +497,7 @@ fun rememberEditorState(
             titleField = title,
             lecturerField = lecturer,
             classroomField = classroom,
+            linkField = link,
             typeField = type,
             subgroupField = subgroup,
             startTimeField = startTime,
@@ -495,6 +507,7 @@ fun rememberEditorState(
                 this.title = pair.title
                 this.lecturer = pair.lecturer
                 this.classroom = pair.classroom
+                this.link = pair.link
                 this.type = pair.type
                 this.subgroup = pair.subgroup
                 this.startTime = pair.time.startString()

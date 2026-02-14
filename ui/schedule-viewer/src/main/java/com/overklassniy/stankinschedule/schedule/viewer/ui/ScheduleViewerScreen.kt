@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import com.overklassniy.stankinschedule.core.ui.components.CalendarDialog
 import com.overklassniy.stankinschedule.core.ui.components.FileSaveDialogs
 import com.overklassniy.stankinschedule.core.ui.components.TrackCurrentScreen
 import com.overklassniy.stankinschedule.core.ui.components.rememberFileSaveState
@@ -64,6 +63,7 @@ import com.overklassniy.stankinschedule.schedule.core.ui.toColor
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ExportProgress
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.RenameEvent
+import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleCalendarDialog
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.SaveFormatDialog
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleRemoveDialog
 import com.overklassniy.stankinschedule.schedule.viewer.ui.components.ScheduleRenameDialog
@@ -214,15 +214,31 @@ fun ScheduleViewerScreen(
         modifier = modifier
     ) { innerPadding ->
 
+        val isVerticalViewer by viewModel.isVerticalViewer.collectAsStateWithLifecycle(false)
+        val pairColorGroup by viewModel.pairColorGroup.collectAsStateWithLifecycle(PairColorGroup.default())
+        val pairColors by remember(pairColorGroup) { derivedStateOf { pairColorGroup.toColor() } }
+
         FileSaveDialogs(state = saveFileState)
 
         SaveFormatDialog(state = saveFormatState)
 
         if (isDaySelector) {
-            // После выбора даты и закрытия диалога сбрасываем флаг показа.
-            CalendarDialog(
+            val calendarDayData by viewModel.calendarDayData.collectAsStateWithLifecycle()
+
+            // Инициируем загрузку данных текущего месяца при первом показе
+            LaunchedEffect(Unit) {
+                viewModel.loadCalendarMonth(
+                    viewModel.currentDay.year,
+                    viewModel.currentDay.monthOfYear
+                )
+            }
+
+            ScheduleCalendarDialog(
                 selectedDate = viewModel.currentDay,
+                dayDataMap = calendarDayData,
+                pairColors = pairColors,
                 onDateSelected = { viewModel.selectDate(it); isDaySelector = false },
+                onMonthChanged = { year, month -> viewModel.loadCalendarMonth(year, month) },
                 onDismissRequest = { isDaySelector = false }
             )
         }
@@ -246,10 +262,6 @@ fun ScheduleViewerScreen(
 
         val scheduleDays = viewModel.scheduleDays.collectAsLazyPagingItems()
         val scheduleListState = rememberLazyListState()
-
-        val isVerticalViewer by viewModel.isVerticalViewer.collectAsStateWithLifecycle(false)
-        val pairColorGroup by viewModel.pairColorGroup.collectAsStateWithLifecycle(PairColorGroup.default())
-        val pairColors by remember(pairColorGroup) { derivedStateOf { pairColorGroup.toColor() } }
 
         if (scheduleState.isLoading) {
             Box(

@@ -80,6 +80,7 @@ fun PairEntity.toPairModel(): PairModel {
         date = ScheduleJsonUtils.dateFromJson(
             Gson().fromJson(date, JsonElement::class.java)
         ),
+        link = link,
         info = PairInfo(
             scheduleId = scheduleId,
             id = id
@@ -117,7 +118,8 @@ fun PairModel.toEntity(scheduleId: Long): PairEntity {
         type = type.tag,
         subgroup = subgroup.tag,
         time = time.toString(),
-        date = ScheduleJsonUtils.toJson(date).toString()
+        date = ScheduleJsonUtils.toJson(date).toString(),
+        link = link
     ).apply {
         this.id = info.id
     }

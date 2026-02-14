@@ -2,6 +2,7 @@
 <resources>
 
     <string name="schedule_no_pairs">Нет пар</string>
+    <string name="classroom_online">Онлайн</string>
 
     <string name="type_lecture">Лекция</string>
     <string name="type_seminar">Семинар</string>

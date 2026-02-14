@@ -10,6 +10,7 @@ package com.overklassniy.stankinschedule.schedule.core.domain.model
  * @property subgroup Подгруппа.
  * @property time Время проведения.
  * @property date Даты проведения.
+ * @property link Ссылка на занятие (необязательная).
  * @property info Служебная информация (ID).
  */
 data class PairModel(
@@ -20,6 +21,7 @@ data class PairModel(
     val subgroup: Subgroup,
     val time: Time,
     val date: DateModel,
+    val link: String = "",
     val info: PairInfo = PairInfo()
 ) : Comparable<PairModel> {
 
