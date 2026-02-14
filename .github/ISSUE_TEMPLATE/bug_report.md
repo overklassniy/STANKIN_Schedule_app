@@ -1,18 +1,17 @@
 ---
 name: Bug report
 about: Сообщить об ошибке
-title: "[BUG]"
+title: "[BUG] "
 labels: bug
 assignees: overklassniy
-
 ---
 
 **Окружение**
 - Версия приложения:  
-- Источник установки (GitHub / RuStore / APK / debug):  
+- Источник установки (GitHub / RuStore / APK):  
 - Устройство (модель):  
 - Версия Android:  
-- Прошивка (stock / OneUI / MIUI / др.):  
+- Прошивка (OneUI / MIUI / др.):  
 - Язык / регион:  
 - Тип сети (Wi-Fi / LTE / нет сети):  
 
