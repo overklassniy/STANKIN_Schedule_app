@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 3.2.2 (14.02.26)
+- Calendar: dots under days indicating class types; weekends
+- Class: "Online" when the room is empty; optional field "Class link", opened by clicking on the room/Online label
+
 ## Version 3.2.1 (06.02.26)
 - Fixed schedule loading from the EOS.
 - Added news tabs for the Center for International Activities and the Graduate School.
