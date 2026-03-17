@@ -88,7 +88,7 @@ fun ScheduleHome(
                     }
                     Toast.makeText(context, R.string.link_copied, Toast.LENGTH_SHORT).show()
                 },
-                enabled = false,
+                enabled = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Dimen.ContentPadding)

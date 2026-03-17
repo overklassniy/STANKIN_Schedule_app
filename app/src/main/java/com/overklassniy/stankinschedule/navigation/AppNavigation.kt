@@ -66,9 +66,9 @@ fun NavGraphBuilder.homePage(navController: NavController) {
                 }
             },
 
-            // Открытие страницы со списком новостей в браузере
-            navigateToNews = {
-                BrowserUtils.openLink(context, STANKIN_NEWS)
+            // Открытие страницы со списком новостей в браузере (URL зависит от вкладки)
+            navigateToNews = { url ->
+                BrowserUtils.openLink(context, url)
             },
 
             // Открытие конкретной новости по URL, если он есть, иначе открываем список новостей

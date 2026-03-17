@@ -10,6 +10,7 @@
 !.idea/codeStyles/
 !.idea/runConfigurations/
 stankin.secret
+/employee/
 
 # Gradle
 .gradle/

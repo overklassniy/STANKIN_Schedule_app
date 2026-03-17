@@ -18,6 +18,8 @@ import androidx.room.PrimaryKey
  * @property time Время проведения занятия (строковое представление JSON объекта TimeJson).
  * @property date Информация о датах проведения (строковое представление JSON массива DateJson).
  * @property link Ссылка на занятие (необязательная).
+ * @property departments Подразделения (JSON-массив строк).
+ * @property email E-mail преподавателя.
  */
 @Entity(
     tableName = "schedule_pair_entities",
@@ -50,6 +52,10 @@ data class PairEntity(
     val date: String,
     @ColumnInfo(name = "link", defaultValue = "")
     val link: String = "",
+    @ColumnInfo(name = "departments", defaultValue = "[]")
+    val departments: String = "[]",
+    @ColumnInfo(name = "email", defaultValue = "")
+    val email: String = "",
 ) {
 
     /**

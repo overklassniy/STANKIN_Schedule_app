@@ -4,8 +4,8 @@ ext {
     extra["appCompileSdkVersion"] = 36
     extra["appMinSdkVersion"] = 26
     extra["appTargetSdkVersion"] = 35
-    extra["appVersionCode"] = 322
-    extra["appVersionName"] = "3.2.2"
+    extra["appVersionCode"] = 323
+    extra["appVersionName"] = "3.2.3"
     extra["appBuildToolsVersion"] = "36.0.0"
 }
 

@@ -11,9 +11,11 @@ import com.google.gson.reflect.TypeToken
 import com.overklassniy.stankinschedule.schedule.core.data.api.PairJson
 import com.overklassniy.stankinschedule.schedule.core.data.mapper.toJson
 import com.overklassniy.stankinschedule.schedule.core.data.mapper.toPairModel
+import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
 import com.overklassniy.stankinschedule.schedule.core.domain.repository.ScheduleDeviceRepository
+import com.overklassniy.stankinschedule.schedule.viewer.data.source.EmployeeDataSource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.FileNotFoundException
 import javax.inject.Inject
@@ -23,11 +25,14 @@ private const val TAG = "ScheduleDeviceRepo"
 /**
  * Реализация репозитория для работы с файлами расписания на устройстве.
  * Позволяет сохранять и загружать расписание из файловой системы.
+ * При импорте обогащает пары данными из справочника сотрудников (ФИО, подразделения, e-mail).
  *
  * @property context Контекст приложения.
+ * @property employeeDataSource Справочник сотрудников для обогащения пар при импорте.
  */
 class ScheduleDeviceRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val employeeDataSource: EmployeeDataSource,
 ) : ScheduleDeviceRepository {
 
     /**
@@ -83,7 +88,7 @@ class ScheduleDeviceRepositoryImpl @Inject constructor(
         }
 
         Log.d(TAG, "loadFromDevice: parsed ${json.size} pairs")
-        val pairs = json.map { it.toPairModel() }
+        val pairs = json.map { enrichPairWithEmployeeData(it.toPairModel()) }
 
         val info = ScheduleInfo(scheduleName)
         val model = ScheduleModel(info)
@@ -91,6 +96,17 @@ class ScheduleDeviceRepositoryImpl @Inject constructor(
 
         Log.d(TAG, "loadFromDevice: success, schedule=$scheduleName, pairs=${pairs.size}")
         return model
+    }
+
+    private fun enrichPairWithEmployeeData(pair: PairModel): PairModel {
+        if (pair.lecturer.isBlank()) return pair
+        val employee = employeeDataSource.findByShortName(pair.lecturer) ?: return pair
+
+        return pair.copy(
+            lecturer = employee.fullName,
+            departments = pair.departments.ifEmpty { employee.departments },
+            email = pair.email.ifBlank { employee.email },
+        )
     }
 
     /**

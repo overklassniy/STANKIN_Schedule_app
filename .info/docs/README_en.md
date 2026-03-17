@@ -4,7 +4,7 @@
 
 **Unofficial application for MSTU "STANKIN" students**
 
-[![Version](https://img.shields.io/badge/version-3.2.2-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.2.3-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -111,13 +111,10 @@ Full changelog is available in [CHANGELOG.md](changelog_en.md).
 
 ### Recent Updates
 
-**Version 3.2.2 (14.02.26)**
-- Calendar: dots under days indicating class types; weekends
-- Class: "Online" when the room is empty; optional field "Class link", opened by clicking on the room/Online label
-
-**Version 3.2.1 (06.02.26)**
-- Fixed schedule loading from the EOS.
-- Added news tabs for the Center for International Activities and the Graduate School.
+**Version 3.2.3 (17.03.26)**
+- Added functionality to view instructor information: full name, departments, and @stankin.ru email address
+- Fixed news links depending on the selected news tab
+- Fixed incorrect opening of the selected date in the calendar on some devices
 
 ## Authors
 

@@ -70,6 +70,12 @@ fun ScheduleInfo.toEntity(): ScheduleEntity {
  * @return Доменная модель пары.
  */
 fun PairEntity.toPairModel(): PairModel {
+    val gson = Gson()
+    val departmentsList = try {
+        gson.fromJson(departments, Array<String>::class.java)?.toList() ?: emptyList()
+    } catch (_: Exception) {
+        emptyList<String>()
+    }
     return PairModel(
         title = title,
         lecturer = lecturer,
@@ -78,9 +84,11 @@ fun PairEntity.toPairModel(): PairModel {
         subgroup = Subgroup.of(subgroup),
         time = Time.fromString(time),
         date = ScheduleJsonUtils.dateFromJson(
-            Gson().fromJson(date, JsonElement::class.java)
+            gson.fromJson(date, JsonElement::class.java)
         ),
         link = link,
+        departments = departmentsList,
+        email = email,
         info = PairInfo(
             scheduleId = scheduleId,
             id = id
@@ -119,7 +127,9 @@ fun PairModel.toEntity(scheduleId: Long): PairEntity {
         subgroup = subgroup.tag,
         time = time.toString(),
         date = ScheduleJsonUtils.toJson(date).toString(),
-        link = link
+        link = link,
+        departments = Gson().toJson(departments),
+        email = email
     ).apply {
         this.id = info.id
     }

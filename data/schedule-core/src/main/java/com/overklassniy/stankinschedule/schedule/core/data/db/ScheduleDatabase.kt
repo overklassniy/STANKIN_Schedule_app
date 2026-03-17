@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ScheduleEntity::class,
         PairEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class ScheduleDatabase : RoomDatabase() {
@@ -50,6 +50,20 @@ abstract class ScheduleDatabase : RoomDatabase() {
         }
 
         /**
+         * Миграция с версии 2 на 3: добавление столбцов departments и email в таблицу пар.
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE schedule_pair_entities ADD COLUMN departments TEXT NOT NULL DEFAULT '[]'"
+                )
+                db.execSQL(
+                    "ALTER TABLE schedule_pair_entities ADD COLUMN email TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        /**
          * Получает или создает экземпляр базы данных.
          * Использует паттерн Singleton с двойной проверкой блокировки.
          *
@@ -73,7 +87,7 @@ abstract class ScheduleDatabase : RoomDatabase() {
                     ScheduleDatabase::class.java,
                     "schedule_database"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .fallbackToDestructiveMigration(true)
 
                 val database = databaseBuilder.build()

@@ -73,7 +73,7 @@ import kotlinx.coroutines.launch
  *
  * @param viewModel ViewModel экрана, источник состояния UI и данных.
  * @param navigateToSchedule Навигация к расписанию по идентификатору.
- * @param navigateToNews Переход к полному разделу «Новости».
+ * @param navigateToNews Переход к полному разделу «Новости» (принимает URL страницы).
  * @param navigateToNewsPost Переход к конкретной карточке новости.
  * @param navigateToSettings Открыть экран настроек.
  * @param modifier Модификатор для внешнего позиционирования.
@@ -84,7 +84,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     viewModel: HomeViewModel,
     navigateToSchedule: (scheduleId: Long) -> Unit,
-    navigateToNews: () -> Unit,
+    navigateToNews: (url: String) -> Unit,
     navigateToNewsPost: (post: NewsPost) -> Unit,
     navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -173,6 +173,14 @@ fun HomeScreen(
             deanNews,
             exchangeNews,
             PhDNews
+        )
+
+        val newsUrls = listOf(
+            "https://stankin.ru/news/",
+            "https://stankin.ru/ads/",
+            "https://stankin.ru/studentam/edinyy-dekanat/news/",
+            "https://stankin.ru/mezhdunarodnaya-deyatelnost/news/",
+            "https://stankin.ru/aspirantam/news/",
         )
 
         LazyColumn(
@@ -340,12 +348,12 @@ fun HomeScreen(
                                 HorizontalDivider()
                             }
 
-                            // Кнопка «Больше новостей» сразу после карточек
+                            // Кнопка «Больше новостей» — открывает URL текущей вкладки
                             Box(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 TextButton(
-                                    onClick = navigateToNews,
+                                    onClick = { navigateToNews(newsUrls[page]) },
                                     modifier = Modifier.align(Alignment.Center)
                                 ) {
                                     Text(text = stringResource(R.string.more_news))

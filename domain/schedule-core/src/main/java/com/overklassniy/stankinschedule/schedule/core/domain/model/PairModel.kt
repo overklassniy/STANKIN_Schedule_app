@@ -11,6 +11,8 @@ package com.overklassniy.stankinschedule.schedule.core.domain.model
  * @property time Время проведения.
  * @property date Даты проведения.
  * @property link Ссылка на занятие (необязательная).
+ * @property departments Подразделения преподавателя.
+ * @property email E-mail преподавателя.
  * @property info Служебная информация (ID).
  */
 data class PairModel(
@@ -22,6 +24,8 @@ data class PairModel(
     val time: Time,
     val date: DateModel,
     val link: String = "",
+    val departments: List<String> = emptyList(),
+    val email: String = "",
     val info: PairInfo = PairInfo()
 ) : Comparable<PairModel> {
 

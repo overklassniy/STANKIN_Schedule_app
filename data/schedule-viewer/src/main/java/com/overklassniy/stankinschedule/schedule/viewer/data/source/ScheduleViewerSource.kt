@@ -3,9 +3,10 @@ package com.overklassniy.stankinschedule.schedule.viewer.data.source
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
-import com.overklassniy.stankinschedule.schedule.viewer.data.mapper.toViewPair
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewDay
+import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewPair
 import org.joda.time.LocalDate
 
 /**
@@ -15,10 +16,12 @@ import org.joda.time.LocalDate
  *
  * @property schedule Модель расписания, из которой берутся данные.
  * @property isDebug Флаг режима отладки для логирования.
+ * @property toViewPair Функция преобразования пары в модель отображения (с учётом справочника сотрудников).
  */
 class ScheduleViewerSource(
     private val schedule: ScheduleModel,
     private val isDebug: Boolean,
+    private val toViewPair: (PairModel) -> ScheduleViewPair,
 ) : PagingSource<LocalDate, ScheduleViewDay>() {
 
     private val startDate = schedule.startDate()
@@ -105,7 +108,7 @@ class ScheduleViewerSource(
         while (begin < end) {
             result.add(
                 ScheduleViewDay(
-                    pairs = schedule.pairsByDate(begin).map { it.toViewPair() },
+                    pairs = schedule.pairsByDate(begin).map { toViewPair(it) },
                     day = begin
                 )
             )

@@ -6,6 +6,7 @@ import androidx.paging.PagingSource
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
 import com.overklassniy.stankinschedule.schedule.viewer.data.mapper.toViewPair
+import com.overklassniy.stankinschedule.schedule.viewer.data.source.EmployeeDataSource
 import com.overklassniy.stankinschedule.schedule.viewer.data.source.ScheduleViewerSource
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewDay
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewPair
@@ -20,9 +21,11 @@ import javax.inject.Inject
  * Отвечает за создание источника данных и маппинг моделей.
  *
  * @property context Контекст приложения (используется для определения режима отладки).
+ * @property employeeDataSource Справочник сотрудников для отображения ФИО и информации в модальном окне.
  */
 class ScheduleViewerRepositoryImpl @Inject constructor(
-    @ApplicationContext context: Context
+    @ApplicationContext context: Context,
+    private val employeeDataSource: EmployeeDataSource,
 ) : ScheduleViewerRepository {
 
     private val isDebug = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
@@ -34,7 +37,9 @@ class ScheduleViewerRepositoryImpl @Inject constructor(
      * @return Источник данных [PagingSource] для пейджинга по датам.
      */
     override fun scheduleSource(schedule: ScheduleModel): PagingSource<LocalDate, ScheduleViewDay> {
-        return ScheduleViewerSource(schedule, isDebug)
+        return ScheduleViewerSource(schedule, isDebug) { pair ->
+            pair.toViewPair(employeeDataSource.findByShortName(pair.lecturer))
+        }
     }
 
     /**
@@ -44,6 +49,6 @@ class ScheduleViewerRepositoryImpl @Inject constructor(
      * @return Модель пары для отображения [ScheduleViewPair].
      */
     override fun convertToViewPair(pair: PairModel): ScheduleViewPair {
-        return pair.toViewPair()
+        return pair.toViewPair(employeeDataSource.findByShortName(pair.lecturer))
     }
 }

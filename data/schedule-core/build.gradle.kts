@@ -54,6 +54,7 @@ dependencies {
     implementation(project(":domain:core"))
 
     implementation(project(":domain:schedule-core"))
+    implementation(project(":data:schedule-viewer"))
 
     // Kotlin
     implementation(libs.androidx.core)

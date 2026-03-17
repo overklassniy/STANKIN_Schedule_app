@@ -1,8 +1,10 @@
 package com.overklassniy.stankinschedule.schedule.viewer.data.mapper
 
 import android.util.Patterns
+import com.overklassniy.stankinschedule.schedule.viewer.data.source.EmployeeInfo
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.CLASSROOM_ONLINE_PLACEHOLDER
+import com.overklassniy.stankinschedule.schedule.viewer.domain.model.LecturerInfo
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.LinkContent
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ScheduleViewPair
 import com.overklassniy.stankinschedule.schedule.viewer.domain.model.TextContent
@@ -11,14 +13,30 @@ import com.overklassniy.stankinschedule.schedule.viewer.domain.model.ViewContent
 /**
  * Преобразует модель пары [PairModel] в модель отображения [ScheduleViewPair].
  *
+ * @param employeeInfo Данные сотрудника из CSV (поиск по "Фамилия И.О."). Если найдено — отображается ФИО и lecturerInfo для модального окна.
  * @return Объект [ScheduleViewPair] с отформатированными данными для UI.
  */
-fun PairModel.toViewPair(): ScheduleViewPair {
+fun PairModel.toViewPair(employeeInfo: EmployeeInfo? = null): ScheduleViewPair {
     val classroomText = classroom.ifEmpty { CLASSROOM_ONLINE_PLACEHOLDER }
+    val displayLecturer = if (employeeInfo != null) employeeInfo.fullName else lecturer
+    // Приоритет: данные из пары, иначе из CSV
+    val lecturerInfoForModal = when {
+        departments.isNotEmpty() || email.isNotBlank() -> LecturerInfo(
+            departments = departments,
+            email = email,
+        )
+        employeeInfo != null -> LecturerInfo(
+            departments = employeeInfo.departments,
+            email = employeeInfo.email,
+        )
+        else -> null
+    }
+
     return ScheduleViewPair(
         id = info.id,
         title = title,
-        lecturer = lecturer,
+        lecturer = displayLecturer,
+        lecturerInfo = lecturerInfoForModal,
         classroom = classroomViewContent(classroomText),
         subgroup = subgroup,
         type = type,

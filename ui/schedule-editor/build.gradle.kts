@@ -54,6 +54,7 @@ dependencies {
 
     implementation(project(":domain:core"))
     implementation(project(":domain:schedule-core"))
+    implementation(project(":data:schedule-viewer"))
 
     // Core
     implementation(libs.androidx.core)
@@ -63,6 +64,7 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
+    implementation(libs.compose.material.icons.core)
 
     // Components
     implementation(libs.androidx.lifecycle.viewmodel)

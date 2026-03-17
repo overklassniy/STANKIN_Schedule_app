@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 3.2.3 (17.02.26)
+- Added functionality to view instructor information: full name, departments, and @stankin.ru email address
+- Fixed news links depending on the selected news tab
+- Fixed incorrect opening of the selected date in the calendar on some devices
+
 ## Version 3.2.2 (14.02.26)
 - Calendar: dots under days indicating class types; weekends
 - Class: "Online" when the room is empty; optional field "Class link", opened by clicking on the room/Online label

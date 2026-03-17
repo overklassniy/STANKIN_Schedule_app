@@ -6,6 +6,9 @@
     <string name="editor_lecturer_label">Преподаватель</string>
     <string name="editor_classroom_label">Аудитория</string>
     <string name="editor_link_label">Ссылка на занятие</string>
+    <string name="editor_departments_label">Подразделения</string>
+    <string name="editor_add_department">Добавить подразделение</string>
+    <string name="editor_email_label">E-mail</string>
     <string name="editor_type_label">Тип</string>
     <string name="editor_type_lecture">Лекция</string>
     <string name="editor_type_seminar">Семинар</string>

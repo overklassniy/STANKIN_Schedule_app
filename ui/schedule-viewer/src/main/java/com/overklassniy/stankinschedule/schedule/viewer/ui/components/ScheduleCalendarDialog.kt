@@ -223,13 +223,19 @@ private fun CalendarGrid(
                 .height((rows * 52).dp),
             userScrollEnabled = false
         ) {
-            // Пустые ячейки до начала месяца
-            items(startDayOfWeek - 1) {
+            // Пустые ячейки до начала месяца (уникальные ключи для корректной работы на всех устройствах)
+            items(
+                count = startDayOfWeek - 1,
+                key = { "pad_$it" }
+            ) {
                 Box(modifier = Modifier.size(40.dp, 48.dp))
             }
 
-            // Дни месяца
-            items(daysInMonth) { index ->
+            // Дни месяца (уникальные ключи предотвращают неправильный выбор даты при переиспользовании ячеек)
+            items(
+                count = daysInMonth,
+                key = { "day_${it + 1}" }
+            ) { index ->
                 val day = index + 1
                 val date = LocalDate(year, month, day)
                 val dayData = dayDataMap[date]

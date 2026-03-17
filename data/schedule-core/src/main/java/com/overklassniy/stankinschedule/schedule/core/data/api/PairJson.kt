@@ -13,6 +13,8 @@ import com.google.gson.annotations.SerializedName
  * @property time Время проведения занятия.
  * @property date Список дат проведения занятия.
  * @property link Ссылка на занятие (необязательная).
+ * @property departments Подразделения преподавателя.
+ * @property email E-mail преподавателя.
  */
 data class PairJson(
     @SerializedName("title") val title: String,
@@ -23,6 +25,8 @@ data class PairJson(
     @SerializedName("time") val time: TimeJson,
     @SerializedName("dates") val date: List<DateJson>,
     @SerializedName("link") val link: String = "",
+    @SerializedName("departments") val departments: List<String> = emptyList(),
+    @SerializedName("email") val email: String = "",
 ) {
     /**
      * Модель времени проведения занятия.

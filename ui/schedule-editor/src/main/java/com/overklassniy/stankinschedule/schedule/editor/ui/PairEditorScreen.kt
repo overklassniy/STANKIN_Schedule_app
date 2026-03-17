@@ -18,9 +18,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -117,6 +120,21 @@ fun PairEditorScreen(
 
     LaunchedEffect(scheduleId, pairId, mode) {
         viewModel.loadPair(scheduleId, pairId, mode)
+    }
+
+    // Автозаполнение ФИО, подразделений и e-mail из справочника при вводе преподавателя
+    LaunchedEffect(editorState.lecturer) {
+        if (editorState.lecturer.isNotBlank() &&
+            editorState.departments.isEmpty() &&
+            editorState.email.isBlank()
+        ) {
+            val employee = viewModel.lookupEmployee(editorState.lecturer)
+            if (employee != null) {
+                editorState.lecturer = employee.fullName
+                editorState.departments = employee.departments
+                editorState.email = employee.email
+            }
+        }
     }
 
     val context = LocalContext.current
@@ -321,6 +339,53 @@ private fun EditorContent(
             modifier = Modifier.fillMaxWidth()
         )
 
+        OutlinedTextField(
+            value = editorState.email,
+            onValueChange = { editorState.email = it },
+            label = { Text(text = stringResource(R.string.editor_email_label)) },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.editor_departments_label),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+            editorState.departments.forEachIndexed { index, _ ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = editorState.departments.getOrElse(index) { "" },
+                        onValueChange = { editorState.updateDepartment(index, it) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { editorState.removeDepartment(index) }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.editor_remove_date)
+                        )
+                    }
+                }
+            }
+            AssistChip(
+                onClick = { editorState.addDepartment() },
+                label = { Text(text = stringResource(R.string.editor_add_department)) },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add_date),
+                        contentDescription = null,
+                    )
+                },
+                modifier = Modifier.defaultMinSize(minHeight = 38.dp)
+            )
+        }
+
         OutlinedSelectField(
             value = editorState.type,
             onValueChanged = { editorState.type = it },
@@ -442,6 +507,8 @@ class EditorState(
     lecturerField: MutableState<String>,
     classroomField: MutableState<String>,
     linkField: MutableState<String>,
+    emailField: MutableState<String>,
+    private val departmentsField: MutableState<List<String>>,
     typeField: MutableState<Type>,
     subgroupField: MutableState<Subgroup>,
     startTimeField: MutableState<String>,
@@ -451,11 +518,30 @@ class EditorState(
     var lecturer by lecturerField
     var classroom by classroomField
     var link by linkField
+    var email by emailField
+    var departments by departmentsField
     var type by typeField
     var subgroup by subgroupField
     var startTime by startTimeField
     var endTime by endTimeField
 
+    fun addDepartment() {
+        departmentsField.value = departmentsField.value + ""
+    }
+
+    fun removeDepartment(index: Int) {
+        val list = departmentsField.value.toMutableList()
+        list.removeAt(index)
+        departmentsField.value = list
+    }
+
+    fun updateDepartment(index: Int, value: String) {
+        val list = departmentsField.value.toMutableList()
+        if (index < list.size) {
+            list[index] = value
+            departmentsField.value = list
+        }
+    }
 
     fun toPair(date: DateModel): PairModel {
         return PairModel(
@@ -467,6 +553,8 @@ class EditorState(
             time = Time(startTime, endTime),
             date = date,
             link = link,
+            departments = departments.filter { it.isNotBlank() },
+            email = email.trim(),
         )
     }
 }
@@ -480,6 +568,8 @@ fun rememberEditorState(
     val lecturer = rememberSaveable { mutableStateOf("") }
     val classroom = rememberSaveable { mutableStateOf("") }
     val link = rememberSaveable { mutableStateOf("") }
+    val email = rememberSaveable { mutableStateOf("") }
+    val departments = rememberSaveable(stateSaver = ListStringSaver) { mutableStateOf(emptyList<String>()) }
 
     val type = rememberSaveable(
         stateSaver = Saver(save = { it.tag }, restore = { Type.of(it) })
@@ -498,6 +588,8 @@ fun rememberEditorState(
             lecturerField = lecturer,
             classroomField = classroom,
             linkField = link,
+            emailField = email,
+            departmentsField = departments,
             typeField = type,
             subgroupField = subgroup,
             startTimeField = startTime,
@@ -508,6 +600,8 @@ fun rememberEditorState(
                 this.lecturer = pair.lecturer
                 this.classroom = pair.classroom
                 this.link = pair.link
+                this.email = pair.email
+                this.departments = pair.departments
                 this.type = pair.type
                 this.subgroup = pair.subgroup
                 this.startTime = pair.time.startString()
@@ -516,3 +610,8 @@ fun rememberEditorState(
         }
     }
 }
+
+private val ListStringSaver = Saver<List<String>, List<*>>(
+    save = { it },
+    restore = { it.filterIsInstance<String>() }
+)

@@ -8,6 +8,7 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.DateModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.core.domain.usecase.PairUseCase
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.DateRequest
+import com.overklassniy.stankinschedule.schedule.viewer.data.source.EmployeeDataSource
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.DateResult
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.EditorMode
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.PairEditorState
@@ -31,7 +32,13 @@ import javax.inject.Inject
 @HiltViewModel
 class PairEditorViewModel @Inject constructor(
     private val useCase: PairUseCase,
+    private val employeeDataSource: EmployeeDataSource,
 ) : ViewModel() {
+
+    /**
+     * Ищет сотрудника по "Фамилия И.О." для автозаполнения полей.
+     */
+    fun lookupEmployee(lecturer: String) = employeeDataSource.findByShortName(lecturer)
 
     private val _pickerResults = Channel<DateResult>(
         capacity = 1,
@@ -75,11 +82,12 @@ class PairEditorViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val newPair = useCase.pair(pairId)
+            val loadedPair = useCase.pair(pairId)
+            val enrichedPair = loadedPair?.let { enrichPairWithEmployeeData(it) }
 
-            _pair.value = PairEditorState.Content(newPair)
-            if (newPair != null) {
-                _date.value = newPair.date.clone()
+            _pair.value = PairEditorState.Content(enrichedPair)
+            if (enrichedPair != null) {
+                _date.value = enrichedPair.date.clone()
             }
         }
     }
@@ -144,8 +152,8 @@ class PairEditorViewModel @Inject constructor(
     /**
      * Применяет изменения пары.
      *
-     * Проверяет, что список дат не пуст, затем вызывает useCase.changePair.
-     * Ошибки домена отправляет в канал scheduleErrors.
+     * Обогащает пару данными из справочника сотрудников (ФИО, подразделения, e-mail),
+     * если они не заполнены. Затем вызывает useCase.changePair.
      *
      * @param newPair Новая модель пары.
      * @throws DateEmptyException Если даты не указаны.
@@ -157,9 +165,10 @@ class PairEditorViewModel @Inject constructor(
                     throw DateEmptyException()
                 }
 
+                val enrichedPair = enrichPairWithEmployeeData(newPair)
                 val pair = _pair.value.getOrNull()
 
-                useCase.changePair(scheduleId, pair, newPair)
+                useCase.changePair(scheduleId, pair, enrichedPair)
                 _pair.value = PairEditorState.Complete
 
             } catch (e: CancellationException) {
@@ -193,11 +202,23 @@ class PairEditorViewModel @Inject constructor(
     }
 
     /**
-     * Возвращает пару из состояния Content, иначе null.
-     *
-     * @receiver Состояние редактора пары.
-     * @return Текущая редактируемая пара или null, если состояние не Content.
+     * Обогащает пару данными из справочника сотрудников при первом создании или если поля пусты.
      */
+    private fun enrichPairWithEmployeeData(pair: PairModel): PairModel {
+        if (pair.lecturer.isBlank()) return pair
+        val employee = employeeDataSource.findByShortName(pair.lecturer) ?: return pair
+
+        val lecturer = if (pair.lecturer != employee.fullName) employee.fullName else pair.lecturer
+        val departments = pair.departments.ifEmpty { employee.departments }
+        val email = pair.email.ifBlank { employee.email }
+
+        return pair.copy(
+            lecturer = lecturer,
+            departments = departments,
+            email = email,
+        )
+    }
+
     private fun PairEditorState.getOrNull(): PairModel? {
         return if (this is PairEditorState.Content) pair else null
     }

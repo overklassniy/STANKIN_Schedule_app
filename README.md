@@ -4,7 +4,7 @@
 
 **Неофициальное приложение для студентов МГТУ «СТАНКИН»**
 
-[![Version](https://img.shields.io/badge/version-3.2.2-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.2.3-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
 \
@@ -111,13 +111,10 @@ cp stankin.secret.example stankin.secret
 
 ### Последнее обновление
 
-**Версия 3.2.2 (14.02.26)**
-- Календарь: точки под днями по типам пар, выходные
-- Пара: «Онлайн» при пустой аудитории; необязательное поле «Ссылка на занятие», открытие по клику на кабинет/Онлайн
-
-**Версия 3.2.1 (06.02.26)**
-- Исправлена загрузка расписаний из ЭОС.
-- Добавлены вкладки новостей центра международной деятельности, аспирантуры.
+**Версия 3.2.3 (17.03.26)**
+- Добавлен функционал просмотра информации о преподавателе: полное ФИО, кафедры и электронная почта @stankin.ru
+- Исправлены ссылки на новости в зависимости от выбранной вкладки новостей
+- Исправлено неверное открытие выбранной даты в календаре на некоторых устройствах
 
 ## Авторы
 
