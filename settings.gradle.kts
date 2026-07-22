@@ -5,6 +5,9 @@ pluginManagement {
         mavenCentral()
     }
 }
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 
 rootProject.name = "stankin-schedule"
 
@@ -24,7 +27,6 @@ include(
     ":data:schedule-settings",
     ":data:schedule-repository",
     ":data:schedule-widget",
-    ":data:settings",
 
     ":domain:core",
     ":domain:journal-core",
@@ -37,7 +39,6 @@ include(
     ":domain:schedule-settings",
     ":domain:schedule-repository",
     ":domain:schedule-widget",
-    ":domain:settings",
 
     ":ui:core",
     ":ui:home",
@@ -45,7 +46,6 @@ include(
     ":ui:journal-viewer",
     ":ui:journal-predict",
     ":ui:news-review",
-    ":ui:news-viewer",
     ":ui:schedule-core",
     ":ui:schedule-list",
     ":ui:schedule-table",

@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.selection.selectable
@@ -32,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -51,6 +52,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
@@ -60,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.AppScaffold
 import com.overklassniy.stankinschedule.core.ui.components.BackButton
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
+import com.overklassniy.stankinschedule.core.ui.utils.formatSemesterName
 import com.overklassniy.stankinschedule.journal.predict.ui.PredictViewModel
 import com.overklassniy.stankinschedule.journal.predict.ui.R
 import com.overklassniy.stankinschedule.journal.predict.ui.model.PredictMark
@@ -73,7 +76,6 @@ import kotlinx.coroutines.launch
  * @param modifier Модификатор корневого контейнера.
  * @param onBackPressed Действие «назад».
  */
-@Suppress("Unused")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PredictScreen(
@@ -83,16 +85,32 @@ fun PredictScreen(
 ) {
     val semesters by viewModel.semesters.collectAsState()
     val currentSemester by viewModel.currentSemester.collectAsState()
+    val context = LocalContext.current
 
     val bottomState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
+    val predictMarks by viewModel.predictMarks.collectAsState()
+    val predictedRating by viewModel.predictedRating.collectAsState()
+    val showExposedMarks by viewModel.showExposedMarks.collectAsState()
+
     AppScaffold(
         topBar = {
             PredictToolBar(
-                subTitle = currentSemester,
+                subTitle = formatSemesterName(context, currentSemester),
                 onBackPressed = onBackPressed,
                 onTitleClicked = { scope.launch { bottomState.show() } }
+            )
+        },
+        bottomBar = {
+            PredictRatingPanel(
+                predictedRating = predictedRating,
+                showExposedMarks = showExposedMarks,
+                onChangeSemester = { scope.launch { bottomState.show() } },
+                onShowExposedMarks = { viewModel.toggleShowExposedMarks() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
             )
         },
         modifier = modifier
@@ -106,10 +124,10 @@ fun PredictScreen(
                 containerColor = MaterialTheme.colorScheme.background,
             ) {
                 SemesterSelectorBottomSheet(
-                    currentSemester = currentSemester,
-                    semesters = semesters,
-                    onSemesterSelected = { semester ->
-                        viewModel.changeSemester(semester)
+                    currentSemester = formatSemesterName(context, currentSemester),
+                    semesters = semesters.map { formatSemesterName(context, it) },
+                    onSemesterSelected = { index ->
+                        viewModel.changeSemester(semesters[index])
                         scope.launch { bottomState.hide() }
                     },
                     modifier = Modifier
@@ -118,35 +136,25 @@ fun PredictScreen(
             }
         }
 
-        Column(
+        PredictDisciplines(
+            predictMarks = predictMarks,
+            showExposedMarks = showExposedMarks,
+            onPredictMarkChanged = { item, value ->
+                viewModel.updatePredictMark(item, value)
+            },
+            contentPadding = PaddingValues(
+                start = 0.dp,
+                top = 0.dp,
+                end = 0.dp,
+                bottom = innerPadding.calculateBottomPadding()
+            ),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .imePadding()
-        ) {
-            val predictMarks by viewModel.predictMarks.collectAsState()
-            val predictedRating by viewModel.predictedRating.collectAsState()
-            val showExposedMarks by viewModel.showExposedMarks.collectAsState()
-
-            PredictDisciplines(
-                predictMarks = predictMarks,
-                onPredictMarkChanged = { item, value ->
-                    viewModel.updatePredictMark(item, value)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
-
-            PredictRatingPanel(
-                predictedRating = predictedRating,
-                showExposedMarks = showExposedMarks,
-                onChangeSemester = { scope.launch { bottomState.show() } },
-                onShowExposedMarks = { viewModel.toggleShowExposedMarks() },
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-        }
+                .padding(
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = 0.dp
+                )
+        )
     }
 }
 
@@ -201,9 +209,9 @@ fun PredictToolBar(
 /**
  * Контент листа выбора семестра.
  *
- * @param currentSemester Текущий семестр.
- * @param semesters Список доступных семестров.
- * @param onSemesterSelected Коллбэк выбора семестра.
+ * @param currentSemester Текущий семестр (локализованный).
+ * @param semesters Список доступных семестров (локализованных).
+ * @param onSemesterSelected Коллбэк выбора семестра по индексу.
  * @param modifier Модификатор контейнера.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -211,7 +219,7 @@ fun PredictToolBar(
 fun SemesterSelectorBottomSheet(
     currentSemester: String,
     semesters: List<String>,
-    onSemesterSelected: (semester: String) -> Unit,
+    onSemesterSelected: (index: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -228,7 +236,7 @@ fun SemesterSelectorBottomSheet(
                 .padding(bottom = Dimen.ContentPadding * 2)
         )
 
-        semesters.forEach { semester ->
+        semesters.forEachIndexed { index, semester ->
             Row(
                 horizontalArrangement = Arrangement.spacedBy(Dimen.ContentPadding),
                 verticalAlignment = Alignment.CenterVertically,
@@ -236,7 +244,7 @@ fun SemesterSelectorBottomSheet(
                     .fillMaxWidth()
                     .selectable(
                         selected = semester == currentSemester,
-                        onClick = { onSemesterSelected(semester) },
+                        onClick = { onSemesterSelected(index) },
                         role = Role.RadioButton
                     )
                     .padding(Dimen.ContentPadding)
@@ -270,12 +278,12 @@ fun SemesterSelectorBottomSheet(
 @Composable
 fun PredictDisciplines(
     predictMarks: Map<String, List<PredictMark>>,
+    showExposedMarks: Boolean,
     onPredictMarkChanged: (item: PredictMark, value: Int) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-
 
     LazyColumn(
         verticalArrangement = Arrangement.Bottom,
@@ -283,6 +291,14 @@ fun PredictDisciplines(
         modifier = modifier
     ) {
         predictMarks.forEach { (header, data) ->
+            val visibleMarks = if (showExposedMarks) {
+                data
+            } else {
+                data.filter { !it.isExposed }
+            }
+
+            if (visibleMarks.isEmpty()) return@forEach
+
             stickyHeader {
                 Card(
                     shape = RectangleShape,
@@ -295,55 +311,62 @@ fun PredictDisciplines(
                     )
                 }
             }
-            itemsIndexed(data) { index, item ->
+            item {
                 Row(
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Dimen.ContentPadding),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    visibleMarks.forEachIndexed { index, item ->
+                        val relocationRequester = remember { BringIntoViewRequester() }
+                        var focused by remember { mutableStateOf(false) }
+                        val imeVisible = WindowInsets.isImeVisible
 
-                    val relocationRequester = remember { BringIntoViewRequester() }
-                    var focused by remember { mutableStateOf(false) }
-                    val imeVisible = WindowInsets.isImeVisible
-
-                    LaunchedEffect(focused) {
-                        if (focused) {
-                            var done = false
-                            while (!done) {
-                                if (imeVisible) {
-                                    relocationRequester.bringIntoView()
-                                    done = true
+                        LaunchedEffect(focused) {
+                            if (focused) {
+                                var done = false
+                                while (!done) {
+                                    if (imeVisible) {
+                                        relocationRequester.bringIntoView()
+                                        done = true
+                                    }
+                                    delay(100L)
                                 }
-                                delay(100L)
                             }
                         }
-                    }
 
-                    TextField(
-                        value = if (item.value == 0) "" else item.value.toString(),
-                        onValueChange = {
-                            val value = when {
-                                it.isEmpty() -> 0
-                                else -> it.toIntOrNull()
-                            }
-                            if (value != null) {
-                                onPredictMarkChanged(item, value)
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = if (index == predictMarks.size - 1) {
-                                ImeAction.Done
-                            } else {
-                                ImeAction.Next
-                            }
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { keyboardController?.hide() }
-                        ),
-                        singleLine = true,
-                        modifier = Modifier
-                            .bringIntoViewRequester(relocationRequester)
-                            .onFocusChanged { focused = it.isFocused }
-                    )
+                        OutlinedTextField(
+                            value = if (item.value == 0) "" else item.value.toString(),
+                            onValueChange = {
+                                val value = when {
+                                    it.isEmpty() -> 0
+                                    else -> it.toIntOrNull()
+                                }
+                                if (value != null) {
+                                    onPredictMarkChanged(item, value)
+                                }
+                            },
+                            isError = item.value == 0,
+                            label = { Text(text = item.type.tag) },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = if (index == visibleMarks.lastIndex) {
+                                    ImeAction.Done
+                                } else {
+                                    ImeAction.Next
+                                }
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = { keyboardController?.hide() }
+                            ),
+                            singleLine = true,
+                            modifier = Modifier
+                                .weight(1f)
+                                .bringIntoViewRequester(relocationRequester)
+                                .onFocusChanged { focused = it.isFocused }
+                        )
+                    }
                 }
             }
         }
@@ -382,6 +405,7 @@ fun PredictRatingPanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(Dimen.ContentPadding)
+                .padding(bottom = Dimen.ContentPadding)
         ) {
             IconButton(
                 onClick = onChangeSemester

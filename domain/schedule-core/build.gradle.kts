@@ -8,9 +8,9 @@ plugins {
 
 android {
     buildFeatures { buildConfig = true }
-    val appCompileSdkVersion: Int by rootProject.extra
-    val appMinSdkVersion: Int by rootProject.extra
-    val appTargetSdkVersion: Int by rootProject.extra
+    val appCompileSdkVersion = rootProject.extra["appCompileSdkVersion"] as Int
+    val appMinSdkVersion = rootProject.extra["appMinSdkVersion"] as Int
+    val appTargetSdkVersion = rootProject.extra["appTargetSdkVersion"] as Int
 
     compileSdk = appCompileSdkVersion
     namespace = "com.overklassniy.stankinschedule.schedule.core.domain"
@@ -33,8 +33,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
 }
 hilt { enableAggregatingTask = true }

@@ -10,12 +10,12 @@ plugins {
 
 android {
 
-    val appCompileSdkVersion: Int by rootProject.extra
-    val appMinSdkVersion: Int by rootProject.extra
-    val appTargetSdkVersion: Int by rootProject.extra
-    val appVersionCode: Int by rootProject.extra
-    val appVersionName: String by rootProject.extra
-    val appBuildToolsVersion: String by rootProject.extra
+    val appCompileSdkVersion = rootProject.extra["appCompileSdkVersion"] as Int
+    val appMinSdkVersion = rootProject.extra["appMinSdkVersion"] as Int
+    val appTargetSdkVersion = rootProject.extra["appTargetSdkVersion"] as Int
+    val appVersionCode = rootProject.extra["appVersionCode"] as Int
+    val appVersionName = rootProject.extra["appVersionName"] as String
+    val appBuildToolsVersion = rootProject.extra["appBuildToolsVersion"] as String
 
     compileSdk = appCompileSdkVersion
     buildToolsVersion = appBuildToolsVersion
@@ -85,14 +85,13 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
 
     // kotlinOptions removed - handled by AGP 9 or tasks.withType<KotlinCompile> in root
 
     buildFeatures {
-        dataBinding = true
         viewBinding = true
         compose = true
         buildConfig = true
@@ -125,7 +124,6 @@ ksp {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 }
 
@@ -136,7 +134,6 @@ dependencies {
     implementation(project(":domain:news-core"))
     implementation(project(":domain:schedule-core"))
     implementation(project(":domain:schedule-settings"))
-    implementation(project(":domain:settings"))
 
     implementation(project(":data:core"))
     implementation(project(":data:journal-core"))
@@ -149,7 +146,6 @@ dependencies {
     implementation(project(":data:schedule-viewer"))
     implementation(project(":data:schedule-widget"))
     implementation(project(":data:news-core"))
-    implementation(project(":data:settings"))
 
     implementation(project(":ui:core"))
     implementation(project(":ui:home"))
@@ -165,7 +161,6 @@ dependencies {
     implementation(project(":ui:schedule-viewer"))
     implementation(project(":ui:schedule-widget"))
     implementation(project(":ui:news-review"))
-    implementation(project(":ui:news-viewer"))
     implementation(project(":ui:settings"))
 
 
@@ -184,7 +179,6 @@ dependencies {
     // Components
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.lifecycle.java8)
-    implementation(libs.androidx.preference)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.paging)
     implementation(libs.androidx.startup)

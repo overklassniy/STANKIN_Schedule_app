@@ -3,7 +3,7 @@ package com.overklassniy.stankinschedule.core.data.di
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import com.overklassniy.stankinschedule.core.data.api.GitHubApi
-import com.overklassniy.stankinschedule.core.data.preference.PreferenceManager
+import com.overklassniy.stankinschedule.core.data.preference.AppPreferenceDataStore
 import com.overklassniy.stankinschedule.core.data.repository.GooglePlayAvailabilityRepositoryImpl
 import com.overklassniy.stankinschedule.core.data.repository.UpdateRepositoryImpl
 import com.overklassniy.stankinschedule.core.domain.repository.GooglePlayAvailabilityRepository
@@ -40,14 +40,14 @@ object CoreModule {
 
     /**
      * Предоставляет реализацию репозитория настроек.
-     * Связывает интерфейс [PreferenceRepository] с реализацией [PreferenceManager].
+     * Связывает интерфейс [PreferenceRepository] с реализацией [AppPreferenceDataStore].
      *
-     * @param manager Реализация менеджера настроек [PreferenceManager]
+     * @param dataStore Реализация хранилища настроек [AppPreferenceDataStore]
      * @return Интерфейс для работы с настройками [PreferenceRepository]
      */
     @Provides
     @Singleton
-    fun providePreferenceManager(manager: PreferenceManager): PreferenceRepository = manager
+    fun providePreferenceRepository(dataStore: AppPreferenceDataStore): PreferenceRepository = dataStore
 
     /**
      * Предоставляет сконфигурированный HTTP-клиент [OkHttpClient].

@@ -48,7 +48,7 @@ class HomeViewModel @Inject constructor(
 
     val pairColorGroup: Flow<PairColorGroup> = scheduleSettingsUseCase.pairColorGroup()
 
-    private val _hasUpdate = MutableStateFlow(applicationPreference.hasUpdate())
+    private val _hasUpdate = MutableStateFlow(false)
     val hasUpdate = _hasUpdate.asStateFlow()
 
     private val _favorite = MutableStateFlow<ScheduleInfo?>(null)
@@ -166,6 +166,10 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            _hasUpdate.value = applicationPreference.hasUpdate()
+        }
+
+        viewModelScope.launch {
             kotlinx.coroutines.delay(1000)
             checkForUpdates()
         }
@@ -177,7 +181,7 @@ class HomeViewModel @Inject constructor(
      * Выполняется не чаще, чем раз в 24 часа. В режиме отладки пропускается.
      */
     private suspend fun checkForUpdates() {
-        val lastCheck = applicationPreference.lastUpdateCheck
+        val lastCheck = applicationPreference.lastUpdateCheck()
         val shouldCheck = lastCheck == null || (lastCheck subHours DateTime.now()) > 24
 
         if (shouldCheck) {
@@ -186,12 +190,12 @@ class HomeViewModel @Inject constructor(
                 val currentVersion = appVersion()
                 val update = updateRepository.checkForUpdate(currentVersion)
 
-                applicationPreference.lastUpdateCheck = DateTime.now()
+                applicationPreference.setLastUpdateCheck(DateTime.now())
 
                 if (update != null) {
-                    applicationPreference.availableUpdateVersion = update.latestVersion
-                    applicationPreference.availableUpdateChangelog = update.changelog
-                    applicationPreference.availableUpdateUrl = update.downloadUrl
+                    applicationPreference.setAvailableUpdateVersion(update.latestVersion)
+                    applicationPreference.setAvailableUpdateChangelog(update.changelog)
+                    applicationPreference.setAvailableUpdateUrl(update.downloadUrl)
                     _hasUpdate.value = true
                 } else {
                     applicationPreference.clearUpdate()
@@ -209,7 +213,9 @@ class HomeViewModel @Inject constructor(
      * @param last Время последнего обновления.
      */
     fun saveLastUpdate(last: DateTime) {
-        applicationPreference.lastInAppUpdate = last
+        viewModelScope.launch {
+            applicationPreference.setLastInAppUpdate(last)
+        }
     }
 
     /**
@@ -217,8 +223,8 @@ class HomeViewModel @Inject constructor(
      *
      * @return Дата/время последнего обновления или null.
      */
-    fun currentLastUpdate(): DateTime? {
-        return applicationPreference.lastInAppUpdate
+    suspend fun currentLastUpdate(): DateTime? {
+        return applicationPreference.lastInAppUpdate()
     }
 
     /**

@@ -17,6 +17,9 @@ import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
 import com.overklassniy.stankinschedule.core.ui.R
 import com.overklassniy.stankinschedule.core.ui.notification.NotificationUtils
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -52,17 +55,22 @@ class MainApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
 
-        // Установка разрешения на сбор аналитики согласно настройкам пользователя
-        Firebase.analytics.setAnalyticsCollectionEnabled(applicationPreference.isAnalyticsEnabled)
+        // Запускаем инициализацию настроек асинхронно, так как DataStore работает асинхронно
+        CoroutineScope(Dispatchers.Main).launch {
+            // Установка разрешения на сбор аналитики согласно настройкам пользователя
+            val analyticsEnabled = applicationPreference.isAnalyticsEnabled()
+            Firebase.analytics.setAnalyticsCollectionEnabled(analyticsEnabled)
 
-        // В режиме отладки отключаем аналитику и сбор крашей
-        if (isDebug) {
-            Firebase.analytics.setAnalyticsCollectionEnabled(false)
-            Firebase.crashlytics.isCrashlyticsCollectionEnabled = false
+            // В режиме отладки отключаем аналитику и сбор крашей
+            if (isDebug) {
+                Firebase.analytics.setAnalyticsCollectionEnabled(false)
+                Firebase.crashlytics.isCrashlyticsCollectionEnabled = false
+            }
+
+            updateDarkMode()
+            updateAppLanguage()
         }
 
-        updateDarkMode()
-        updateAppLanguage()
         setupNotifications()
     }
 
@@ -86,7 +94,7 @@ class MainApplication : Application(), Configuration.Provider {
      *
      * Считывает настройки из [applicationPreference] и применяет их через [AppCompatDelegate].
      */
-    private fun updateDarkMode() {
+    private suspend fun updateDarkMode() {
         val mode = when (applicationPreference.currentDarkMode()) {
             DarkMode.Default -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             DarkMode.Dark -> AppCompatDelegate.MODE_NIGHT_YES
@@ -104,7 +112,7 @@ class MainApplication : Application(), Configuration.Provider {
      * Считывает настройки языка из [applicationPreference] и применяет их глобально.
      * Если язык не выбран, используется системный.
      */
-    private fun updateAppLanguage() {
+    private suspend fun updateAppLanguage() {
         val language = applicationPreference.currentAppLanguage()
         val localeList = if (language.localeCode.isEmpty()) {
             LocaleListCompat.getEmptyLocaleList()

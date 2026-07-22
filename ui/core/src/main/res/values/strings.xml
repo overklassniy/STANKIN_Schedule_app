@@ -32,4 +32,7 @@
     <string name="permission_write_denied_text">Without write permissions, the app will not be able to save the file to your device. Permissions can be enabled in the app settings</string>
     <string name="permission_write_to_settings">Open settings</string>
 
+    <string name="semester_spring">Spring</string>
+    <string name="semester_autumn">Autumn</string>
+
 </resources>

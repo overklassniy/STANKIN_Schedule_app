@@ -26,6 +26,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.AppScaffold
+import com.overklassniy.stankinschedule.core.ui.components.OutlinedSelectField
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
 import com.overklassniy.stankinschedule.schedule.widget.domain.model.ScheduleItem

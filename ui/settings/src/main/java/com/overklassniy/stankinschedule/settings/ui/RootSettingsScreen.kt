@@ -70,7 +70,8 @@ fun RootSettingsScreen(
         val appLanguage by viewModel.appLanguage.collectAsState()
 
         LaunchedEffect(nightMode) {
-            val mode = when (nightMode) {
+            val current = nightMode ?: return@LaunchedEffect
+            val mode = when (current) {
                 DarkMode.Default -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
                 DarkMode.Dark -> AppCompatDelegate.MODE_NIGHT_YES
                 DarkMode.Light -> AppCompatDelegate.MODE_NIGHT_NO
@@ -82,10 +83,11 @@ fun RootSettingsScreen(
         }
 
         LaunchedEffect(appLanguage) {
-            val localeList = if (appLanguage.localeCode.isEmpty()) {
+            val current = appLanguage ?: return@LaunchedEffect
+            val localeList = if (current.localeCode.isEmpty()) {
                 LocaleListCompat.getEmptyLocaleList()
             } else {
-                LocaleListCompat.forLanguageTags(appLanguage.localeCode)
+                LocaleListCompat.forLanguageTags(current.localeCode)
             }
             AppCompatDelegate.setApplicationLocales(localeList)
         }
@@ -93,7 +95,7 @@ fun RootSettingsScreen(
         DialogPreference(
             title = stringResource(R.string.pref_dark_mode),
             items = DarkMode.entries,
-            selected = nightMode,
+            selected = nightMode ?: DarkMode.Default,
             label = {
                 @StringRes val id = when (it) {
                     DarkMode.Default -> R.string.dark_mode_default
@@ -109,7 +111,7 @@ fun RootSettingsScreen(
         DialogPreference(
             title = stringResource(R.string.pref_language),
             items = AppLanguage.entries,
-            selected = appLanguage,
+            selected = appLanguage ?: AppLanguage.System,
             label = {
                 @StringRes val id = when (it) {
                     AppLanguage.System -> R.string.language_system
@@ -154,12 +156,12 @@ fun RootSettingsScreen(
         val configuration = androidx.compose.ui.platform.LocalConfiguration.current
         val isRussian = remember(appLanguage, configuration) {
             when (appLanguage) {
-                AppLanguage.Russian -> true
-                AppLanguage.English -> false
-                AppLanguage.System -> {
+                null, AppLanguage.System -> {
                     val systemLanguage = configuration.locales.get(0)?.language ?: "en"
                     systemLanguage == "ru"
                 }
+                AppLanguage.Russian -> true
+                AppLanguage.English -> false
             }
         }
 

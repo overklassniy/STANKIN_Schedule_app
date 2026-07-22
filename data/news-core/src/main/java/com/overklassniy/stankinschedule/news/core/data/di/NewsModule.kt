@@ -1,14 +1,9 @@
 package com.overklassniy.stankinschedule.news.core.data.di
 
-import com.google.gson.GsonBuilder
-import com.overklassniy.stankinschedule.news.core.data.api.PostResponse
-import com.overklassniy.stankinschedule.news.core.data.api.StankinDeanNewsAPI
 import com.overklassniy.stankinschedule.news.core.data.api.StankinRSS
-import com.overklassniy.stankinschedule.news.core.data.repository.NewsPostRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsPreferenceRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.NewsStorageRepositoryImpl
 import com.overklassniy.stankinschedule.news.core.data.repository.UniversityNewsRepositoryImpl
-import com.overklassniy.stankinschedule.news.core.domain.repository.NewsPostRepository
 import com.overklassniy.stankinschedule.news.core.domain.repository.NewsPreferenceRepository
 import com.overklassniy.stankinschedule.news.core.domain.repository.NewsRemoteRepository
 import com.overklassniy.stankinschedule.news.core.domain.repository.NewsStorageRepository
@@ -20,7 +15,6 @@ import dagger.hilt.android.scopes.ViewModelScoped
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import javax.inject.Singleton
 
@@ -52,33 +46,6 @@ object NewsNetworkModule {
             .create(StankinRSS::class.java)
     }
 
-    /**
-     * Предоставляет сервис API для сайта деканата (old.stankin.ru).
-     * Используется [GsonConverterFactory] с кастомным десериализатором для [PostResponse.NewsPost].
-     * Сохранён для просмотра полного содержимого новостей деканата.
-     *
-     * @param client OkHttpClient для выполнения запросов.
-     * @return Экземпляр [StankinDeanNewsAPI].
-     */
-    @Provides
-    @Singleton
-    @Suppress("Unused")
-    fun provideDeanNewsService(client: OkHttpClient): StankinDeanNewsAPI {
-        return Retrofit.Builder()
-            .baseUrl(StankinDeanNewsAPI.BASE_URL)
-            .addConverterFactory(
-                GsonConverterFactory.create(
-                    GsonBuilder()
-                        .registerTypeAdapter(
-                            PostResponse.NewsPost::class.java, PostResponse.NewsPostDeserializer()
-                        )
-                        .create()
-                )
-            )
-            .client(client)
-            .build()
-            .create(StankinDeanNewsAPI::class.java)
-    }
 }
 
 /**
@@ -126,15 +93,4 @@ object NewsModule {
         repository: NewsPreferenceRepositoryImpl
     ): NewsPreferenceRepository = repository
 
-    /**
-     * Предоставляет реализацию репозитория для получения контента конкретной новости.
-     *
-     * @param repository Реализация [NewsPostRepositoryImpl].
-     * @return Интерфейс [NewsPostRepository].
-     */
-    @Provides
-    @ViewModelScoped
-    fun provideNewsPostRepository(
-        repository: NewsPostRepositoryImpl
-    ): NewsPostRepository = repository
 }

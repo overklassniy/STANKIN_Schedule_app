@@ -7,10 +7,10 @@ plugins {
 }
 
 android {
-    val appCompileSdkVersion: Int by rootProject.extra
-    val appMinSdkVersion: Int by rootProject.extra
-    val appTargetSdkVersion: Int by rootProject.extra
-    val appVersionName: String by rootProject.extra
+    val appCompileSdkVersion = rootProject.extra["appCompileSdkVersion"] as Int
+    val appMinSdkVersion = rootProject.extra["appMinSdkVersion"] as Int
+    val appTargetSdkVersion = rootProject.extra["appTargetSdkVersion"] as Int
+    val appVersionName = rootProject.extra["appVersionName"] as String
 
     compileSdk = appCompileSdkVersion
     namespace = "com.overklassniy.stankinschedule.home.ui"
@@ -35,8 +35,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
 
     buildFeatures {

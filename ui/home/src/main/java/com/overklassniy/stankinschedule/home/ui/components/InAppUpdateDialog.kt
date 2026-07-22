@@ -62,13 +62,13 @@ class InAppUpdateState internal constructor(
  * Проводит проверку обновления и обновляет дату последнего обновления.
  *
  * @param saveLastUpdate Коллбэк сохранения времени последнего успешного обновления.
- * @param currentLastUpdate Поставщик времени последнего обновления.
+ * @param currentLastUpdate Suspend-поставщик времени последнего обновления.
  * @return [InAppUpdateState] для отображения и управления процессом.
  */
 @Composable
 fun rememberInAppUpdater(
     saveLastUpdate: (last: DateTime) -> Unit,
-    currentLastUpdate: () -> DateTime?
+    currentLastUpdate: suspend () -> DateTime?
 ): InAppUpdateState {
 
     val context = LocalContext.current

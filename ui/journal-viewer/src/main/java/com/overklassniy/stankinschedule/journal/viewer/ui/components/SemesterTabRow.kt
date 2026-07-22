@@ -6,7 +6,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.overklassniy.stankinschedule.core.ui.utils.formatSemesterName
 import kotlinx.coroutines.launch
 
 /**
@@ -28,6 +30,7 @@ fun SemesterTabRow(
     modifier: Modifier = Modifier,
 ) {
     val pagerScroller = rememberCoroutineScope()
+    val context = LocalContext.current
 
     PrimaryScrollableTabRow(
         selectedTabIndex = currentPage,
@@ -39,7 +42,7 @@ fun SemesterTabRow(
             Tab(
                 selected = index == currentPage,
                 onClick = { pagerScroller.launch { onPageScrolled(index) } },
-                text = { Text(text = semester) }
+                text = { Text(text = formatSemesterName(context, semester)) }
             )
         }
     }

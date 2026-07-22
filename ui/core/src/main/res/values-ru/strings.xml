@@ -32,4 +32,7 @@
     <string name="permission_write_denied_text">Без разрешения на запись приложение не сможет сохранить файл на устройстве. Разрешения можно включить в настройках приложения</string>
     <string name="permission_write_to_settings">В настройки</string>
 
+    <string name="semester_spring">весна</string>
+    <string name="semester_autumn">осень</string>
+
 </resources>

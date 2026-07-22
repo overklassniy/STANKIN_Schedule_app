@@ -1,9 +1,9 @@
 // Top-level build file where you can add configuration options common to all subprojects/modules.
 
 ext {
-    extra["appCompileSdkVersion"] = 36
+    extra["appCompileSdkVersion"] = 37
     extra["appMinSdkVersion"] = 26
-    extra["appTargetSdkVersion"] = 35
+    extra["appTargetSdkVersion"] = 36
     extra["appVersionCode"] = 323
     extra["appVersionName"] = "3.2.3"
     extra["appBuildToolsVersion"] = "36.0.0"
@@ -48,20 +48,20 @@ allprojects {
 subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25)
         }
     }
 
     plugins.withType<org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper> {
         extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension> {
-            jvmToolchain(21)
+            jvmToolchain(25)
         }
     }
 
     tasks.withType<JavaCompile> {
         val javaToolchains = project.extensions.getByType<JavaToolchainService>()
         javaCompiler.set(javaToolchains.compilerFor {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            languageVersion.set(JavaLanguageVersion.of(25))
         })
     }
 }

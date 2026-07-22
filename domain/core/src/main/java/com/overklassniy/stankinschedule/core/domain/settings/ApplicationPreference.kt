@@ -9,70 +9,129 @@ import javax.inject.Inject
  * Предоставляет типизированный доступ к настройкам, хранящимся в [PreferenceRepository].
  * Управляет такими параметрами как аналитика, тема оформления, язык приложения и информация об обновлениях.
  *
- * @property manager Репозиторий для низкоуровневой работы с хранилищем настроек.
+ * Все методы являются suspend, так как хранилище (DataStore) работает асинхронно.
+ *
+ * @property repository Репозиторий для низкоуровневой работы с хранилищем настроек.
  */
 class ApplicationPreference @Inject constructor(
-    private val manager: PreferenceRepository
+    private val repository: PreferenceRepository
 ) {
 
     /**
      * Включена ли отправка аналитики (Firebase Analytics).
-     * Значение по умолчанию: `true`.
+     *
+     * @return `true`, если аналитика включена. Значение по умолчанию: `true`.
      */
-    var isAnalyticsEnabled: Boolean
-        get() = manager.getBoolean(FIREBASE_ANALYTICS, true)
-        set(value) = manager.saveBoolean(FIREBASE_ANALYTICS, value)
+    suspend fun isAnalyticsEnabled(): Boolean {
+        return repository.getBoolean(FIREBASE_ANALYTICS, true)
+    }
 
     /**
-     * Время последнего обновления внутри приложения (In-App Update).
+     * Устанавливает флаг включения аналитики.
+     *
+     * @param value `true` для включения аналитики.
      */
-    var lastInAppUpdate: DateTime?
-        get() = manager.getDateTime(LAST_IN_APP_UPDATE)
-        set(value) {
-            if (value != null) {
-                manager.saveDateTime(LAST_IN_APP_UPDATE, value)
-            }
-        }
+    suspend fun setAnalyticsEnabled(value: Boolean) {
+        repository.saveBoolean(FIREBASE_ANALYTICS, value)
+    }
 
     /**
-     * Время последней проверки наличия обновлений.
+     * Возвращает время последнего обновления внутри приложения (In-App Update).
+     *
+     * @return [DateTime] последнего обновления или null.
      */
-    var lastUpdateCheck: DateTime?
-        get() = manager.getDateTime(LAST_UPDATE_CHECK)
-        set(value) {
-            if (value != null) {
-                manager.saveDateTime(LAST_UPDATE_CHECK, value)
-            }
-        }
+    suspend fun lastInAppUpdate(): DateTime? {
+        return repository.getDateTime(LAST_IN_APP_UPDATE)
+    }
 
     /**
-     * Версия доступного обновления приложения.
+     * Сохраняет время последнего обновления внутри приложения.
+     *
+     * @param value Время обновления.
      */
-    var availableUpdateVersion: String?
-        get() = manager.getString(AVAILABLE_UPDATE_VERSION)
-        set(value) = manager.saveString(AVAILABLE_UPDATE_VERSION, value ?: "")
+    suspend fun setLastInAppUpdate(value: DateTime) {
+        repository.saveDateTime(LAST_IN_APP_UPDATE, value)
+    }
 
     /**
-     * Список изменений (changelog) доступного обновления.
+     * Возвращает время последней проверки наличия обновлений.
+     *
+     * @return [DateTime] последней проверки или null.
      */
-    var availableUpdateChangelog: String?
-        get() = manager.getString(AVAILABLE_UPDATE_CHANGELOG)
-        set(value) = manager.saveString(AVAILABLE_UPDATE_CHANGELOG, value ?: "")
+    suspend fun lastUpdateCheck(): DateTime? {
+        return repository.getDateTime(LAST_UPDATE_CHECK)
+    }
 
     /**
-     * Ссылка на скачивание доступного обновления.
+     * Сохраняет время последней проверки наличия обновлений.
+     *
+     * @param value Время проверки.
      */
-    var availableUpdateUrl: String?
-        get() = manager.getString(AVAILABLE_UPDATE_URL)
-        set(value) = manager.saveString(AVAILABLE_UPDATE_URL, value ?: "")
+    suspend fun setLastUpdateCheck(value: DateTime) {
+        repository.saveDateTime(LAST_UPDATE_CHECK, value)
+    }
+
+    /**
+     * Возвращает версию доступного обновления приложения.
+     *
+     * @return Строку версии или null.
+     */
+    suspend fun availableUpdateVersion(): String? {
+        return repository.getString(AVAILABLE_UPDATE_VERSION)
+    }
+
+    /**
+     * Сохраняет версию доступного обновления.
+     *
+     * @param value Версия обновления.
+     */
+    suspend fun setAvailableUpdateVersion(value: String) {
+        repository.saveString(AVAILABLE_UPDATE_VERSION, value)
+    }
+
+    /**
+     * Возвращает список изменений (changelog) доступного обновления.
+     *
+     * @return Список изменений или null.
+     */
+    suspend fun availableUpdateChangelog(): String? {
+        return repository.getString(AVAILABLE_UPDATE_CHANGELOG)
+    }
+
+    /**
+     * Сохраняет список изменений доступного обновления.
+     *
+     * @param value Список изменений.
+     */
+    suspend fun setAvailableUpdateChangelog(value: String) {
+        repository.saveString(AVAILABLE_UPDATE_CHANGELOG, value)
+    }
+
+    /**
+     * Возвращает ссылку на скачивание доступного обновления.
+     *
+     * @return URL ссылки или null.
+     */
+    suspend fun availableUpdateUrl(): String? {
+        return repository.getString(AVAILABLE_UPDATE_URL)
+    }
+
+    /**
+     * Сохраняет ссылку на скачивание доступного обновления.
+     *
+     * @param value URL ссылки.
+     */
+    suspend fun setAvailableUpdateUrl(value: String) {
+        repository.saveString(AVAILABLE_UPDATE_URL, value)
+    }
 
     /**
      * Проверяет, есть ли доступное обновление.
      *
      * @return `true`, если версия обновления не пустая, иначе `false`.
      */
-    fun hasUpdate(): Boolean {
-        val available = availableUpdateVersion
+    suspend fun hasUpdate(): Boolean {
+        val available = availableUpdateVersion()
         return !available.isNullOrEmpty()
     }
 
@@ -80,38 +139,55 @@ class ApplicationPreference @Inject constructor(
      * Очищает информацию о доступном обновлении.
      * Сбрасывает версию, список изменений и ссылку.
      */
-    fun clearUpdate() {
-        availableUpdateVersion = null
-        availableUpdateChangelog = null
-        availableUpdateUrl = null
+    suspend fun clearUpdate() {
+        setAvailableUpdateVersion("")
+        setAvailableUpdateChangelog("")
+        setAvailableUpdateUrl("")
     }
 
     /**
-     * Результат последней проверки доступности приложения в Google Play.
-     * `null` — проверка ещё не выполнялась.
+     * Возвращает результат последней проверки доступности приложения в Google Play.
+     *
+     * @return `true`/`false` или null, если проверка ещё не выполнялась.
      */
-    var isGooglePlayAvailable: Boolean?
-        get() = manager.getString(GOOGLE_PLAY_AVAILABLE)?.takeIf { it.isNotEmpty() }?.toBooleanStrictOrNull()
-        set(value) = manager.saveString(GOOGLE_PLAY_AVAILABLE, value?.toString() ?: "")
+    suspend fun isGooglePlayAvailable(): Boolean? {
+        return repository.getString(GOOGLE_PLAY_AVAILABLE)?.takeIf { it.isNotEmpty() }?.toBooleanStrictOrNull()
+    }
 
     /**
-     * Время последней проверки доступности приложения в Google Play.
+     * Сохраняет результат проверки доступности приложения в Google Play.
+     *
+     * @param value Результат проверки или null для сброса.
      */
-    var lastGooglePlayCheck: DateTime?
-        get() = manager.getDateTime(LAST_GOOGLE_PLAY_CHECK)
-        set(value) {
-            if (value != null) {
-                manager.saveDateTime(LAST_GOOGLE_PLAY_CHECK, value)
-            }
-        }
+    suspend fun setGooglePlayAvailable(value: Boolean?) {
+        repository.saveString(GOOGLE_PLAY_AVAILABLE, value?.toString() ?: "")
+    }
+
+    /**
+     * Возвращает время последней проверки доступности приложения в Google Play.
+     *
+     * @return [DateTime] последней проверки или null.
+     */
+    suspend fun lastGooglePlayCheck(): DateTime? {
+        return repository.getDateTime(LAST_GOOGLE_PLAY_CHECK)
+    }
+
+    /**
+     * Сохраняет время последней проверки доступности приложения в Google Play.
+     *
+     * @param value Время проверки.
+     */
+    suspend fun setLastGooglePlayCheck(value: DateTime) {
+        repository.saveDateTime(LAST_GOOGLE_PLAY_CHECK, value)
+    }
 
     /**
      * Возвращает текущий режим темы оформления.
      *
      * @return Текущий [DarkMode] или [DarkMode.Default], если значение не установлено.
      */
-    fun currentDarkMode(): DarkMode {
-        return DarkMode.from(manager.getString(DARK_MODE)) ?: DarkMode.Default
+    suspend fun currentDarkMode(): DarkMode {
+        return DarkMode.from(repository.getString(DARK_MODE)) ?: DarkMode.Default
     }
 
     /**
@@ -119,8 +195,8 @@ class ApplicationPreference @Inject constructor(
      *
      * @param mode Новый режим [DarkMode].
      */
-    fun setDarkMode(mode: DarkMode) {
-        manager.saveString(DARK_MODE, mode.tag)
+    suspend fun setDarkMode(mode: DarkMode) {
+        repository.saveString(DARK_MODE, mode.tag)
     }
 
     /**
@@ -128,8 +204,8 @@ class ApplicationPreference @Inject constructor(
      *
      * @return Текущий [AppLanguage] или [AppLanguage.System], если значение не установлено.
      */
-    fun currentAppLanguage(): AppLanguage {
-        return AppLanguage.from(manager.getString(APP_LANGUAGE)) ?: AppLanguage.System
+    suspend fun currentAppLanguage(): AppLanguage {
+        return AppLanguage.from(repository.getString(APP_LANGUAGE)) ?: AppLanguage.System
     }
 
     /**
@@ -137,8 +213,8 @@ class ApplicationPreference @Inject constructor(
      *
      * @param language Новый язык [AppLanguage].
      */
-    fun setAppLanguage(language: AppLanguage) {
-        manager.saveString(APP_LANGUAGE, language.tag)
+    suspend fun setAppLanguage(language: AppLanguage) {
+        repository.saveString(APP_LANGUAGE, language.tag)
     }
 
     companion object {

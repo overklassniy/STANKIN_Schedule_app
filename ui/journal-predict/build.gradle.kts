@@ -8,9 +8,9 @@ plugins {
 }
 
 android {
-    val appCompileSdkVersion: Int by rootProject.extra
-    val appMinSdkVersion: Int by rootProject.extra
-    val appTargetSdkVersion: Int by rootProject.extra
+    val appCompileSdkVersion = rootProject.extra["appCompileSdkVersion"] as Int
+    val appMinSdkVersion = rootProject.extra["appMinSdkVersion"] as Int
+    val appTargetSdkVersion = rootProject.extra["appTargetSdkVersion"] as Int
 
     compileSdk = appCompileSdkVersion
     namespace = "com.overklassniy.stankinschedule.journal.predict.ui"
@@ -33,13 +33,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
     buildFeatures {
         buildConfig = true
-        dataBinding = true
-        viewBinding = true
         compose = true
     }
 }
@@ -64,7 +62,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.lifecycle.java8)
     implementation(libs.androidx.activity)
-    implementation(libs.androidx.fragment)
     implementation(libs.androidx.appcompat)
     implementation(libs.ui.material)
 

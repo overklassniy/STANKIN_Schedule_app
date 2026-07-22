@@ -34,20 +34,24 @@ class SettingsViewModel @Inject constructor(
     private val googlePlayAvailabilityRepository: GooglePlayAvailabilityRepository,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
-    private val _nightMode = MutableStateFlow(value = applicationPreference.currentDarkMode())
-    val nightMode: StateFlow<DarkMode> = _nightMode.asStateFlow()
+    private val _nightMode = MutableStateFlow<DarkMode?>(value = null)
+    val nightMode: StateFlow<DarkMode?> = _nightMode.asStateFlow()
 
     fun setNightMode(mode: DarkMode) {
-        applicationPreference.setDarkMode(mode)
-        _nightMode.value = mode
+        viewModelScope.launch {
+            applicationPreference.setDarkMode(mode)
+            _nightMode.value = mode
+        }
     }
 
-    private val _appLanguage = MutableStateFlow(value = applicationPreference.currentAppLanguage())
-    val appLanguage: StateFlow<AppLanguage> = _appLanguage.asStateFlow()
+    private val _appLanguage = MutableStateFlow<AppLanguage?>(value = null)
+    val appLanguage: StateFlow<AppLanguage?> = _appLanguage.asStateFlow()
 
     fun setAppLanguage(language: AppLanguage) {
-        applicationPreference.setAppLanguage(language)
-        _appLanguage.value = language
+        viewModelScope.launch {
+            applicationPreference.setAppLanguage(language)
+            _appLanguage.value = language
+        }
     }
 
     val isVerticalViewer: Flow<Boolean> = schedulePreference.isVerticalViewer()
@@ -71,60 +75,67 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private val _isAnalyticsEnabled = MutableStateFlow(applicationPreference.isAnalyticsEnabled)
+    private val _isAnalyticsEnabled = MutableStateFlow(true)
     val isAnalyticsEnabled = _isAnalyticsEnabled.asStateFlow()
 
     fun setAnalyticsEnabled(enable: Boolean) {
-        applicationPreference.isAnalyticsEnabled = enable
-        _isAnalyticsEnabled.value = enable
+        viewModelScope.launch {
+            applicationPreference.setAnalyticsEnabled(enable)
+            _isAnalyticsEnabled.value = enable
+        }
     }
 
     private val _availableUpdate = MutableStateFlow<AppUpdate?>(null)
     val availableUpdate: StateFlow<AppUpdate?> = _availableUpdate.asStateFlow()
 
-    private val _googlePlayAvailable = MutableStateFlow(applicationPreference.isGooglePlayAvailable == true)
+    private val _googlePlayAvailable = MutableStateFlow(false)
     val googlePlayAvailable: StateFlow<Boolean> = _googlePlayAvailable.asStateFlow()
 
     init {
-        loadCachedUpdateState()
-        loadCachedGooglePlayAvailability()
+        loadCachedState()
         checkForUpdates()
     }
 
-    private fun loadCachedUpdateState() {
-        val version = applicationPreference.availableUpdateVersion
-        val changelog = applicationPreference.availableUpdateChangelog
-        val url = applicationPreference.availableUpdateUrl
+    /**
+     * Загружает кэшированные значения настроек из DataStore.
+     */
+    private fun loadCachedState() {
+        viewModelScope.launch {
+            _nightMode.value = applicationPreference.currentDarkMode()
+            _appLanguage.value = applicationPreference.currentAppLanguage()
+            _isAnalyticsEnabled.value = applicationPreference.isAnalyticsEnabled()
+            _googlePlayAvailable.value = applicationPreference.isGooglePlayAvailable() == true
 
-        if (!version.isNullOrEmpty()) {
-            _availableUpdate.value = AppUpdate(
-                latestVersion = version,
-                changelog = changelog ?: "",
-                downloadUrl = url ?: "",
-                releaseName = "v$version"
-            )
+            val version = applicationPreference.availableUpdateVersion()
+            val changelog = applicationPreference.availableUpdateChangelog()
+            val url = applicationPreference.availableUpdateUrl()
+
+            if (!version.isNullOrEmpty()) {
+                _availableUpdate.value = AppUpdate(
+                    latestVersion = version,
+                    changelog = changelog ?: "",
+                    downloadUrl = url ?: "",
+                    releaseName = "v$version"
+                )
+            }
         }
-    }
-
-    private fun loadCachedGooglePlayAvailability() {
-        _googlePlayAvailable.value = applicationPreference.isGooglePlayAvailable == true
     }
 
     fun checkForUpdates(force: Boolean = false) {
         viewModelScope.launch {
-            val lastCheck = applicationPreference.lastUpdateCheck
+            val lastCheck = applicationPreference.lastUpdateCheck()
             val shouldCheck = force || lastCheck == null || (lastCheck subHours DateTime.now()) > 24
 
             if (shouldCheck) {
                 val currentVersion = appVersion()
                 val update = updateRepository.checkForUpdate(currentVersion)
 
-                applicationPreference.lastUpdateCheck = DateTime.now()
+                applicationPreference.setLastUpdateCheck(DateTime.now())
 
                 if (update != null) {
-                    applicationPreference.availableUpdateVersion = update.latestVersion
-                    applicationPreference.availableUpdateChangelog = update.changelog
-                    applicationPreference.availableUpdateUrl = update.downloadUrl
+                    applicationPreference.setAvailableUpdateVersion(update.latestVersion)
+                    applicationPreference.setAvailableUpdateChangelog(update.changelog)
+                    applicationPreference.setAvailableUpdateUrl(update.downloadUrl)
                     _availableUpdate.value = update
                 } else {
                     applicationPreference.clearUpdate()
@@ -138,20 +149,25 @@ class SettingsViewModel @Inject constructor(
 
     private fun checkGooglePlayAvailability() {
         viewModelScope.launch {
-            val lastCheck = applicationPreference.lastGooglePlayCheck
+            val lastCheck = applicationPreference.lastGooglePlayCheck()
             val shouldCheck = lastCheck == null || (lastCheck subHours DateTime.now()) > 24
 
             if (shouldCheck) {
                 val available = googlePlayAvailabilityRepository.isAppAvailableOnPlayStore()
-                applicationPreference.isGooglePlayAvailable = available
-                applicationPreference.lastGooglePlayCheck = DateTime.now()
+                applicationPreference.setGooglePlayAvailable(available)
+                applicationPreference.setLastGooglePlayCheck(DateTime.now())
                 _googlePlayAvailable.value = available
             }
         }
     }
 
     @Suppress("unused")
-    fun hasUpdate(): Boolean = applicationPreference.hasUpdate()
+    fun dismissUpdate() {
+        viewModelScope.launch {
+            applicationPreference.clearUpdate()
+            _availableUpdate.value = null
+        }
+    }
 
     private fun appVersion(): String {
         return try {
@@ -160,11 +176,5 @@ class SettingsViewModel @Inject constructor(
         } catch (_: Exception) {
             "0.0.0"
         }
-    }
-
-    @Suppress("unused")
-    fun dismissUpdate() {
-        applicationPreference.clearUpdate()
-        _availableUpdate.value = null
     }
 }

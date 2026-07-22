@@ -13,7 +13,7 @@ interface NewsPreferenceRepository {
      * @param subdivision Идентификатор подразделения.
      * @param time Время обновления (по умолчанию текущее время).
      */
-    fun updateNewsDateTime(subdivision: Int, time: DateTime = DateTime.now())
+    suspend fun updateNewsDateTime(subdivision: Int, time: DateTime = DateTime.now())
 
     /**
      * Возвращает время последней синхронизации новостей для подразделения.
@@ -21,5 +21,5 @@ interface NewsPreferenceRepository {
      * @param subdivision Идентификатор подразделения.
      * @return [DateTime] последнего обновления или null, если обновление еще не выполнялось.
      */
-    fun currentNewsDateTime(subdivision: Int): DateTime?
+    suspend fun currentNewsDateTime(subdivision: Int): DateTime?
 }
