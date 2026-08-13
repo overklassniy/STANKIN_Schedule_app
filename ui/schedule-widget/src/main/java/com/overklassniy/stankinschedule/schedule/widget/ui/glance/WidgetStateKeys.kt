@@ -39,6 +39,7 @@ object WidgetStateKeys {
     val pairSubgroupA = stringPreferencesKey("pair_subgroup_a")
     val pairSubgroupB = stringPreferencesKey("pair_subgroup_b")
     val textColor = stringPreferencesKey("text_color")
+    val isDarkTheme = booleanPreferencesKey("is_dark_theme")
 
     /**
      * Преобразует [Preferences] в [ScheduleWidgetData] или null, если данные отсутствуют.
@@ -74,6 +75,7 @@ object WidgetStateKeys {
         )
 
         val textColorOverride = prefs[textColor]?.takeIf { it.isNotEmpty() }
+        val isDark = prefs[isDarkTheme] ?: false
 
         return ScheduleWidgetData(
             scheduleName = name,
@@ -84,6 +86,7 @@ object WidgetStateKeys {
             keyColors = if (preset == ThemePreset.Custom) keyColors else null,
             pairColorGroup = pairColorGroup,
             textColor = textColorOverride,
+            isDarkTheme = isDark,
         )
     }
 
@@ -129,5 +132,8 @@ object WidgetStateKeys {
         } else {
             prefs.remove(textColor)
         }
+
+        // isDarkTheme не записывается из конфигурации — это системный флаг,
+        // управляемый из provideGlance и MainApplication.onConfigurationChanged
     }
 }

@@ -105,8 +105,10 @@ class MainApplication : Application(), WorkConfiguration.Provider {
     /**
      * Регистрирует колбэк для отслеживания изменения конфигурации системы.
      *
-     * При смене системной темы (тёмная/светлая) обновляет все экземпляры виджета,
-     * чтобы provideGlance выполнился заново с актуальным isSystemDarkTheme.
+     * При смене системной темы (тёмная/светлая) обновляет флаг isDarkTheme
+     * в Glance state всех экземпляров виджетов и вызывает updateAll.
+     * Запись в state триггерит рекомпозицию через currentState, даже если
+     * provideGlance ещё активен (updateAll не перезапускает его).
      * Это работает только когда процесс приложения запущен.
      */
     private fun registerThemeChangeCallback() {
@@ -115,8 +117,9 @@ class MainApplication : Application(), WorkConfiguration.Provider {
                 val nightMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
                 if (nightMode != lastNightMode) {
                     lastNightMode = nightMode
-                    ScheduleWidgetUpdater.updateAll(this@MainApplication)
-                    NewsWidgetUpdater.updateAll(this@MainApplication)
+                    val isDark = nightMode == Configuration.UI_MODE_NIGHT_YES
+                    ScheduleWidgetUpdater.updateThemeState(this@MainApplication, isDark)
+                    NewsWidgetUpdater.updateThemeState(this@MainApplication, isDark)
                 }
             }
 

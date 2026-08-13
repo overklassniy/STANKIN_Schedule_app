@@ -13,6 +13,7 @@ import com.overklassniy.stankinschedule.news.core.domain.model.NewsSubdivision
  * @property keyColors Ключевые цвета для пресета Custom. null для остальных пресетов.
  * @property textColor Переопределение цвета текста (onSurface и onBackground). null для автоматического вычисления.
  * @property announcementsColor Переопределение цвета метки категории «Анонсы». null для использования surfaceTint.
+ * @property isDarkTheme Признак тёмной системной темы. Сохраняется в Glance state для реагирования на смену темы.
  */
 data class NewsWidgetData(
     val selectedSubdivisions: Set<NewsSubdivision>,
@@ -20,6 +21,7 @@ data class NewsWidgetData(
     val keyColors: KeyColors? = null,
     val textColor: String? = null,
     val announcementsColor: String? = null,
+    val isDarkTheme: Boolean = false,
 ) {
 
     /**

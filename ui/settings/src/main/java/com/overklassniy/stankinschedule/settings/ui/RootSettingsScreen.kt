@@ -370,9 +370,9 @@ fun RootSettingsScreen(
 
             val changelogText = stringResource(R.string.changelog)
             val changelogUrl = if (isRussian) {
-                "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/changelog.md"
+                "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/CHANGELOG.md"
             } else {
-                "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/.info/docs/changelog_en.md"
+                "https://raw.githubusercontent.com/overklassniy/STANKIN_Schedule_app/master/.info/docs/CHANGELOG_en.md"
             }
 
             val primaryColor = MaterialTheme.colorScheme.primary

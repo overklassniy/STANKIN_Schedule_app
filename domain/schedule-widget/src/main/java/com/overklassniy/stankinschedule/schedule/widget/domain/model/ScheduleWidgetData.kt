@@ -17,6 +17,7 @@ import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColor
  * @property keyColors Ключевые цвета для пресета Custom. null для остальных пресетов.
  * @property pairColorGroup Цвета пар виджета. Независимы от настроек приложения.
  * @property textColor Переопределение цвета текста (onSurface и onBackground). null для автоматического вычисления.
+ * @property isDarkTheme Признак тёмной системной темы. Сохраняется в Glance state для реагирования на смену темы.
  */
 data class ScheduleWidgetData(
     val scheduleName: String,
@@ -27,6 +28,7 @@ data class ScheduleWidgetData(
     val keyColors: KeyColors? = null,
     val pairColorGroup: PairColorGroup = PairColorGroup.default(),
     val textColor: String? = null,
+    val isDarkTheme: Boolean = false,
 ) {
 
     /**

@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.news.widget.ui.glance
 
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.overklassniy.stankinschedule.core.domain.settings.KeyColors
@@ -29,6 +30,7 @@ object NewsWidgetStateKeys {
 
     val textColor = stringPreferencesKey("news_text_color")
     val announcementsColor = stringPreferencesKey("news_announcements_color")
+    val isDarkTheme = booleanPreferencesKey("news_is_dark_theme")
 
     /**
      * Преобразует [Preferences] в [NewsWidgetData] или null, если данные отсутствуют.
@@ -65,6 +67,7 @@ object NewsWidgetStateKeys {
 
         val textColorOverride = prefs[textColor]?.takeIf { it.isNotEmpty() }
         val announcementsColorOverride = prefs[announcementsColor]?.takeIf { it.isNotEmpty() }
+        val isDark = prefs[isDarkTheme] ?: false
 
         return NewsWidgetData(
             selectedSubdivisions = selectedSubdivisions,
@@ -72,6 +75,7 @@ object NewsWidgetStateKeys {
             keyColors = if (preset == ThemePreset.Custom) keyColors else null,
             textColor = textColorOverride,
             announcementsColor = announcementsColorOverride,
+            isDarkTheme = isDark,
         )
     }
 
@@ -118,5 +122,8 @@ object NewsWidgetStateKeys {
         } else {
             prefs.remove(announcementsColor)
         }
+
+        // isDarkTheme не записывается из конфигурации — это системный флаг,
+        // управляемый из provideGlance и MainApplication.onConfigurationChanged
     }
 }

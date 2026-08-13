@@ -18,6 +18,7 @@ import androidx.core.net.toUri
 import androidx.datastore.preferences.core.Preferences
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
 import androidx.glance.action.Action
 import androidx.glance.action.NoRippleOverride
 import androidx.glance.action.clickable
@@ -28,6 +29,7 @@ import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -77,10 +79,20 @@ class NewsGlanceWidget : GlanceAppWidget() {
             val manager = GlanceAppWidgetManager(context)
             val appWidgetId = manager.getAppWidgetId(id)
 
+            // Записываем isDark в state, чтобы при смене темы MainApplication
+            // мог обновить этот ключ и триггерить рекомпозицию через currentState
+            val initialIsDark = isSystemDarkTheme(context)
+            updateAppWidgetState(context, id) { prefs ->
+                prefs[NewsWidgetStateKeys.isDarkTheme] = initialIsDark
+            }
+
             provideContent {
                 Log.d(TAG, "provideContent: composing, appWidgetId=$appWidgetId")
                 val currentPrefs = currentState<Preferences>()
                 val data = NewsWidgetStateKeys.toData(currentPrefs)
+                // isDark из state, fallback на initialIsDark — currentState может
+                // читать snapshot до записи updateAppWidgetState при первом рендере
+                val isDark = currentPrefs[NewsWidgetStateKeys.isDarkTheme] ?: initialIsDark
 
                 var news by remember(data?.hashCode()) {
                     mutableStateOf<List<Pair<NewsSubdivision, NewsPost>>>(emptyList())
@@ -94,7 +106,7 @@ class NewsGlanceWidget : GlanceAppWidget() {
                     }
                 }
 
-                WidgetContent(context, appWidgetId, data, news)
+                WidgetContent(LocalContext.current, appWidgetId, data, news, isDark)
             }
         } catch (e: Throwable) {
             Log.e(TAG, "provideGlance: FATAL ERROR", e)
@@ -116,6 +128,7 @@ class NewsGlanceWidget : GlanceAppWidget() {
      * @param appWidgetId Идентификатор виджета.
      * @param data Данные конфигурации виджета или null.
      * @param news Список пар: категория и новость.
+     * @param isDark Признак тёмной системной темы.
      */
     @androidx.compose.runtime.Composable
     private fun WidgetContent(
@@ -123,13 +136,13 @@ class NewsGlanceWidget : GlanceAppWidget() {
         appWidgetId: Int,
         data: NewsWidgetData?,
         news: List<Pair<NewsSubdivision, NewsPost>>,
+        isDark: Boolean,
     ) {
         if (data == null) {
             EmptyState(context)
             return
         }
 
-        val isDark = isSystemDarkTheme(context)
         val themeColors = data.themeColors(isDark)
 
         val backgroundColor = Color(hexToArgb(themeColors.background))
@@ -449,6 +462,4 @@ class NewsGlanceWidget : GlanceAppWidget() {
 }
 
 private fun fixedColorProvider(color: Color): ColorProvider =
-    object : ColorProvider {
-        override fun getColor(context: Context): Color = color
-    }
+    @Suppress("RESTRICTED_API") ColorProvider(color)

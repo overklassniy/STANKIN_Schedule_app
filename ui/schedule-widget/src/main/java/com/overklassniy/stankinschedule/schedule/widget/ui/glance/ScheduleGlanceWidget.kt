@@ -17,6 +17,7 @@ import androidx.core.graphics.toColorInt
 import androidx.datastore.preferences.core.Preferences
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.action.Action
@@ -95,12 +96,22 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
             val manager = GlanceAppWidgetManager(context)
             val appWidgetId = manager.getAppWidgetId(id)
 
+            // Записываем isDark в state, чтобы при смене темы MainApplication
+            // мог обновить этот ключ и триггерить рекомпозицию через currentState
+            val initialIsDark = isSystemDarkTheme(context)
+            updateAppWidgetState(context, id) { prefs ->
+                prefs[WidgetStateKeys.isDarkTheme] = initialIsDark
+            }
+
             // Состояние читается внутри provideContent через currentState,
             // чтобы рекомпозиция получала свежие данные после update()
             provideContent {
                 Log.d(TAG, "provideContent: composing, appWidgetId=$appWidgetId")
                 val currentPrefs = currentState<Preferences>()
                 val data = WidgetStateKeys.toData(currentPrefs)
+                // isDark из state, fallback на initialIsDark — currentState может
+                // читать snapshot до записи updateAppWidgetState при первом рендере
+                val isDark = currentPrefs[WidgetStateKeys.isDarkTheme] ?: initialIsDark
                 Log.d(TAG, "provideContent: data from currentState=$data")
 
                 // Загрузка дней расписания при изменении данных
@@ -121,7 +132,7 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
                     }
                 }
 
-                WidgetContent(context, appWidgetId, data, days, today)
+                WidgetContent(LocalContext.current, appWidgetId, data, days, today, isDark)
             }
         } catch (e: Throwable) {
             Log.e(TAG, "provideGlance: FATAL ERROR", e)
@@ -170,6 +181,7 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
      * @param data Данные конфигурации виджета или null.
      * @param days Список списков пар по дням.
      * @param today Текущая дата.
+     * @param isDark Признак тёмной системной темы.
      */
     @androidx.compose.runtime.Composable
     private fun WidgetContent(
@@ -178,13 +190,13 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
         data: ScheduleWidgetData?,
         days: List<List<PairModel>>,
         today: LocalDate,
+        isDark: Boolean,
     ) {
         if (data == null) {
             EmptyState(context)
             return
         }
 
-        val isDark = isSystemDarkTheme(context)
         val themeColors = data.themeColors(isDark)
         val pairColors = data.pairColorGroup
 
@@ -227,6 +239,7 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
                     scheduleId = data.scheduleId,
                     pairColors = pairColors,
                     onBackgroundColor = onBackgroundColor,
+                    isDark = isDark,
                 )
             }
         }
@@ -298,6 +311,7 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
      * @param scheduleId ID расписания для deep-link.
      * @param pairColors Цвета пар.
      * @param onBackgroundColor Цвет текста на фоне виджета.
+     * @param isDark Признак тёмной системной темы для тонирования фона пар.
      */
     @androidx.compose.runtime.Composable
     private fun DaysList(
@@ -307,6 +321,7 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
         scheduleId: Long,
         pairColors: PairColorGroup,
         onBackgroundColor: Color,
+        isDark: Boolean,
     ) {
         // Список собран из плоских пунктов (заголовок дня и пары как отдельные items):
         // многоуровневая вложенность контейнеров внутри пунктов списка
@@ -351,12 +366,17 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
                         )
                     }
                 } else {
+                    val pairAction = actionStartActivity(
+                        ScheduleDeepLink.viewerIntent(scheduleId, date)
+                    )
                     for (pair in pairs) {
                         item {
                             PairItem(
                                 pair = pair,
                                 pairColors = pairColors,
                                 onBackgroundColor = onBackgroundColor,
+                                isDark = isDark,
+                                onClickAction = pairAction,
                             )
                         }
                     }
@@ -372,20 +392,24 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
     }
 
     /**
-     * Элемент пары. Строка со временем и аудиторией окрашена в цвет типа пары
-     * вместо вертикальной цветной полосы-индикатора.
+     * Элемент пары. Строка имеет тонированный фон цвета типа пары
+     * вместо цветной полосы-индикатора или окрашенного текста.
      *
      * @param pair Модель пары.
      * @param pairColors Цвета пар.
      * @param onBackgroundColor Цвет текста на фоне виджета.
+     * @param isDark Признак тёмной системной темы для тонирования фона.
+     * @param onClickAction Действие при нажатии на пару.
      */
     @androidx.compose.runtime.Composable
     private fun PairItem(
         pair: PairModel,
         pairColors: PairColorGroup,
         onBackgroundColor: Color,
+        isDark: Boolean,
+        onClickAction: Action,
     ) {
-        val indicatorColor = colorForPair(pair, pairColors)
+        val tintColor = tintColorForPair(colorForPair(pair, pairColors), isDark)
 
         val timeWithClassroom = if (pair.classroom.isNotEmpty()) {
             pair.time.toString() + ", " + pair.classroom
@@ -396,7 +420,10 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 2.dp)
+                .background(tintColor)
+                .cornerRadius(8.dp)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .clickableWithSafeRipple(onClickAction)
         ) {
             Text(
                 text = pair.title,
@@ -409,7 +436,7 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
             Text(
                 text = timeWithClassroom,
                 style = TextStyle(
-                    color = fixedColorProvider(indicatorColor),
+                    color = fixedColorProvider(onBackgroundColor),
                     fontSize = 12.sp,
                 ),
                 maxLines = 1,
@@ -473,20 +500,48 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
      */
     private fun colorForPair(
         pair: PairModel,
-        pairColors: PairColorGroup
+        pairColorGroup: PairColorGroup
     ): Color {
         val hex = when (pair.type) {
-            Type.LECTURE -> pairColors.lectureColor
-            Type.SEMINAR -> pairColors.seminarColor
+            Type.LECTURE -> pairColorGroup.lectureColor
+            Type.SEMINAR -> pairColorGroup.seminarColor
             Type.LABORATORY -> {
                 when (pair.subgroup) {
-                    Subgroup.A -> pairColors.subgroupAColor
-                    Subgroup.B -> pairColors.subgroupBColor
-                    else -> pairColors.laboratoryColor
+                    Subgroup.A -> pairColorGroup.subgroupAColor
+                    Subgroup.B -> pairColorGroup.subgroupBColor
+                    else -> pairColorGroup.laboratoryColor
                 }
             }
         }
         return Color(hexToArgb(hex))
+    }
+
+    /**
+     * Вычисляет тонированный цвет фона для строки пары.
+     *
+     * Светлая тема: цвет пары смешивается с белым (70% белого) — отчётливый светлый оттенок.
+     * Тёмная тема: цвет пары затемняется до 50% — тёмный оттенок с выраженным тоном.
+     *
+     * @param color Базовый цвет типа пары.
+     * @param isDark Признак тёмной системной темы.
+     * @return Тонированный цвет для фона строки пары.
+     */
+    private fun tintColorForPair(color: Color, isDark: Boolean): Color {
+        return if (isDark) {
+            Color(
+                (color.red * 0.5f * 255).toInt(),
+                (color.green * 0.5f * 255).toInt(),
+                (color.blue * 0.5f * 255).toInt(),
+                255,
+            )
+        } else {
+            Color(
+                (color.red * 0.3f * 255 + 255 * 0.7f).toInt(),
+                (color.green * 0.3f * 255 + 255 * 0.7f).toInt(),
+                (color.blue * 0.3f * 255 + 255 * 0.7f).toInt(),
+                255,
+            )
+        }
     }
 
     /**
@@ -552,6 +607,4 @@ class ScheduleGlanceWidget : GlanceAppWidget() {
 }
 
 private fun fixedColorProvider(color: Color): ColorProvider =
-    object : ColorProvider {
-        override fun getColor(context: Context): Color = color
-    }
+    @Suppress("RESTRICTED_API") ColorProvider(color)
