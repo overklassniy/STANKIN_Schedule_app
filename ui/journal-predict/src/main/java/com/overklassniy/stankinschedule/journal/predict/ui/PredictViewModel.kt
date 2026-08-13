@@ -6,7 +6,6 @@ import com.overklassniy.stankinschedule.journal.core.domain.model.Discipline
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.usecase.PredictUseCase
 import com.overklassniy.stankinschedule.journal.predict.ui.model.PredictMark
-import com.overklassniy.stankinschedule.journal.predict.ui.utils.combineState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,14 +33,10 @@ class PredictViewModel @Inject constructor(
     private val _predictedRating = MutableStateFlow(0f)
     val predictedRating = _predictedRating.asStateFlow()
 
-    val panelState = combineState(
-        predictedRating,
-        showExposedMarks,
-        scope = viewModelScope,
-        transform = { f, s -> f to s }
-    )
-
     private var semesterMarks: SemesterMarks? = null
+
+    // Флаг: пользователь изменил хотя бы одну оценку
+    private var hasUserModification = false
 
     init {
         viewModelScope.launch {
@@ -70,6 +65,16 @@ class PredictViewModel @Inject constructor(
 
     private fun updatePredictRating() {
         val marks = semesterMarks ?: return
+        // Если пользователь не изменял оценки и все они уже выставлены — показываем --.--
+        if (!hasUserModification) {
+            val allMarksSet = marks.all { discipline ->
+                discipline.all { (_, value) -> value != Discipline.NO_MARK }
+            }
+            if (allMarksSet) {
+                _predictedRating.value = Float.NaN
+                return
+            }
+        }
         _predictedRating.value = useCase.predictSemester(marks).toFloat()
     }
 
@@ -77,6 +82,7 @@ class PredictViewModel @Inject constructor(
         val marks = semesterMarks
         if (marks != null) {
             marks.updateMark(item.discipline, item.type, value)
+            hasUserModification = true
             updatePredictRating()
 
             _predictMarks.value[item.discipline]?.find { it.type == item.type }?.value = value
@@ -88,6 +94,7 @@ class PredictViewModel @Inject constructor(
             _currentSemester.value = semester
             val newMarks = useCase.semesterMarks(semester).first()
             semesterMarks = newMarks
+            hasUserModification = false
             updatePredictRating()
 
             _predictMarks.value = createContent(newMarks)

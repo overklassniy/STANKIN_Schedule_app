@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
@@ -34,7 +33,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -68,6 +66,7 @@ import com.overklassniy.stankinschedule.journal.predict.ui.R
 import com.overklassniy.stankinschedule.journal.predict.ui.model.PredictMark
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Экран предсказания рейтинга: выбор семестра, ввод предполагаемых оценок и панель результата.
@@ -331,7 +330,7 @@ fun PredictDisciplines(
                                         relocationRequester.bringIntoView()
                                         done = true
                                     }
-                                    delay(100L)
+                                    delay(100.milliseconds)
                                 }
                             }
                         }
@@ -347,6 +346,7 @@ fun PredictDisciplines(
                                     onPredictMarkChanged(item, value)
                                 }
                             },
+                            enabled = !item.isExposed,
                             isError = item.value == 0,
                             label = { Text(text = item.type.tag) },
                             keyboardOptions = KeyboardOptions(
