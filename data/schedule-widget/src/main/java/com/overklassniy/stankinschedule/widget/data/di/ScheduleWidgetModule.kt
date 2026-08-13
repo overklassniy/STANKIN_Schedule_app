@@ -5,16 +5,16 @@ import com.overklassniy.stankinschedule.widget.data.repository.ScheduleWidgetPre
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.components.SingletonComponent
 
 /**
  * Hilt модуль для предоставления зависимостей виджета расписания.
  *
- * Устанавливается в [ViewModelComponent] и [ServiceComponent].
+ * Устанавливается в [SingletonComponent] и [ViewModelComponent].
  */
 @Module
-@InstallIn(ViewModelComponent::class, ServiceComponent::class)
+@InstallIn(SingletonComponent::class, ViewModelComponent::class)
 @Suppress("Unused")
 interface ScheduleWidgetModule {
 

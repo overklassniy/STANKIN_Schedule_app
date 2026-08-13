@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="news_widget_title">STANKIN News</string>
+    <string name="news_widget_description">Latest 10 news from selected categories</string>
+    <string name="news_widget_no_news">No news available</string>
+    <string name="news_widget_error">Cannot load widget</string>
+    <string name="news_widget_configure_title">Configure news widget</string>
+    <string name="news_widget_categories">News categories</string>
+    <string name="news_widget_theme_title">Widget theme</string>
+    <string name="news_widget_theme_colors">Theme colors</string>
+    <string name="news_widget_preset_system">System</string>
+    <string name="news_widget_preset_light">Light</string>
+    <string name="news_widget_preset_dark">Dark</string>
+    <string name="news_widget_preset_custom">Custom</string>
+    <string name="news_widget_color_primary">University category</string>
+    <string name="news_widget_color_secondary">PhD category</string>
+    <string name="news_widget_color_tertiary">Exchange category</string>
+    <string name="news_widget_color_background">Widget background</string>
+    <string name="news_widget_color_surface">Widget surface</string>
+    <string name="news_widget_color_error">Dean\'s office category</string>
+    <string name="news_widget_color_announcements">Announcements category</string>
+    <string name="news_widget_text_color">Text color</string>
+    <string name="news_widget_text_color_reset">Reset to auto</string>
+    <string name="news_widget_add">Add widget</string>
+    <string name="news_widget_change">Change widget</string>
+
+    <string name="news_subdivision_university">University</string>
+    <string name="news_subdivision_exchange">Exchange</string>
+    <string name="news_subdivision_phd">PhD</string>
+    <string name="news_subdivision_dean">Dean\'s office</string>
+    <string name="news_subdivision_announcements">Announcements</string>
+</resources>

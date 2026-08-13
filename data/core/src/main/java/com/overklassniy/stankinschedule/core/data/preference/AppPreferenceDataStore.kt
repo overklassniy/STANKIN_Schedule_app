@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.overklassniy.stankinschedule.core.domain.settings.PreferenceRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.joda.time.DateTime
@@ -48,6 +49,12 @@ class AppPreferenceDataStore @Inject constructor(
     override suspend fun saveString(key: String, value: String) {
         context.appDataStore.edit { preferences ->
             preferences[stringPreferencesKey(key)] = value
+        }
+    }
+
+    override fun getStringFlow(key: String): Flow<String?> {
+        return context.appDataStore.data.map { preferences ->
+            preferences[stringPreferencesKey(key)]
         }
     }
 

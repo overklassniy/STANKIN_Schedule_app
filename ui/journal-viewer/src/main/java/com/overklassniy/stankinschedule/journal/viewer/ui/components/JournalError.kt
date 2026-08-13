@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import com.overklassniy.stankinschedule.core.ui.components.LocalAnalytics
+import com.overklassniy.stankinschedule.core.ui.components.LocalCrashReporter
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.journal.viewer.ui.R
 
@@ -30,10 +30,10 @@ fun JournalError(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val analytics = LocalAnalytics.current
+    val crashReporter = LocalCrashReporter.current
 
-    // Записываем исключение в аналитику
-    analytics.recordException(error)
+    // Записываем исключение в краш-репортинг
+    crashReporter.recordException(error)
 
     Column(
         modifier = modifier,

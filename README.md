@@ -1,45 +1,16 @@
-<div align="center">
+<p align="center">
+  <img src=".info/hero.svg" width="100%" alt="СТАНКИН Расписание — неофициальное приложение для студентов МГТУ СТАНКИН: расписание, журнал, новости">
+</p>
 
-# СТАНКИН Расписание
+<p align="center">
+  <a href="README.md">Русский</a> · <a href=".info/docs/README_en.md">English</a>
+</p>
 
-**Неофициальное приложение для студентов МГТУ «СТАНКИН»**
-
-[![Version](https://img.shields.io/badge/version-3.2.3-blue.svg)](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
-[![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)](https://www.android.com/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-purple.svg)](https://kotlinlang.org/)
-\
-<img src=".info/icons/224x224.png" width="224" alt="СТАНКИН Расписание">
-
-[🇷🇺 Русский](README.md) • [🇺🇸 English](.info/docs/README_en.md)
-
-</div>
-
----
-
-## О проекте
-
-**СТАНКИН Расписание** – это неофициальное мобильное приложение для студентов МГТУ «СТАНКИН», которое предоставляет удобный доступ к расписанию занятий, модульному журналу и новостям университета прямо с вашего смартфона.
-
-Этот проект является форком [ProjectPepega](https://github.com/Nikololoshka/ProjectPepega) – оригинального приложения, которое больше не поддерживается автором. Проект был возобновлен и продолжает развиваться с улучшениями и новыми функциями.
-
-### Основные возможности
-
-- **Расписание занятий** – просмотр расписания с удобной навигацией по дням
-- **Модульный журнал** – доступ к оценкам и рейтингу
-- **Новости университета** – свежие новости прямо в приложении
-- **Виджет на рабочем столе** – быстрый доступ к расписанию без открытия приложения
-- **Темная тема** – комфортная работа в любое время суток
-- **Импорт расписаний** – поддержка импорта из различных источников, включая Электронную Образовательную Среду (ЭОС) МГТУ «СТАНКИН»
-
-## Скачать
-
-<div align="center">
-
-[<img src="https://img.shields.io/badge/Google%20Play-Скачать-8cf041?style=for-the-badge&labelColor=grey&logo=googleplay" height="60">](https://play.google.com/store/apps/details?id=com.overklassniy.stankinschedule)
-[<img src="https://img.shields.io/badge/RuStore-Скачать-red?style=for-the-badge&logo=android" height="60">](https://www.rustore.ru/catalog/app/com.overklassniy.stankinschedule)
-[<img src="https://img.shields.io/badge/GitHub-Release-blue?style=for-the-badge&logo=github" height="60">](https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest)
-
-</div>
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.overklassniy.stankinschedule"><img src="https://img.shields.io/badge/Google%20Play-Скачать-8cf041?style=for-the-badge&labelColor=grey&logo=googleplay" height="40" alt="Google Play"></a>
+  <a href="https://www.rustore.ru/catalog/app/com.overklassniy.stankinschedule"><img src="https://img.shields.io/badge/RuStore-Скачать-red?style=for-the-badge&logo=android" height="40" alt="RuStore"></a>
+  <a href="https://github.com/overklassniy/STANKIN_Schedule_app/releases/latest"><img src="https://img.shields.io/badge/GitHub-Release-blue?style=for-the-badge&logo=github" height="40" alt="GitHub Release"></a>
+</p>
 
 ---
 
@@ -47,88 +18,89 @@
 
 <div align="center">
 
-| Главная | Расписание | Журнал |
+| | | |
 |:---:|:---:|:---:|
-| <img src=".info/screenshots/main.png" width="300" alt="Главная"> | <img src=".info/screenshots/schedule_day.png" width="300" alt="Расписание"> | <img src=".info/screenshots/modules.png" width="300" alt="Журнал"> |
-
-| Списки расписаний | Виджет |
-|:---:|:---:|
-| <img src=".info/screenshots/schedules.png" width="300" alt="Списки расписаний"> | <img src=".info/screenshots/widget.png" width="300" alt="Виджет"> |
+| <img src=".info/screenshots/main.png" width="260" alt="Главная"> | <img src=".info/screenshots/schedule_day.png" width="260" alt="Расписание"> | <img src=".info/screenshots/modules.png" width="260" alt="Журнал"> |
+| <img src=".info/screenshots/schedules.png" width="260" alt="Списки расписаний"> | <img src=".info/screenshots/widget.png" width="260" alt="Виджет"> | |
 
 </div>
+
+---
+
+## Возможности
+
+- **Расписание** — навигация по дням, импорт из ЭОС МГТУ «СТАНКИН»
+- **Модульный журнал** — оценки и рейтинг
+- **Новости** — университет, деканат, анонсы
+- **Виджеты** — расписание и новости на рабочем столе
 
 ---
 
 ## Технологии
 
-Приложение построено на современных технологиях Android-разработки:
+<p align="center">
+  <img src="https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin">
+  <img src="https://img.shields.io/badge/Compose-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose">
+  <img src="https://img.shields.io/badge/Material_3-6750A4?style=flat-square&logo=materialdesign&logoColor=white" alt="Material 3">
+  <img src="https://img.shields.io/badge/Hilt-4285F4?style=flat-square&logoColor=white" alt="Hilt">
+  <img src="https://img.shields.io/badge/Room-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Room">
+  <img src="https://img.shields.io/badge/Retrofit-48B883?style=flat-square&logo=retrofit&logoColor=white" alt="Retrofit">
+  <img src="https://img.shields.io/badge/Coroutines-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Coroutines">
+  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firebase">
+  <img src="https://img.shields.io/badge/Glance-4285F4?style=flat-square&logo=android&logoColor=white" alt="Glance">
+  <img src="https://img.shields.io/badge/Sentry-362D59?style=flat-square&logo=sentry&logoColor=white" alt="Sentry">
+</p>
 
-- **Kotlin 2.3.0** – современный язык программирования
-- **Jetpack Compose** – декларативный UI-фреймворк
-- **Material Design 3** – современный дизайн-язык
-- **Hilt** – dependency injection
-- **Room** – локальная база данных
-- **Retrofit** – работа с сетевыми запросами
-- **Firebase** – аналитика и crash reporting
-- **Coroutines** – асинхронное программирование
+---
 
 ## Разработка
 
-### Требования
+<details>
+<summary>Требования и сборка</summary>
 
-- Android Studio Otter или новее
-- JDK 21
-- Android SDK 36
-- Минимальная версия Android: 8.0 (API 26)
-
-### Сборка проекта
+**Требования:** Android Studio Otter+, JDK 25, Android SDK 37, min API 26
 
 ```bash
-# Клонировать репозиторий
 git clone https://github.com/overklassniy/STANKIN_Schedule_app.git
 cd STANKIN_Schedule_app
-
-# Собрать проект
 ./gradlew assembleDebug
-
-# Или открыть в Android Studio
 ```
 
-### Новости (RSS)
+**Sentry DSN** — в `local.properties` укажите ключ для краш-репортинга:
+```bash
+# local.properties (файл в .gitignore)
+sentry.dsn=
+```
 
+**RSS-новости** — создайте `stankin.secret` из примера:
 ```bash
 cp stankin.secret.example stankin.secret
-# Отредактируйте stankin.secret и укажите реальные URL (файл уже в .gitignore)
+# Укажите URL RSS-лент в stankin.secret (файл в .gitignore)
 ```
 
-Без `stankin.secret` приложение собирается и запускается, раздел новостей будет пустым.
+Без этих файлов приложение собирается и запускается: Sentry будет отключён, раздел новостей — пустым.
+
+</details>
 
 ---
 
 ## История изменений
 
-Полный список изменений доступен в [CHANGELOG.md](changelog.md).
+**v3.3.0** — миграция на DataStore, переписывание экранов на Compose, обновление зависимостей
 
-### Последнее обновление
-
-**Версия 3.2.3 (17.03.26)**
-- Добавлен функционал просмотра информации о преподавателе: полное ФИО, кафедры и электронная почта @stankin.ru
-- Исправлены ссылки на новости в зависимости от выбранной вкладки новостей
-- Исправлено неверное открытие выбранной даты в календаре на некоторых устройствах
-
-## Авторы
-
-- **Оригинальный проект** – [Nikololoshka](https://github.com/Nikololoshka) (ProjectPepega)
-- **Текущий форк** – [overklassniy](https://github.com/overklassniy)
-
-## Отказ от ответственности
-
-Это неофициальное приложение. Приложение предоставляется "как есть" без каких-либо гарантий.
+Полный список — [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
-<div align="center">
+## Авторы
 
-**Сделано студентами – для студентов СТАНКИН**
+- Оригинальный проект — [Nikololoshka](https://github.com/Nikololoshka) (ProjectPepega)
+- Текущий форк — [overklassniy](https://github.com/overklassniy)
 
-</div>
+Неофициальное приложение. Предоставляется «как есть» без каких-либо гарантий.
+
+---
+
+<p align="center">
+  <strong>Сделано студентами — для студентов СТАНКИН</strong>
+</p>

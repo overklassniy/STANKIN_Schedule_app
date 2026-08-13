@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="hero-title hero-desc">
+  <title id="hero-title">СТАНКИН Расписание</title>
+  <desc id="hero-desc">Неофициальное приложение для студентов МГТУ СТАНКИН: расписание занятий, модульный журнал и новости университета</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0C4F7D"/>
+      <stop offset="100%" stop-color="#0A4068"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="340" rx="24" fill="url(#bg)"/>
+
+  <!-- Левая часть: заголовок -->
+  <g transform="translate(64 56)">
+    <text x="0" y="22" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="600" fill="#A3B4CB" letter-spacing="3">ANDROID · МГТУ «СТАНКИН»</text>
+    <text x="0" y="78" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="50" font-weight="700" fill="#FFFFFF">СТАНКИН Расписание</text>
+    <text x="0" y="118" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="400" fill="#ADBAC5">Расписание · Журнал · Новости</text>
+
+    <!-- Бейджи -->
+    <g transform="translate(0 150)">
+      <rect x="0" y="0" width="92" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.10" stroke="#A3B4CB" stroke-opacity="0.35" stroke-width="1"/>
+      <text x="46" y="20" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">v3.3.0</text>
+
+      <rect x="106" y="0" width="108" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.10" stroke="#A3B4CB" stroke-opacity="0.35" stroke-width="1"/>
+      <text x="160" y="20" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">Android 8+</text>
+
+      <rect x="228" y="0" width="116" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.10" stroke="#A3B4CB" stroke-opacity="0.35" stroke-width="1"/>
+      <text x="286" y="20" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">Kotlin 2.4.10</text>
+    </g>
+  </g>
+
+  <!-- Правая часть: карточки расписания -->
+  <g transform="translate(740 44)">
+    <!-- Карточка 1 -->
+    <rect x="0" y="0" width="380" height="76" rx="14" fill="#FFFFFF" fill-opacity="0.08" stroke="#A3B4CB" stroke-opacity="0.20" stroke-width="1"/>
+    <rect x="0" y="0" width="6" height="76" rx="3" fill="#FFFFFF"/>
+    <text x="24" y="34" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="17" font-weight="600" fill="#FFFFFF">Математический анализ</text>
+    <text x="24" y="56" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="400" fill="#ADBAC5">10:00 — 11:30 · ауд. 0308</text>
+
+    <!-- Карточка 2 (со смещением) -->
+    <rect x="20" y="92" width="380" height="76" rx="14" fill="#FFFFFF" fill-opacity="0.08" stroke="#A3B4CB" stroke-opacity="0.20" stroke-width="1"/>
+    <rect x="20" y="92" width="6" height="76" rx="3" fill="#A3B4CB"/>
+    <text x="44" y="126" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="17" font-weight="600" fill="#FFFFFF">Программирование на C++</text>
+    <text x="44" y="148" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="400" fill="#ADBAC5">12:00 — 13:30 · ауд. 214</text>
+
+    <!-- Карточка 3 -->
+    <rect x="0" y="184" width="380" height="76" rx="14" fill="#FFFFFF" fill-opacity="0.08" stroke="#A3B4CB" stroke-opacity="0.20" stroke-width="1"/>
+    <rect x="0" y="184" width="6" height="76" rx="3" fill="#FFFFFF" fill-opacity="0.5"/>
+    <text x="24" y="218" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="17" font-weight="600" fill="#FFFFFF">Физика</text>
+    <text x="24" y="240" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="400" fill="#ADBAC5">14:00 — 15:30 · ауд. 417</text>
+  </g>
+</svg>

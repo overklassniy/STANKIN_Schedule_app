@@ -11,6 +11,7 @@
     <string name="news_exchange">Int. Activities</string>
     <string name="news_PhD">PhD</string>
     <string name="more_news">More news</string>
+    <string name="news_empty">No recent news</string>
 
     <string name="link_copied">Link copied!</string>
 

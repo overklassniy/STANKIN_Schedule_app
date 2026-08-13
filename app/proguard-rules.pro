@@ -9,11 +9,6 @@
 # and specify the fully qualified class name to the JavaScript interface
 # class:
 
-# NewsViewer interface
--keepclassmembers class com.overklassniy.stankinschedule.news.viewer.ui.NewsViewerActivity$NewsViewInterface {
-   public *;
-}
-
 #-------------------------------------------------
 # JetPack Navigation
 # This fixes:
@@ -87,3 +82,26 @@
 -dontwarn com.google.re2j.**
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 #===================================================================================================
+
+#===================================================================================================
+# WorkManager / Glance
+# WorkManager рефлексивно создаёт InputMerger по имени класса из WorkSpec.
+# Glance рендерит каждый виджет через SessionWorker, поэтому без keep-правила
+# в release-сборке виджеты могут навсегда оставаться на загрузочном layout.
+#===================================================================================================
+-keep class * extends androidx.work.InputMerger {
+    <init>();
+}
+
+#===================================================================================================
+# Sentry
+# Сохраняем атрибуты для корректной трассировки стека в краш-репортах.
+# Proguard mapping загружается автоматически через Sentry Gradle plugin.
+#===================================================================================================
+-keepattributes SourceFile, LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# Отсутствующие классы из транзитивных зависимостей Sentry (Groovy/Ivy/XStream)
+-dontwarn com.thoughtworks.xstream.**
+-dontwarn java.beans.**
+-dontwarn org.apache.ivy.**

@@ -1,12 +1,14 @@
 package com.overklassniy.stankinschedule.core.domain.settings
 
+import kotlinx.coroutines.flow.Flow
 import org.joda.time.DateTime
 
 /**
  * Интерфейс репозитория для работы с персистентным хранилищем настроек (Key-Value storage).
  *
  * Абстрагирует работу с DataStore или аналогичными механизмами.
- * Все методы являются suspend, так как DataStore выполняет операции асинхронно.
+ * suspend-методы выполняют разовые запросы, Flow-методы предоставляют
+ * реактивное наблюдение за изменениями значений.
  */
 interface PreferenceRepository {
 
@@ -42,6 +44,14 @@ interface PreferenceRepository {
      * @param value Значение для сохранения.
      */
     suspend fun saveString(key: String, value: String)
+
+    /**
+     * Возвращает Flow для наблюдения за изменениями строкового значения по ключу.
+     *
+     * @param key Ключ настройки.
+     * @return Flow, эмитящий сохраненную строку или null при каждом изменении.
+     */
+    fun getStringFlow(key: String): Flow<String?>
 
     /**
      * Получает значение даты и времени по ключу.

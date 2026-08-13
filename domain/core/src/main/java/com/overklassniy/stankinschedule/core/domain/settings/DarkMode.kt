@@ -3,8 +3,12 @@ package com.overklassniy.stankinschedule.core.domain.settings
 /**
  * Перечисление режимов темы оформления приложения.
  *
+ * Устаревший enum, заменён на [ThemePreset].
+ * Используется только для миграции при обновлении.
+ *
  * @property tag Строковый идентификатор режима для сохранения в настройках.
  */
+@Deprecated("Заменён на ThemePreset. Используется только для миграции.", ReplaceWith("ThemePreset"))
 enum class DarkMode(val tag: String) {
     /** Системная тема (по умолчанию). */
     Default("dark_mode_default"),
@@ -22,6 +26,7 @@ enum class DarkMode(val tag: String) {
          * @param value Строковый идентификатор (тег).
          * @return Соответствующий [DarkMode] или null, если не найдено.
          */
+        @Suppress("DEPRECATION")
         fun from(value: String?): DarkMode? {
             return entries.find { it.tag == value }
         }

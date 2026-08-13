@@ -3,24 +3,19 @@ package com.overklassniy.stankinschedule.schedule.widget.domain.usecase
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
 import com.overklassniy.stankinschedule.schedule.core.domain.repository.ScheduleStorage
-import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
-import com.overklassniy.stankinschedule.schedule.settings.domain.repository.SchedulePreference
-import com.overklassniy.stankinschedule.schedule.widget.domain.model.ScheduleWidgetData
-import com.overklassniy.stankinschedule.schedule.widget.domain.repository.ScheduleWidgetPreference
 import kotlinx.coroutines.flow.first
 import org.joda.time.LocalDate
 import javax.inject.Inject
 
 /**
- * UseCase для получения данных, необходимых виджету расписания.
+ * UseCase для получения данных расписания, необходимых Glance-виджету.
  *
- * Формирует список дней/пар для выбранного расписания и подгруппы,
- * предоставляет цвета пар из настроек и загружает конфигурацию виджета.
+ * Формирует список дней/пар для выбранного расписания и подгруппы.
+ * Конфигурация виджета (цвета, пресет) хранится в Glance state и читается
+ * непосредственно в ScheduleGlanceWidget.
  */
 class ScheduleWidgetUseCase @Inject constructor(
-    private val storage: ScheduleStorage,
-    private val widgetPreference: ScheduleWidgetPreference,
-    private val schedulePreference: SchedulePreference
+    private val storage: ScheduleStorage
 ) {
 
     /**
@@ -50,23 +45,4 @@ class ScheduleWidgetUseCase @Inject constructor(
 
         return days
     }
-
-    /**
-     * Возвращает текущую цветовую схему пар из настроек.
-     *
-     * @return [PairColorGroup] с HEX-цветами.
-     */
-    suspend fun pairColors(): PairColorGroup {
-        return schedulePreference.scheduleColorGroup().first()
-    }
-
-    /**
-     * Загружает сохранённые данные конфигурации виджета.
-     *
-     * @param appWidgetId Идентификатор виджета.
-     * @return [ScheduleWidgetData] или null, если данных нет.
-     */
-    fun loadWidgetData(appWidgetId: Int): ScheduleWidgetData? =
-        widgetPreference.loadData(appWidgetId)
-
 }

@@ -53,6 +53,7 @@ dependencies {
 
     implementation(project(":ui:news-review"))
     implementation(project(":domain:news-core"))
+    implementation(project(":ui:news-widget"))
 
     implementation(project(":ui:schedule-core"))
     implementation(project(":domain:schedule-viewer"))

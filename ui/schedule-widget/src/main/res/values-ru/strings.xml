@@ -9,5 +9,25 @@
     <string name="widget_change">Изменить виджет</string>
     <string name="widget_settings">Показать настройки</string>
     <string name="widget_error">Не удалось загрузить виджет</string>
-    <string name="widget_no_pairs">Нет пар</string>
+    <string name="widget_no_pairs">Нет занятий</string>
+    <string name="widget_theme_title">Тема виджета</string>
+    <string name="widget_theme_colors">Цвета темы</string>
+    <string name="widget_pair_colors">Цвета пар</string>
+    <string name="widget_preset_system">Системная</string>
+    <string name="widget_preset_light">Светлая</string>
+    <string name="widget_preset_dark">Тёмная</string>
+    <string name="widget_preset_custom">Пользовательская</string>
+    <string name="widget_color_primary">Основной</string>
+    <string name="widget_color_secondary">Вторичный</string>
+    <string name="widget_color_tertiary">Третичный</string>
+    <string name="widget_color_background">Фон</string>
+    <string name="widget_color_surface">Поверхность</string>
+    <string name="widget_color_error">Ошибка</string>
+    <string name="widget_text_color">Цвет текста</string>
+    <string name="widget_text_color_reset">Сбросить к авто</string>
+    <string name="widget_lecture_color">Лекция</string>
+    <string name="widget_seminar_color">Семинар</string>
+    <string name="widget_laboratory_color">Лабораторная</string>
+    <string name="widget_subgroup_a_color">Подгруппа А</string>
+    <string name="widget_subgroup_b_color">Подгруппа Б</string>
 </resources>

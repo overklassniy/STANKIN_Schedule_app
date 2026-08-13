@@ -10,8 +10,6 @@ import com.overklassniy.stankinschedule.news.core.domain.repository.NewsStorageR
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.android.scopes.ViewModelScoped
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -50,10 +48,11 @@ object NewsNetworkModule {
 
 /**
  * Модуль Hilt для зависимостей репозиториев модуля новостей.
- * Установлен в [ViewModelComponent], зависимости живут пока жива ViewModel.
+ * Установлен в [SingletonComponent], зависимости живут всё время работы приложения.
+ * Необходимо для доступа из Glance-виджета и WorkManager Worker.
  */
 @Module
-@InstallIn(ViewModelComponent::class)
+@InstallIn(SingletonComponent::class)
 @Suppress("Unused")
 object NewsModule {
 
@@ -64,7 +63,7 @@ object NewsModule {
      * @return Интерфейс [NewsStorageRepository].
      */
     @Provides
-    @ViewModelScoped
+    @Singleton
     fun provideNewsStorageRepository(
         repository: NewsStorageRepositoryImpl
     ): NewsStorageRepository = repository
@@ -76,7 +75,7 @@ object NewsModule {
      * @return Интерфейс [NewsRemoteRepository].
      */
     @Provides
-    @ViewModelScoped
+    @Singleton
     fun provideNewsRemoteRepository(
         repository: UniversityNewsRepositoryImpl
     ): NewsRemoteRepository = repository
@@ -88,7 +87,7 @@ object NewsModule {
      * @return Интерфейс [NewsPreferenceRepository].
      */
     @Provides
-    @ViewModelScoped
+    @Singleton
     fun provideNewsPreferenceRepository(
         repository: NewsPreferenceRepositoryImpl
     ): NewsPreferenceRepository = repository

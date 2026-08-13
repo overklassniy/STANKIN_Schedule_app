@@ -1,7 +1,9 @@
 package com.overklassniy.stankinschedule.di
 
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
-import com.overklassniy.stankinschedule.data.FirebaseLoggerAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.CrashReporter
+import com.overklassniy.stankinschedule.core.domain.repository.ProductAnalytics
+import com.overklassniy.stankinschedule.data.FirebaseProductAnalytics
+import com.overklassniy.stankinschedule.data.SentryCrashReporter
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -9,11 +11,10 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * Dagger модуль для предоставления зависимостей на уровне всего приложения.
+ * Dagger модуль для предоставления зависимостей аналитики и краш-репортинга.
  *
- * Этот модуль устанавливается в [SingletonComponent], что означает, что
- * предоставляемые зависимости будут жить столько же, сколько и само приложение,
- * и будут единственными экземплярами (синглтонами).
+ * Устанавливается в [SingletonComponent], предоставляемые зависимости
+ * живут столько же, сколько само приложение.
  */
 @Suppress("Unused")
 @Module
@@ -21,19 +22,24 @@ import javax.inject.Singleton
 interface AppModule {
 
     /**
-     * Предоставляет реализацию интерфейса [LoggerAnalytics].
+     * Предоставляет реализацию [ProductAnalytics] через [FirebaseProductAnalytics].
      *
-     * Использует [FirebaseLoggerAnalytics] в качестве конкретной реализации для аналитики и логирования.
-     * Благодаря аннотации [Binds], Dagger автоматически связывает интерфейс с реализацией
-     * без необходимости писать ручной код создания объекта.
-     *
-     * @param analytics Реализация аналитики через Firebase ([FirebaseLoggerAnalytics]).
-     *                  Dagger сам найдет, как создать этот объект, так как у него есть конструктор с @Inject.
-     * @return Экземпляр [LoggerAnalytics], который можно внедрять в другие классы.
+     * @param analytics Реализация продуктовой аналитики через Firebase.
+     * @return Экземпляр [ProductAnalytics].
      */
     @Suppress("Unused")
     @Binds
     @Singleton
-    fun provideAnalytics(analytics: FirebaseLoggerAnalytics): LoggerAnalytics
+    fun provideProductAnalytics(analytics: FirebaseProductAnalytics): ProductAnalytics
 
+    /**
+     * Предоставляет реализацию [CrashReporter] через [SentryCrashReporter].
+     *
+     * @param crashReporter Реализация краш-репортинга через Sentry.
+     * @return Экземпляр [CrashReporter].
+     */
+    @Suppress("Unused")
+    @Binds
+    @Singleton
+    fun provideCrashReporter(crashReporter: SentryCrashReporter): CrashReporter
 }

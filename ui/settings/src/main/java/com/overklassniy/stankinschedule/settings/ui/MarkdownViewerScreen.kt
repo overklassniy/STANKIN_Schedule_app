@@ -20,11 +20,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.viewinterop.AndroidView
@@ -208,8 +207,8 @@ private fun setupWebView(webView: WebView, isDark: Boolean, context: android.con
  */
 @Composable
 private fun isDarkTheme(): Boolean {
-    val context = LocalContext.current
-    val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    val configuration = LocalConfiguration.current
+    val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
     return currentNightMode == Configuration.UI_MODE_NIGHT_YES
 }
 
@@ -289,7 +288,6 @@ private fun convertMarkdownToHtml(markdown: String, isDark: Boolean): String {
                     htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
                     inList = false
                 }
-                htmlLines.add("<br>")
             }
 
             else -> {
@@ -320,23 +318,25 @@ private fun convertMarkdownToHtml(markdown: String, isDark: Boolean): String {
                 background-color: $backgroundColor;
                 color: $textColor;
                 padding: 16px;
-                line-height: 1.6;
+                line-height: 1.5;
                 max-width: 800px;
                 margin: 0 auto;
+                overflow-wrap: break-word;
+                word-break: break-word;
             }
             h1, h2, h3, h4 {
                 color: $textColor;
-                margin-top: 24px;
-                margin-bottom: 16px;
+                margin-top: 12px;
+                margin-bottom: 6px;
             }
-            h1 { font-size: 2em; }
-            h2 { font-size: 1.5em; }
-            h3 { font-size: 1.25em; }
-            h4 { font-size: 1.1em; }
-            p { margin: 16px 0; }
-            ul, ol { margin: 16px 0; padding-left: 24px; }
-            li { margin: 8px 0; }
-            a { color: $linkColor; text-decoration: none; }
+            h1 { font-size: 1.5em; }
+            h2 { font-size: 1.25em; }
+            h3 { font-size: 1.1em; }
+            h4 { font-size: 1em; }
+            p { margin: 6px 0; }
+            ul, ol { margin: 6px 0; padding-left: 20px; }
+            li { margin: 2px 0; }
+            a { color: $linkColor; text-decoration: none; word-break: break-all; }
             a:hover { text-decoration: underline; }
             strong { font-weight: 600; }
             em { font-style: italic; }

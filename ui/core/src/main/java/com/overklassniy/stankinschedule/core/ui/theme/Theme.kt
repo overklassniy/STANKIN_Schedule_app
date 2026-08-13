@@ -1,13 +1,45 @@
 package com.overklassniy.stankinschedule.core.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
+import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
+import com.overklassniy.stankinschedule.core.domain.settings.ThemeColors
+import com.overklassniy.stankinschedule.core.domain.settings.ThemePreset
+import com.overklassniy.stankinschedule.core.ui.ext.parse
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+
+/**
+ * Точка входа Hilt для получения [ApplicationPreference] без ViewModel.
+ *
+ * Используется внутри [AppTheme] для доступа к сохранённой теме оформления
+ * через LocalContext, не требуя передачи параметра в каждую Activity.
+ */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface AppThemeEntryPoint {
+    /**
+     * Предоставляет экземпляр [ApplicationPreference].
+     */
+    fun applicationPreference(): ApplicationPreference
+}
 
 /**
  * Схема цветов для светлой темы на основе md_theme_light_* палитры.
+ *
+ * Используется как fallback при отсутствии данных в DataStore.
  */
 private val LightColors = lightColorScheme(
     primary = md_theme_light_primary,
@@ -41,6 +73,8 @@ private val LightColors = lightColorScheme(
 
 /**
  * Схема цветов для тёмной темы на основе md_theme_dark_* палитры.
+ *
+ * Используется как fallback при отсутствии данных в DataStore.
  */
 private val DarkColors = darkColorScheme(
     primary = md_theme_dark_primary,
@@ -73,7 +107,58 @@ private val DarkColors = darkColorScheme(
 )
 
 /**
- * Применяет MaterialTheme со светлой/тёмной цветовой схемой.
+ * Преобразует HEX-строку в [Color].
+ *
+ * @param hex HEX-значение в формате `#RRGGBB` или `#AARRGGBB`.
+ * @return Объект [Color].
+ */
+private fun hexToColor(hex: String): Color = Color.parse(hex)
+
+/**
+ * Преобразует [ThemeColors] в [ColorScheme] Material 3.
+ *
+ * @param isDark `true` для построения тёмной схемы, `false` для светлой.
+ * @return Объект [ColorScheme], заполненный значениями из [ThemeColors].
+ */
+fun ThemeColors.toColorScheme(isDark: Boolean): ColorScheme {
+    val builder = if (isDark) darkColorScheme() else lightColorScheme()
+    return builder.copy(
+        primary = hexToColor(primary),
+        onPrimary = hexToColor(onPrimary),
+        primaryContainer = hexToColor(primaryContainer),
+        onPrimaryContainer = hexToColor(onPrimaryContainer),
+        secondary = hexToColor(secondary),
+        onSecondary = hexToColor(onSecondary),
+        secondaryContainer = hexToColor(secondaryContainer),
+        onSecondaryContainer = hexToColor(onSecondaryContainer),
+        tertiary = hexToColor(tertiary),
+        onTertiary = hexToColor(onTertiary),
+        tertiaryContainer = hexToColor(tertiaryContainer),
+        onTertiaryContainer = hexToColor(onTertiaryContainer),
+        error = hexToColor(error),
+        onError = hexToColor(onError),
+        errorContainer = hexToColor(errorContainer),
+        onErrorContainer = hexToColor(onErrorContainer),
+        background = hexToColor(background),
+        onBackground = hexToColor(onBackground),
+        surface = hexToColor(surface),
+        onSurface = hexToColor(onSurface),
+        surfaceVariant = hexToColor(surfaceVariant),
+        onSurfaceVariant = hexToColor(onSurfaceVariant),
+        outline = hexToColor(outline),
+        inverseSurface = hexToColor(inverseSurface),
+        inverseOnSurface = hexToColor(inverseOnSurface),
+        inversePrimary = hexToColor(inversePrimary),
+        surfaceTint = hexToColor(surfaceTint),
+    )
+}
+
+/**
+ * Применяет MaterialTheme с динамической цветовой схемой на основе настроек темы.
+ *
+ * Читает текущий пресет и цвета из DataStore через [ApplicationPreference].
+ * Для пресетов System, Light, Dark используются встроенные значения.
+ * Для пресета Custom используются сохранённые значения с fallback на встроенные.
  *
  * @param darkTheme Использовать тёмную тему; по умолчанию берётся системная настройка.
  * @param content Содержимое UI, отрисовываемое внутри темы.
@@ -83,8 +168,43 @@ fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
+    val context = LocalContext.current
+    val entryPoint = remember {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            AppThemeEntryPoint::class.java
+        )
+    }
+    val preference = remember { entryPoint.applicationPreference() }
+
+    val themePreset by remember(preference) {
+        preference.themePresetFlow()
+    }.collectAsState(initial = null)
+
+    val themeColors by remember(preference) {
+        preference.themeColors()
+    }.collectAsState(initial = null)
+
+    // Для пресета System: используем системную настройку тёмной/светлой темы.
+    // Для остальных пресетов: используем themeColors с определением isDark по luminance.
+    val colorScheme = when {
+        themePreset == null || themeColors == null -> {
+            if (darkTheme) DarkColors else LightColors
+        }
+        themePreset == ThemePreset.System -> {
+            if (darkTheme) DarkColors else LightColors
+        }
+        else -> {
+            val isDark = themeColors!!.let { colors ->
+                val bg = hexToColor(colors.background)
+                bg.luminance() < 0.5f
+            }
+            themeColors!!.toColorScheme(isDark = isDark)
+        }
+    }
+
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else LightColors,
+        colorScheme = colorScheme,
         content = content
     )
 }

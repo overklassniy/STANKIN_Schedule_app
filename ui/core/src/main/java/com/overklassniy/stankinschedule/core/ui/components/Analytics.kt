@@ -3,17 +3,28 @@ package com.overklassniy.stankinschedule.core.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.overklassniy.stankinschedule.core.domain.repository.ConsoleLoggerAnalytics
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.ConsoleCrashReporter
+import com.overklassniy.stankinschedule.core.domain.repository.ConsoleProductAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.CrashReporter
+import com.overklassniy.stankinschedule.core.domain.repository.ProductAnalytics
 
 
 /**
- * CompositionLocal для доступа к реализации [LoggerAnalytics] в UI.
+ * CompositionLocal для доступа к реализации [ProductAnalytics] в UI.
  *
- * По умолчанию используется [ConsoleLoggerAnalytics].
+ * По умолчанию используется [ConsoleProductAnalytics].
  */
-val LocalAnalytics = staticCompositionLocalOf<LoggerAnalytics> {
-    ConsoleLoggerAnalytics()
+val LocalProductAnalytics = staticCompositionLocalOf<ProductAnalytics> {
+    ConsoleProductAnalytics()
+}
+
+/**
+ * CompositionLocal для доступа к реализации [CrashReporter] в UI.
+ *
+ * По умолчанию используется [ConsoleCrashReporter].
+ */
+val LocalCrashReporter = staticCompositionLocalOf<CrashReporter> {
+    ConsoleCrashReporter()
 }
 
 /**
@@ -23,11 +34,11 @@ val LocalAnalytics = staticCompositionLocalOf<LoggerAnalytics> {
  */
 @Composable
 fun TrackCurrentScreen(screen: String) {
-    val analytics = LocalAnalytics.current
+    val analytics = LocalProductAnalytics.current
     DisposableEffect(Unit) {
-        analytics.logEvent(LoggerAnalytics.SCREEN_ENTER, screen)
+        analytics.logEvent(ProductAnalytics.SCREEN_ENTER, screen)
         onDispose {
-            analytics.logEvent(LoggerAnalytics.SCREEN_LEAVE, screen)
+            analytics.logEvent(ProductAnalytics.SCREEN_LEAVE, screen)
         }
     }
 }

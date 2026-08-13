@@ -5,18 +5,22 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.ApplicationInfo
+import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
-import androidx.work.Configuration
+import androidx.work.Configuration as WorkConfiguration
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
-import com.google.firebase.crashlytics.crashlytics
 import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
-import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
+import com.overklassniy.stankinschedule.core.domain.settings.ThemePreset
 import com.overklassniy.stankinschedule.core.ui.R
 import com.overklassniy.stankinschedule.core.ui.notification.NotificationUtils
+import com.overklassniy.stankinschedule.news.widget.ui.glance.NewsWidgetUpdater
+import com.overklassniy.stankinschedule.news.widget.ui.worker.NewsWidgetWorkerScheduler
+import com.overklassniy.stankinschedule.schedule.widget.ui.glance.ScheduleWidgetUpdater
 import dagger.hilt.android.HiltAndroidApp
+import io.sentry.android.core.SentryAndroid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,12 +32,12 @@ import javax.inject.Inject
  * Отвечает за:
  * 1. Инициализацию Hilt (DI).
  * 2. Настройку WorkManager.
- * 3. Инициализацию Firebase Analytics и Crashlytics.
+ * 3. Инициализацию Firebase Analytics (продуктовая аналитика) и Sentry (краши/перфоманс).
  * 4. Применение настроек темы и языка.
  * 5. Создание каналов уведомлений.
  */
 @HiltAndroidApp
-class MainApplication : Application(), Configuration.Provider {
+class MainApplication : Application(), WorkConfiguration.Provider {
 
     // Фабрика для создания воркеров с поддержкой Hilt
     @Inject
@@ -47,13 +51,30 @@ class MainApplication : Application(), Configuration.Provider {
     private val isDebug: Boolean
         get() = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
+    // Последнее известное состояние ночного режима для отслеживания смены темы
+    private var lastNightMode: Int = Configuration.UI_MODE_NIGHT_UNDEFINED
+
     /**
      * Вызывается при запуске приложения.
      *
      * Инициализирует аналитику, тему, язык и уведомления.
+     * Регистрирует колбэк для отслеживания смены системной темы (тёмная/светлая)
+     * и обновления виджета при изменении.
      */
     override fun onCreate() {
         super.onCreate()
+
+        lastNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+
+        // Инициализация Sentry для краш-репортинга и мониторинга производительности
+        SentryAndroid.init(this) { options ->
+            options.dsn = BuildConfig.SENTRY_DSN
+
+            // В режиме отладки отключаем отправку событий в Sentry
+            if (isDebug) {
+                options.setEnabled(false)
+            }
+        }
 
         // Запускаем инициализацию настроек асинхронно, так как DataStore работает асинхронно
         CoroutineScope(Dispatchers.Main).launch {
@@ -61,17 +82,47 @@ class MainApplication : Application(), Configuration.Provider {
             val analyticsEnabled = applicationPreference.isAnalyticsEnabled()
             Firebase.analytics.setAnalyticsCollectionEnabled(analyticsEnabled)
 
-            // В режиме отладки отключаем аналитику и сбор крашей
-            if (isDebug) {
-                Firebase.analytics.setAnalyticsCollectionEnabled(false)
-                Firebase.crashlytics.isCrashlyticsCollectionEnabled = false
+            // Управление Sentry в зависимости от настроек пользователя
+            if (!analyticsEnabled) {
+                io.sentry.Sentry.close()
             }
 
-            updateDarkMode()
+            // В режиме отладки отключаем аналитику и Sentry
+            if (isDebug) {
+                Firebase.analytics.setAnalyticsCollectionEnabled(false)
+                io.sentry.Sentry.close()
+            }
+
+            updateThemePreset()
             updateAppLanguage()
         }
 
         setupNotifications()
+        registerThemeChangeCallback()
+        NewsWidgetWorkerScheduler.schedule(this)
+    }
+
+    /**
+     * Регистрирует колбэк для отслеживания изменения конфигурации системы.
+     *
+     * При смене системной темы (тёмная/светлая) обновляет все экземпляры виджета,
+     * чтобы provideGlance выполнился заново с актуальным isSystemDarkTheme.
+     * Это работает только когда процесс приложения запущен.
+     */
+    private fun registerThemeChangeCallback() {
+        registerComponentCallbacks(@Suppress("OVERRIDE_DEPRECATION") object : android.content.ComponentCallbacks2 {
+            override fun onConfigurationChanged(newConfig: Configuration) {
+                val nightMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+                if (nightMode != lastNightMode) {
+                    lastNightMode = nightMode
+                    ScheduleWidgetUpdater.updateAll(this@MainApplication)
+                    NewsWidgetUpdater.updateAll(this@MainApplication)
+                }
+            }
+
+            override fun onLowMemory() {}
+            override fun onTrimMemory(level: Int) {}
+        })
     }
 
     /**
@@ -79,8 +130,8 @@ class MainApplication : Application(), Configuration.Provider {
      *
      * Определяет фабрику воркеров и уровень логирования (DEBUG в режиме отладки).
      */
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
+    override val workManagerConfiguration: WorkConfiguration
+        get() = WorkConfiguration.Builder()
             .apply {
                 if (isDebug) {
                     setMinimumLoggingLevel(android.util.Log.DEBUG)
@@ -90,15 +141,19 @@ class MainApplication : Application(), Configuration.Provider {
             .build()
 
     /**
-     * Обновляет тему приложения (светлая/темная/системная).
+     * Обновляет тему приложения на основе сохранённого пресета.
      *
      * Считывает настройки из [applicationPreference] и применяет их через [AppCompatDelegate].
+     * Для пресета Custom используется системный режим, так как кастомная тема
+     * может быть как светлой, так и тёмной.
      */
-    private suspend fun updateDarkMode() {
-        val mode = when (applicationPreference.currentDarkMode()) {
-            DarkMode.Default -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            DarkMode.Dark -> AppCompatDelegate.MODE_NIGHT_YES
-            DarkMode.Light -> AppCompatDelegate.MODE_NIGHT_NO
+    @Suppress("DEPRECATION")
+    private suspend fun updateThemePreset() {
+        val mode = when (applicationPreference.currentThemePreset()) {
+            ThemePreset.System -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            ThemePreset.Dark -> AppCompatDelegate.MODE_NIGHT_YES
+            ThemePreset.Light -> AppCompatDelegate.MODE_NIGHT_NO
+            ThemePreset.Custom -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
 
         if (mode != AppCompatDelegate.getDefaultNightMode()) {

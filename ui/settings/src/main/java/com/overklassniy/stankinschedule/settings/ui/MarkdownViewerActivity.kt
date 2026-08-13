@@ -8,7 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.ProductAnalytics
 import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class MarkdownViewerActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var loggerAnalytics: LoggerAnalytics
+    lateinit var productAnalytics: ProductAnalytics
 
     private val viewModel: MarkdownViewerViewModel by viewModels()
 
@@ -47,12 +47,12 @@ class MarkdownViewerActivity : AppCompatActivity() {
 
         viewModel.loadMarkdown(url)
 
-        loggerAnalytics.logEvent(LoggerAnalytics.SCREEN_ENTER, "MarkdownViewerActivity")
+        productAnalytics.logEvent(ProductAnalytics.SCREEN_ENTER, "MarkdownViewerActivity")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        loggerAnalytics.logEvent(LoggerAnalytics.SCREEN_LEAVE, "MarkdownViewerActivity")
+        productAnalytics.logEvent(ProductAnalytics.SCREEN_LEAVE, "MarkdownViewerActivity")
     }
 
     companion object {

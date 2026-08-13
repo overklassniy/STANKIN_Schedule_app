@@ -42,6 +42,7 @@ hilt { enableAggregatingTask = true }
 dependencies {
     implementation(project(":domain:core"))
     implementation(project(":domain:schedule-core"))
+    implementation(project(":domain:schedule-settings"))
     implementation(project(":domain:schedule-widget"))
 
     // Kotlin

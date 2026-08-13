@@ -1,7 +1,8 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
 
     id("dagger.hilt.android.plugin")
     alias(libs.plugins.ksp)
@@ -33,6 +34,14 @@ android {
 
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Sentry DSN из local.properties
+        val sentryDsn = rootProject.file("local.properties")
+            .takeIf { it.exists() }
+            ?.let { Properties().apply { it.inputStream().use { s -> load(s) } } }
+            ?.getProperty("sentry.dsn", "")
+            ?: ""
+        buildConfigField("String", "SENTRY_DSN", "\"$sentryDsn\"")
 
         // Opt-in to annotation defaults for Kotlin 2.x
         javaCompileOptions {
@@ -132,6 +141,7 @@ dependencies {
 
     implementation(project(":domain:core"))
     implementation(project(":domain:news-core"))
+    implementation(project(":domain:news-widget"))
     implementation(project(":domain:schedule-core"))
     implementation(project(":domain:schedule-settings"))
 
@@ -146,6 +156,7 @@ dependencies {
     implementation(project(":data:schedule-viewer"))
     implementation(project(":data:schedule-widget"))
     implementation(project(":data:news-core"))
+    implementation(project(":data:news-widget"))
 
     implementation(project(":ui:core"))
     implementation(project(":ui:home"))
@@ -161,6 +172,7 @@ dependencies {
     implementation(project(":ui:schedule-viewer"))
     implementation(project(":ui:schedule-widget"))
     implementation(project(":ui:news-review"))
+    implementation(project(":ui:news-widget"))
     implementation(project(":ui:settings"))
 
 
@@ -188,8 +200,10 @@ dependencies {
 
     // Firebase
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
+
+    // Sentry
+    implementation(libs.sentry.android)
 
     // Room DB
     implementation(libs.bundles.room)

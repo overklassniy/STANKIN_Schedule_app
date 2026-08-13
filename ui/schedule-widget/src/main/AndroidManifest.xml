@@ -4,11 +4,12 @@
     <application>
         <!-- Schedule widget -->
         <receiver
-            android:name=".ScheduleWidgetProvider"
-            android:exported="false">
+            android:name=".glance.ScheduleGlanceWidgetReceiver"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE_OPTIONS" />
             </intent-filter>
 
             <meta-data
@@ -16,10 +17,6 @@
                 android:resource="@xml/widget_schedule_app_info" />
 
         </receiver>
-
-        <service
-            android:name=".ScheduleWidgetService"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <activity
             android:name=".configure.ScheduleWidgetConfigureActivity"

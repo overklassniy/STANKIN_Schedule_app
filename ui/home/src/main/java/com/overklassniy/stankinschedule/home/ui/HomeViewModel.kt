@@ -11,6 +11,7 @@ import com.overklassniy.stankinschedule.core.ui.components.UIState
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsPost
 import com.overklassniy.stankinschedule.news.core.domain.model.NewsSubdivision
 import com.overklassniy.stankinschedule.news.core.domain.usecase.NewsReviewUseCase
+import com.overklassniy.stankinschedule.news.widget.ui.glance.NewsWidgetUpdater
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
 import com.overklassniy.stankinschedule.schedule.core.domain.usecase.ScheduleUseCase
@@ -26,6 +27,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
@@ -153,13 +156,16 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            kotlinx.coroutines.delay(500)
+            kotlinx.coroutines.delay(500.milliseconds)
             try {
                 newsUseCase.refreshNews(NewsSubdivision.University.id, force = false)
                 newsUseCase.refreshNews(NewsSubdivision.Announcements.id, force = false)
                 newsUseCase.refreshNews(NewsSubdivision.Dean.id, force = false)
                 newsUseCase.refreshNews(NewsSubdivision.Exchange.id, force = false)
                 newsUseCase.refreshNews(NewsSubdivision.PhD.id, force = false)
+
+                // Обновление виджетов новостей после загрузки свежих данных
+                NewsWidgetUpdater.updateAll(context)
             } catch (_: Exception) {
                 // Silent fail
             }
@@ -170,7 +176,7 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            kotlinx.coroutines.delay(1000)
+            kotlinx.coroutines.delay(1.seconds)
             checkForUpdates()
         }
     }

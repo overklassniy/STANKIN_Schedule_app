@@ -81,8 +81,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.ui.material)
 
-    implementation(libs.compose.color.picker.android)
-
     // Network
     implementation(libs.okhttp)
     implementation(libs.androidx.webkit)

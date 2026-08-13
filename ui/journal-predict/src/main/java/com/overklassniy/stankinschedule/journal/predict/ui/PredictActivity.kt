@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.ProductAnalytics
 import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import com.overklassniy.stankinschedule.journal.predict.ui.components.PredictScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,7 +19,7 @@ import javax.inject.Inject
 class PredictActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var loggerAnalytics: LoggerAnalytics
+    lateinit var productAnalytics: ProductAnalytics
 
     private val viewModel: PredictViewModel by viewModels()
 
@@ -38,7 +38,7 @@ class PredictActivity : AppCompatActivity() {
             }
         }
 
-        loggerAnalytics.logEvent(LoggerAnalytics.SCREEN_ENTER, "PredictActivity")
+        productAnalytics.logEvent(ProductAnalytics.SCREEN_ENTER, "PredictActivity")
     }
 
     /**
@@ -46,6 +46,6 @@ class PredictActivity : AppCompatActivity() {
      */
     override fun onDestroy() {
         super.onDestroy()
-        loggerAnalytics.logEvent(LoggerAnalytics.SCREEN_LEAVE, "PredictActivity")
+        productAnalytics.logEvent(ProductAnalytics.SCREEN_LEAVE, "PredictActivity")
     }
 }

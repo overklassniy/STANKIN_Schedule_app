@@ -11,6 +11,7 @@
     <string name="news_exchange">Межд. деят.</string>
     <string name="news_PhD">Аспирантура</string>
     <string name="more_news">Больше новостей</string>
+    <string name="news_empty">Последних новостей нет</string>
 
     <string name="link_copied">Ссылка скопирована!</string>
 

@@ -4,8 +4,8 @@ ext {
     extra["appCompileSdkVersion"] = 37
     extra["appMinSdkVersion"] = 26
     extra["appTargetSdkVersion"] = 36
-    extra["appVersionCode"] = 323
-    extra["appVersionName"] = "3.2.3"
+    extra["appVersionCode"] = 330
+    extra["appVersionName"] = "3.3.0"
     extra["appBuildToolsVersion"] = "36.0.0"
 }
 
@@ -21,7 +21,6 @@ buildscript {
     dependencies {
         classpath(libs.androidGradlePlugin)
         classpath(libs.kotlinPlugin)
-        classpath(libs.firebase.plugin)
         classpath(libs.hilt.plugin)
     }
 }

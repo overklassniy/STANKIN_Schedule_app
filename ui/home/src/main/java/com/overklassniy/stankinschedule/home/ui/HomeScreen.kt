@@ -319,33 +319,43 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(0.dp)
                         ) {
-                            val maxCount = HomeViewModel.NEWS_COUNT
-                            val itemCount = if (currentNews.isEmpty()) {
-                                maxCount
-                            } else {
-                                currentNews.size.coerceAtMost(maxCount)
-                            }
-                            repeat(itemCount) { index ->
-                                val post = currentNews.getOrNull(index)
-                                val itemModifier = if (index == 0) {
-                                    Modifier.padding(
-                                        start = 8.dp,
-                                        end = 8.dp,
-                                        top = 0.dp,
-                                        bottom = 8.dp
-                                    )
-                                } else {
-                                    Modifier.padding(8.dp)
-                                }
-                                NewsPost(
-                                    post = post,
-                                    imageLoader = imageLoader,
-                                    onClick = { clicked ->
-                                        navigateToNewsPost(clicked)
-                                    },
-                                    modifier = itemModifier
+                            if (currentNews.isEmpty()) {
+                                // Новостей нет — показываем сообщение вместо серых заглушек
+                                Text(
+                                    text = stringResource(R.string.news_empty),
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            horizontal = Dimen.ContentPadding,
+                                            vertical = Dimen.ContentPadding * 2
+                                        )
                                 )
-                                HorizontalDivider()
+                            } else {
+                                val maxCount = HomeViewModel.NEWS_COUNT
+                                val itemCount = currentNews.size.coerceAtMost(maxCount)
+                                repeat(itemCount) { index ->
+                                    val post = currentNews[index]
+                                    val itemModifier = if (index == 0) {
+                                        Modifier.padding(
+                                            start = 8.dp,
+                                            end = 8.dp,
+                                            top = 0.dp,
+                                            bottom = 8.dp
+                                        )
+                                    } else {
+                                        Modifier.padding(8.dp)
+                                    }
+                                    NewsPost(
+                                        post = post,
+                                        imageLoader = imageLoader,
+                                        onClick = { clicked ->
+                                            navigateToNewsPost(clicked)
+                                        },
+                                        modifier = itemModifier
+                                    )
+                                    HorizontalDivider()
+                                }
                             }
 
                             // Кнопка «Больше новостей» — открывает URL текущей вкладки

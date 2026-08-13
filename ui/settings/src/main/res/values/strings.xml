@@ -1,7 +1,8 @@
 <resources>
     <string name="settings_title">Settings</string>
 
-    <string name="pref_dark_mode">Dark mode</string>
+    <string name="pref_dark_mode">Theme</string>
+    <string name="pref_dark_mode_summary">Theme presets and color customization</string>
     <string name="dark_mode_default">System default</string>
     <string name="dark_mode_dark">On</string>
     <string name="dark_mode_light">Off</string>
@@ -37,12 +38,14 @@
     <string name="schedule_view_ver">Vertical view of the schedule</string>
     <string name="schedule_view_ver_summary">When viewing, use vertical scrolling instead of horizontal</string>
 
+    <string name="schedule_no_pairs">No classes</string>
+
     <string name="schedule_pair_settings">Pair</string>
 
     <string name="settings_more_title">Additionally</string>
 
     <string name="pref_send_analytics_data">Send data about application usage</string>
-    <string name="pref_send_analytics_data_summary">Screen views, usage times</string>
+    <string name="pref_send_analytics_data_summary" />
 
     <string name="lecture_color">Lecture color</string>
     <string name="seminar_color">Seminar color</string>
@@ -67,4 +70,33 @@
     <string name="email_copied_to_clipboard">Email copied to clipboard</string>
 
     <string name="retry">Retry</string>
+
+    <!-- Экран настройки темы -->
+    <string name="theme_settings_title">Theme</string>
+
+    <!-- Секция пресетов -->
+    <string name="theme_presets">Presets</string>
+    <string name="theme_preset_system">System default</string>
+    <string name="theme_preset_light">Light</string>
+    <string name="theme_preset_dark">Dark</string>
+    <string name="theme_preset_custom">Custom</string>
+    <string name="theme_preset_custom_summary">Automatically set when you change any color</string>
+    <string name="theme_reset_to_preset">Reset to preset</string>
+
+    <!-- Секция цветов интерфейса -->
+    <string name="theme_material_colors">Interface colors</string>
+    <string name="theme_color_primary">Primary</string>
+    <string name="theme_color_secondary">Secondary</string>
+    <string name="theme_color_tertiary">Tertiary</string>
+    <string name="theme_color_background">Background</string>
+    <string name="theme_color_surface">Surface</string>
+    <string name="theme_color_error">Error</string>
+
+    <!-- Секция цвета текста -->
+    <string name="theme_text_color">Text color</string>
+    <string name="theme_text_color_summary">Overrides text color on background and surface</string>
+    <string name="theme_text_color_reset">Reset to auto</string>
+
+    <!-- Секция цветов пар -->
+    <string name="theme_pair_colors">Pair colors</string>
 </resources>

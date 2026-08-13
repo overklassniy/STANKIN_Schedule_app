@@ -9,5 +9,25 @@
     <string name="widget_change">Change widget</string>
     <string name="widget_settings">Show settings</string>
     <string name="widget_error">Cannot load widget</string>
-    <string name="widget_no_pairs">No pairs</string>
+    <string name="widget_no_pairs">No classes</string>
+    <string name="widget_theme_title">Widget theme</string>
+    <string name="widget_theme_colors">Theme colors</string>
+    <string name="widget_pair_colors">Pair colors</string>
+    <string name="widget_preset_system">System</string>
+    <string name="widget_preset_light">Light</string>
+    <string name="widget_preset_dark">Dark</string>
+    <string name="widget_preset_custom">Custom</string>
+    <string name="widget_color_primary">Primary</string>
+    <string name="widget_color_secondary">Secondary</string>
+    <string name="widget_color_tertiary">Tertiary</string>
+    <string name="widget_color_background">Background</string>
+    <string name="widget_color_surface">Surface</string>
+    <string name="widget_color_error">Error</string>
+    <string name="widget_text_color">Text color</string>
+    <string name="widget_text_color_reset">Reset to auto</string>
+    <string name="widget_lecture_color">Lecture</string>
+    <string name="widget_seminar_color">Seminar</string>
+    <string name="widget_laboratory_color">Laboratory</string>
+    <string name="widget_subgroup_a_color">Subgroup A</string>
+    <string name="widget_subgroup_b_color">Subgroup B</string>
 </resources>

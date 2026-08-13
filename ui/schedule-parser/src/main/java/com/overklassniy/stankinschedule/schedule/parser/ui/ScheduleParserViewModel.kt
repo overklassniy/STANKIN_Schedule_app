@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.CrashReporter
 import com.overklassniy.stankinschedule.core.domain.usecase.DeviceUseCase
 import com.overklassniy.stankinschedule.core.ui.components.UIState
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleInfo
@@ -37,7 +37,7 @@ import javax.inject.Inject
 class ScheduleParserViewModel @Inject constructor(
     private val deviceUseCase: DeviceUseCase,
     private val parserUseCase: ParserUseCase,
-    private val loggerAnalytics: LoggerAnalytics,
+    private val crashReporter: CrashReporter,
     private val scheduleUseCase: ScheduleUseCase,
     private val scheduleSettingsUseCase: ScheduleSettingsUseCase
 ) : ViewModel() {
@@ -98,7 +98,7 @@ class ScheduleParserViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                loggerAnalytics.recordException(e)
+                crashReporter.recordException(e)
             }
         }
     }
@@ -224,7 +224,7 @@ class ScheduleParserViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 _parserState.value = ParserState.ParserResult(UIState.failed(e))
-                loggerAnalytics.recordException(e)
+                crashReporter.recordException(e)
             }
         }
     }

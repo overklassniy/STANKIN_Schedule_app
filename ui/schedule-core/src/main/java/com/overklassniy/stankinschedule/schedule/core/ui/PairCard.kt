@@ -1,12 +1,11 @@
 package com.overklassniy.stankinschedule.schedule.core.ui
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.LocalIndication
+import androidx.core.net.toUri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -260,7 +259,7 @@ private fun LecturerInfoDialog(
                             indication = LocalIndication.current
                         ) {
                             context.startActivity(
-                                Intent(Intent.ACTION_VIEW, Uri.parse("mailto:$email"))
+                                Intent(Intent.ACTION_VIEW, "mailto:$email".toUri())
                             )
                         }
                     )
@@ -301,11 +300,12 @@ private fun ClassroomText(
     onLinkClicked: (link: String) -> Unit,
     onLinkCopied: (link: String) -> Unit,
     interactionSource: MutableInteractionSource,
+    modifier: Modifier = Modifier,
     clickHandledByParent: Boolean = false,
-    modifier: Modifier = Modifier
 ) {
-    // Цвет ссылок зависит от темы системы; значения подобраны под читаемость
-    val linkColor = if (isSystemInDarkTheme()) {
+    // Цвет ссылок зависит от фактической темы приложения; значения подобраны под читаемость
+    val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val linkColor = if (isDarkTheme) {
         Color(113, 170, 235)
     } else {
         Color(51, 102, 204)
@@ -496,6 +496,10 @@ private fun SubgroupText(
 /**
  * Выбирает цвет текста, контрастный фону плашки.
  *
+ * Тёмность темы определяется по luminance фактического surface из MaterialTheme,
+ * а не по системной настройке, чтобы корректно работать когда тема приложения
+ * не совпадает с системной.
+ *
  * @param background Цвет фона плашки.
  * @param isDark Признак «тёмности» фона (по умолчанию вычисляется через luminance < 0.5).
  * @return Цвет текста с достаточным контрастом.
@@ -505,8 +509,9 @@ private fun textColor(
     background: Color,
     isDark: Boolean = background.luminance() < 0.5f
 ): Color {
-    // Порог 0.5 для luminance – эмпирический, обеспечивает читаемость в большинстве случаев
-    return if (isSystemInDarkTheme()) {
+    // Порог 0.5 для luminance — эмпирический, обеспечивает читаемость в большинстве случаев
+    val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    return if (isDarkTheme) {
         if (isDark) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.surface
     } else {
         if (isDark) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onSurface

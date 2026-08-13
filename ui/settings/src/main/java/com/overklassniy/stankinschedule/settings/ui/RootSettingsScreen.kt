@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import com.overklassniy.stankinschedule.core.domain.settings.AppLanguage
-import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
+import com.overklassniy.stankinschedule.core.domain.settings.ThemePreset
 import com.overklassniy.stankinschedule.core.ui.utils.BrowserUtils
 import com.overklassniy.stankinschedule.settings.ui.components.DialogPreference
 import com.overklassniy.stankinschedule.settings.ui.components.PreferenceDivider
@@ -56,6 +56,7 @@ fun RootSettingsScreen(
     onBackPressed: () -> Unit,
     navigateToSchedule: () -> Unit,
     navigateToMore: () -> Unit,
+    navigateToTheme: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -66,21 +67,8 @@ fun RootSettingsScreen(
     ) {
         val context = LocalContext.current
 
-        val nightMode by viewModel.nightMode.collectAsState()
+        val themePreset by viewModel.themePreset.collectAsState()
         val appLanguage by viewModel.appLanguage.collectAsState()
-
-        LaunchedEffect(nightMode) {
-            val current = nightMode ?: return@LaunchedEffect
-            val mode = when (current) {
-                DarkMode.Default -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                DarkMode.Dark -> AppCompatDelegate.MODE_NIGHT_YES
-                DarkMode.Light -> AppCompatDelegate.MODE_NIGHT_NO
-            }
-
-            if (mode != AppCompatDelegate.getDefaultNightMode()) {
-                AppCompatDelegate.setDefaultNightMode(mode)
-            }
-        }
 
         LaunchedEffect(appLanguage) {
             val current = appLanguage ?: return@LaunchedEffect
@@ -92,19 +80,18 @@ fun RootSettingsScreen(
             AppCompatDelegate.setApplicationLocales(localeList)
         }
 
-        DialogPreference(
+        RegularPreference(
             title = stringResource(R.string.pref_dark_mode),
-            items = DarkMode.entries,
-            selected = nightMode ?: DarkMode.Default,
-            label = {
-                @StringRes val id = when (it) {
-                    DarkMode.Default -> R.string.dark_mode_default
-                    DarkMode.Dark -> R.string.dark_mode_dark
-                    DarkMode.Light -> R.string.dark_mode_light
+            subtitle = themePreset?.let { preset ->
+                @StringRes val id = when (preset) {
+                    ThemePreset.System -> R.string.theme_preset_system
+                    ThemePreset.Light -> R.string.theme_preset_light
+                    ThemePreset.Dark -> R.string.theme_preset_dark
+                    ThemePreset.Custom -> R.string.theme_preset_custom
                 }
                 stringResource(id)
-            },
-            onItemChanged = { viewModel.setNightMode(it) },
+            } ?: stringResource(R.string.pref_dark_mode_summary),
+            onClick = navigateToTheme,
             icon = R.drawable.ic_pref_dark_mode
         )
 

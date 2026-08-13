@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
-import com.overklassniy.stankinschedule.core.ui.components.LocalAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.CrashReporter
+import com.overklassniy.stankinschedule.core.domain.repository.ProductAnalytics
+import com.overklassniy.stankinschedule.core.ui.components.LocalCrashReporter
+import com.overklassniy.stankinschedule.core.ui.components.LocalProductAnalytics
 import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -25,10 +27,16 @@ import javax.inject.Inject
 class ScheduleRepositoryActivity : AppCompatActivity() {
 
     /**
-     * Аналитика событий (LoggerAnalytics), передается в Compose через LocalAnalytics.
+     * Продуктовая аналитика, передается в Compose через LocalProductAnalytics.
      */
     @Inject
-    lateinit var loggerAnalytics: LoggerAnalytics
+    lateinit var productAnalytics: ProductAnalytics
+
+    /**
+     * Краш-репортинг, передается в Compose через LocalCrashReporter.
+     */
+    @Inject
+    lateinit var crashReporter: CrashReporter
 
     private val viewModel: ScheduleRepositoryViewModel by viewModels()
 
@@ -49,7 +57,10 @@ class ScheduleRepositoryActivity : AppCompatActivity() {
 
         setContent {
             AppTheme {
-                CompositionLocalProvider(LocalAnalytics provides loggerAnalytics) {
+                CompositionLocalProvider(
+                    LocalProductAnalytics provides productAnalytics,
+                    LocalCrashReporter provides crashReporter
+                ) {
                     ScheduleRepositoryScreen(
                         onBackPressed = {
                             onBackPressedDispatcher.onBackPressed()

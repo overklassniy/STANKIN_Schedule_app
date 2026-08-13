@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.overklassniy.stankinschedule.core.ui.components.LocalAnalytics
+import com.overklassniy.stankinschedule.core.ui.components.LocalCrashReporter
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
@@ -30,10 +30,10 @@ fun RepositoryError(
     onRetryClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val analytics = LocalAnalytics.current
+    val crashReporter = LocalCrashReporter.current
 
-    // Записываем исключение в аналитику
-    analytics.recordException(error)
+    // Записываем исключение в краш-репортинг
+    crashReporter.recordException(error)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

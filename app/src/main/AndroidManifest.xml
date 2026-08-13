@@ -47,6 +47,19 @@
         android:localeConfig="@xml/locale_config"
         tools:targetApi="tiramisu">
 
+        <!-- Sentry: отключаем auto-init, инициализируем вручную в MainApplication -->
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+
+        <!-- Sentry: включаем performance monitoring (трассировки) -->
+        <meta-data android:name="io.sentry.traces.sample-rate" android:value="1.0" />
+
+        <!-- Sentry: включаем profiling (Perfetto на Android 15+, legacy на старых) -->
+        <meta-data android:name="io.sentry.traces.profiling.session-sample-rate" android:value="1.0" />
+        <meta-data android:name="io.sentry.traces.profiling.lifecycle" android:value="trace" />
+
+        <!-- Sentry: включаем tombstone для расширенной информации о нативных крашах -->
+        <meta-data android:name="io.sentry.tombstone.enable" android:value="true" />
+
 
         <!-- If you want to disable android.startup completely. -->
         <provider

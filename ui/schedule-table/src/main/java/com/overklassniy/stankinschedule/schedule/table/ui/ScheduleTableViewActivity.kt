@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
-import com.overklassniy.stankinschedule.core.ui.components.LocalAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.CrashReporter
+import com.overklassniy.stankinschedule.core.domain.repository.ProductAnalytics
+import com.overklassniy.stankinschedule.core.ui.components.LocalCrashReporter
+import com.overklassniy.stankinschedule.core.ui.components.LocalProductAnalytics
 import com.overklassniy.stankinschedule.core.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,7 +28,10 @@ import javax.inject.Inject
 class ScheduleTableViewActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var loggerAnalytics: LoggerAnalytics
+    lateinit var productAnalytics: ProductAnalytics
+
+    @Inject
+    lateinit var crashReporter: CrashReporter
 
     private val viewModel: ScheduleTableViewModel by viewModels()
 
@@ -41,7 +46,10 @@ class ScheduleTableViewActivity : AppCompatActivity() {
 
         setContent {
             AppTheme {
-                CompositionLocalProvider(LocalAnalytics provides loggerAnalytics) {
+                CompositionLocalProvider(
+                    LocalProductAnalytics provides productAnalytics,
+                    LocalCrashReporter provides crashReporter
+                ) {
                     ScheduleTableScreen(
                         scheduleId = scheduleId,
                         viewModel = viewModel,

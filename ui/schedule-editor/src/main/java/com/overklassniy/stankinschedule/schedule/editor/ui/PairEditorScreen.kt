@@ -67,7 +67,7 @@ import com.overklassniy.stankinschedule.schedule.editor.ui.components.EditorMode
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.EditorToolbar
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.PairEditorState
 import com.overklassniy.stankinschedule.schedule.editor.ui.components.getOrNull
-import com.overklassniy.stankinschedule.schedule.widget.ui.ScheduleWidget
+import com.overklassniy.stankinschedule.schedule.widget.ui.glance.ScheduleWidgetUpdater
 import kotlinx.coroutines.launch
 import com.overklassniy.stankinschedule.core.ui.R as R_core
 
@@ -84,7 +84,6 @@ import com.overklassniy.stankinschedule.core.ui.R as R_core
  * @param viewModel ViewModel редактора пары.
  * @param modifier Модификатор внешнего вида и расположения.
  */
-@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PairEditorScreen(
@@ -141,7 +140,7 @@ fun PairEditorScreen(
     LaunchedEffect(pairState) {
         when (pairState) {
             is PairEditorState.Complete -> {
-                ScheduleWidget.updateWidgetById(context, scheduleId, true)
+                ScheduleWidgetUpdater.updateAll(context)
                 onBackClicked()
             }
 

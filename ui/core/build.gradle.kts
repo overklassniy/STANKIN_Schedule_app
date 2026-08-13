@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
     id("com.android.library")
 }
 
@@ -44,6 +45,10 @@ dependencies {
     // Kotlin
     implementation(libs.androidx.core)
 
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+
     // Jetpack Compose & Material 3
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
@@ -58,6 +63,7 @@ dependencies {
     implementation(libs.ui.material)
     implementation(libs.androidx.paging)
     implementation(libs.androidx.splashscreen)
+    implementation(libs.compose.color.picker.android)
 
     // Components
     implementation(libs.integration.browser)

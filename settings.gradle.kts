@@ -19,6 +19,7 @@ include(
     ":data:core",
     ":data:journal-core",
     ":data:news-core",
+    ":data:news-widget",
     ":data:schedule-core",
     ":data:schedule-table",
     ":data:schedule-ical",
@@ -31,6 +32,7 @@ include(
     ":domain:core",
     ":domain:journal-core",
     ":domain:news-core",
+    ":domain:news-widget",
     ":domain:schedule-core",
     ":domain:schedule-ical",
     ":domain:schedule-table",
@@ -46,6 +48,7 @@ include(
     ":ui:journal-viewer",
     ":ui:journal-predict",
     ":ui:news-review",
+    ":ui:news-widget",
     ":ui:schedule-core",
     ":ui:schedule-list",
     ":ui:schedule-table",
@@ -56,5 +59,4 @@ include(
     ":ui:schedule-repository",
     ":ui:schedule-widget",
     ":ui:settings",
-
     )

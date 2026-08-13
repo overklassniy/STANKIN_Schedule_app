@@ -3,7 +3,7 @@ package com.overklassniy.stankinschedule.schedule.table.ui
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.CrashReporter
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
 import com.overklassniy.stankinschedule.schedule.core.domain.usecase.ScheduleUseCase
 import com.overklassniy.stankinschedule.schedule.table.domain.model.ScheduleTable
@@ -37,7 +37,7 @@ import javax.inject.Inject
 class ScheduleTableViewModel @Inject constructor(
     private val scheduleUseCase: ScheduleUseCase,
     private val tableUseCase: AndroidTableUseCase,
-    private val loggerAnalytics: LoggerAnalytics
+    private val crashReporter: CrashReporter
 ) : ViewModel() {
 
     private val _scheduleName = MutableStateFlow("")
@@ -245,7 +245,7 @@ class ScheduleTableViewModel @Inject constructor(
             .catch { t ->
                 // Ошибки экспорта отображаются пользователю и протоколируются в аналитике.
                 _exportProgress.value = ExportProgress.Error(t)
-                loggerAnalytics.recordException(t)
+                crashReporter.recordException(t)
             }
             .collect { result ->
                 _exportProgress.value = ExportProgress.Finished(
@@ -283,7 +283,7 @@ class ScheduleTableViewModel @Inject constructor(
             .catch { t ->
                 // Ошибки сохранения отображаются пользователю и протоколируются в аналитике.
                 _exportProgress.value = ExportProgress.Error(t)
-                loggerAnalytics.recordException(t)
+                crashReporter.recordException(t)
             }
             .collect { result ->
                 _exportProgress.value = ExportProgress.Finished(

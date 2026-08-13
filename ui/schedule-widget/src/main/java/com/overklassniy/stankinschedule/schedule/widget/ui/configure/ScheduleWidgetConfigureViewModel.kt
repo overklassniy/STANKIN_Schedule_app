@@ -1,11 +1,17 @@
 package com.overklassniy.stankinschedule.schedule.widget.ui.configure
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.state.getAppWidgetState
+import androidx.glance.state.PreferencesGlanceStateDefinition
 import com.overklassniy.stankinschedule.schedule.widget.domain.model.ScheduleItem
 import com.overklassniy.stankinschedule.schedule.widget.domain.model.ScheduleWidgetData
 import com.overklassniy.stankinschedule.schedule.widget.domain.usecase.ScheduleConfigureUseCase
+import com.overklassniy.stankinschedule.schedule.widget.ui.glance.WidgetStateKeys
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,10 +22,14 @@ import javax.inject.Inject
 /**
  * ViewModel конфигурации виджета расписания.
  *
- * Управляет загрузкой списков расписаний и сохранением настроек виджета.
+ * Управляет загрузкой списков расписаний и сохранением настроек виджета
+ * через Glance state.
+ *
+ * @property applicationContext Контекст приложения для доступа к Glance API.
  */
 @HiltViewModel
 class ScheduleWidgetConfigureViewModel @Inject constructor(
+    @ApplicationContext private val applicationContext: Context,
     private val useCase: ScheduleConfigureUseCase
 ) : ViewModel() {
 
@@ -44,23 +54,22 @@ class ScheduleWidgetConfigureViewModel @Inject constructor(
     }
 
     /**
-     * Загружает сохраненные настройки виджета.
+     * Загружает сохраненные настройки виджета из Glance state.
      * Повторные вызовы игнорируются, если данные уже загружены.
      *
      * @param appWidgetId Идентификатор виджета.
      */
     fun loadConfigure(appWidgetId: Int) {
         if (_currentData.value != null) return
-        _currentData.value = useCase.loadWidgetData(appWidgetId)
-    }
-
-    /**
-     * Сохраняет настройки виджета.
-     *
-     * @param appWidgetId Идентификатор виджета.
-     * @param data Данные для сохранения.
-     */
-    fun saveConfigure(appWidgetId: Int, data: ScheduleWidgetData) {
-        useCase.saveWidgetData(appWidgetId, data)
+        viewModelScope.launch {
+            val manager = GlanceAppWidgetManager(applicationContext)
+            val glanceId = manager.getGlanceIdBy(appWidgetId)
+            val prefs = getAppWidgetState<androidx.datastore.preferences.core.Preferences>(
+                applicationContext,
+                PreferencesGlanceStateDefinition,
+                glanceId
+            )
+            _currentData.value = WidgetStateKeys.toData(prefs)
+        }
     }
 }

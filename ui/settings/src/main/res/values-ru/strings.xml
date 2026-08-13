@@ -2,7 +2,8 @@
 <resources>
     <string name="settings_title">Настройки</string>
 
-    <string name="pref_dark_mode">Темная тема</string>
+    <string name="pref_dark_mode">Тема</string>
+    <string name="pref_dark_mode_summary">Пресеты тем и настройка цветов</string>
     <string name="dark_mode_default">Следовать настройкам системы</string>
     <string name="dark_mode_dark">Включена</string>
     <string name="dark_mode_light">Выключена</string>
@@ -43,7 +44,7 @@
     <string name="settings_more_title">Дополнительно</string>
 
     <string name="pref_send_analytics_data">Отправлять данные об использовании приложения</string>
-    <string name="pref_send_analytics_data_summary">Просмотр экранов, время использования</string>
+    <string name="pref_send_analytics_data_summary" />
 
     <string name="lecture_color">Цвет лекции</string>
     <string name="seminar_color">Цвет семинара</string>
@@ -68,4 +69,33 @@
     <string name="email_copied_to_clipboard">Email скопирован в буфер обмена</string>
 
     <string name="retry">Повторить</string>
+
+    <!-- Экран настройки темы -->
+    <string name="theme_settings_title">Тема оформления</string>
+
+    <!-- Секция пресетов -->
+    <string name="theme_presets">Пресеты</string>
+    <string name="theme_preset_system">Системная по умолчанию</string>
+    <string name="theme_preset_light">Светлая</string>
+    <string name="theme_preset_dark">Тёмная</string>
+    <string name="theme_preset_custom">Кастомная</string>
+    <string name="theme_preset_custom_summary">Устанавливается автоматически при изменении любого цвета</string>
+    <string name="theme_reset_to_preset">Сбросить к пресету</string>
+
+    <!-- Секция цветов интерфейса -->
+    <string name="theme_material_colors">Цвета интерфейса</string>
+    <string name="theme_color_primary">Основной</string>
+    <string name="theme_color_secondary">Вторичный</string>
+    <string name="theme_color_tertiary">Третичный</string>
+    <string name="theme_color_background">Фон</string>
+    <string name="theme_color_surface">Поверхность</string>
+    <string name="theme_color_error">Ошибка</string>
+
+    <!-- Секция цвета текста -->
+    <string name="theme_text_color">Цвет текста</string>
+    <string name="theme_text_color_summary">Переопределяет цвет текста на фоне и поверхности</string>
+    <string name="theme_text_color_reset">Сбросить к авто</string>
+
+    <!-- Секция цветов пар -->
+    <string name="theme_pair_colors">Цвета пар</string>
 </resources>

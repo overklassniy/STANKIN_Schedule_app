@@ -77,7 +77,10 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.ui.material)
     implementation(libs.compose.navigation)
-    // implementation(libs.androidx.glance)
+
+    // Glance
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
 
     // DI
     implementation(libs.hilt.android)

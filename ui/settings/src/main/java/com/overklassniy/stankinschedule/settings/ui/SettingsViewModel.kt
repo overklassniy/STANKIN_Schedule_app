@@ -9,18 +9,17 @@ import com.overklassniy.stankinschedule.core.domain.repository.GooglePlayAvailab
 import com.overklassniy.stankinschedule.core.domain.repository.UpdateRepository
 import com.overklassniy.stankinschedule.core.domain.settings.AppLanguage
 import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreference
-import com.overklassniy.stankinschedule.core.domain.settings.DarkMode
+import com.overklassniy.stankinschedule.core.domain.settings.ThemeColors
+import com.overklassniy.stankinschedule.core.domain.settings.ThemePreset
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorGroup
 import com.overklassniy.stankinschedule.schedule.settings.domain.model.PairColorType
 import com.overklassniy.stankinschedule.schedule.settings.domain.repository.SchedulePreference
+import com.overklassniy.stankinschedule.schedule.widget.ui.glance.ScheduleWidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
@@ -34,13 +33,70 @@ class SettingsViewModel @Inject constructor(
     private val googlePlayAvailabilityRepository: GooglePlayAvailabilityRepository,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
-    private val _nightMode = MutableStateFlow<DarkMode?>(value = null)
-    val nightMode: StateFlow<DarkMode?> = _nightMode.asStateFlow()
+    private val _themePreset = MutableStateFlow<ThemePreset?>(value = null)
+    val themePreset: StateFlow<ThemePreset?> = _themePreset.asStateFlow()
 
-    fun setNightMode(mode: DarkMode) {
+    /**
+     * Устанавливает пресет темы оформления.
+     *
+     * @param preset Новый пресет темы.
+     */
+    fun setThemePreset(preset: ThemePreset) {
         viewModelScope.launch {
-            applicationPreference.setDarkMode(mode)
-            _nightMode.value = mode
+            applicationPreference.setThemePreset(preset)
+            _themePreset.value = preset
+        }
+    }
+
+    // Flow с цветами Material 3 из DataStore
+    val themeColors: Flow<ThemeColors> = applicationPreference.themeColors()
+
+    /**
+     * Устанавливает отдельный цвет темы Material 3.
+     *
+     * При вызове автоматически переключает пресет на Custom.
+     *
+     * @param colorName Имя цвета (ключ в THEME_COLOR_KEYS без префикса).
+     * @param hex HEX-значение цвета.
+     */
+    fun setThemeColor(colorName: String, hex: String) {
+        viewModelScope.launch {
+            applicationPreference.setThemeColor(colorName, hex)
+            _themePreset.value = ThemePreset.Custom
+        }
+    }
+
+    /**
+     * Сбрасывает все цвета Material 3 к встроенному пресету.
+     *
+     * @param preset Пресет для сброса.
+     */
+    fun resetThemeColors(preset: ThemePreset) {
+        viewModelScope.launch {
+            applicationPreference.resetThemeColors(preset)
+            _themePreset.value = preset
+        }
+    }
+
+    /**
+     * Устанавливает цвет текста (onSurface и onBackground).
+     *
+     * Не переключает пресет на Custom, так как настройка доступна для всех пресетов.
+     *
+     * @param hex HEX-значение цвета.
+     */
+    fun setThemeTextColor(hex: String) {
+        viewModelScope.launch {
+            applicationPreference.setThemeTextColor(hex)
+        }
+    }
+
+    /**
+     * Сбрасывает переопределение цвета текста к автоматическому вычислению.
+     */
+    fun resetThemeTextColor() {
+        viewModelScope.launch {
+            applicationPreference.resetThemeTextColor()
         }
     }
 
@@ -57,13 +113,6 @@ class SettingsViewModel @Inject constructor(
     val isVerticalViewer: Flow<Boolean> = schedulePreference.isVerticalViewer()
     val pairColorGroup: Flow<PairColorGroup> = schedulePreference.scheduleColorGroup()
 
-    private val _colorChanged = MutableSharedFlow<PairColorType>(
-        replay = 1,
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    val colorChanged = _colorChanged.asSharedFlow()
-
     fun setVerticalViewer(isVertical: Boolean) {
         viewModelScope.launch { schedulePreference.setVerticalViewer(isVertical) }
     }
@@ -71,7 +120,7 @@ class SettingsViewModel @Inject constructor(
     fun setPairColor(hex: String, type: PairColorType) {
         viewModelScope.launch {
             schedulePreference.setScheduleColor(hex, type)
-            _colorChanged.emit(type)
+            ScheduleWidgetUpdater.updateAll(context)
         }
     }
 
@@ -101,7 +150,7 @@ class SettingsViewModel @Inject constructor(
      */
     private fun loadCachedState() {
         viewModelScope.launch {
-            _nightMode.value = applicationPreference.currentDarkMode()
+            _themePreset.value = applicationPreference.currentThemePreset()
             _appLanguage.value = applicationPreference.currentAppLanguage()
             _isAnalyticsEnabled.value = applicationPreference.isAnalyticsEnabled()
             _googlePlayAvailable.value = applicationPreference.isGooglePlayAvailable() == true

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="news_widget_title">СТАНКИН Новости</string>
+    <string name="news_widget_description">Последние 10 новостей из выбранных категорий</string>
+    <string name="news_widget_no_news">Нет новостей</string>
+    <string name="news_widget_error">Не удалось загрузить виджет</string>
+    <string name="news_widget_configure_title">Настройка виджета новостей</string>
+    <string name="news_widget_categories">Категории новостей</string>
+    <string name="news_widget_theme_title">Тема виджета</string>
+    <string name="news_widget_theme_colors">Цвета темы</string>
+    <string name="news_widget_preset_system">Системная</string>
+    <string name="news_widget_preset_light">Светлая</string>
+    <string name="news_widget_preset_dark">Тёмная</string>
+    <string name="news_widget_preset_custom">Кастомная</string>
+    <string name="news_widget_color_primary">Категория «Университет»</string>
+    <string name="news_widget_color_secondary">Категория «Аспирантура»</string>
+    <string name="news_widget_color_tertiary">Категория «Международная деятельность»</string>
+    <string name="news_widget_color_background">Фон виджета</string>
+    <string name="news_widget_color_surface">Поверхность виджета</string>
+    <string name="news_widget_color_error">Категория «Деканат»</string>
+    <string name="news_widget_color_announcements">Категория «Анонсы»</string>
+    <string name="news_widget_text_color">Цвет текста</string>
+    <string name="news_widget_text_color_reset">Сбросить к авто</string>
+    <string name="news_widget_add">Добавить виджет</string>
+    <string name="news_widget_change">Изменить виджет</string>
+
+    <string name="news_subdivision_university">Университет</string>
+    <string name="news_subdivision_exchange">Международная деятельность</string>
+    <string name="news_subdivision_phd">Аспирантура</string>
+    <string name="news_subdivision_dean">Единый Деканат</string>
+    <string name="news_subdivision_announcements">Анонсы</string>
+</resources>

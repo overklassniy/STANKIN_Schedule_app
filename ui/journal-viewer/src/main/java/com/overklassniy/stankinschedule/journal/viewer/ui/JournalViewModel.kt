@@ -6,7 +6,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.overklassniy.stankinschedule.core.domain.repository.LoggerAnalytics
+import com.overklassniy.stankinschedule.core.domain.repository.CrashReporter
 import com.overklassniy.stankinschedule.core.ui.components.UIState
 import com.overklassniy.stankinschedule.journal.core.domain.exceptions.StudentAuthorizedException
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
@@ -38,7 +38,7 @@ class JournalViewModel @Inject constructor(
     private val journal: JournalUseCase,
     private val login: LoginUseCase,
     private val predict: PredictUseCase,
-    private val logger: LoggerAnalytics
+    private val crashReporter: CrashReporter
 ) : ViewModel() {
 
     private val _isSignIn = MutableStateFlow(true)
@@ -212,7 +212,7 @@ class JournalViewModel @Inject constructor(
             try {
                 login.signOut()
             } catch (e: Exception) {
-                logger.recordException(e)
+                crashReporter.recordException(e)
             }
             _isSignIn.value = false
         }

@@ -33,7 +33,7 @@ fun SwitchPreference(
 ) {
     SwitchPreference(
         title = title,
-        subtitle = AnnotatedString(text = subtitle),
+        subtitle = if (subtitle.isEmpty()) null else AnnotatedString(text = subtitle),
         checked = checked,
         onCheckedChange = onCheckedChange,
         modifier = modifier,
@@ -44,7 +44,7 @@ fun SwitchPreference(
 @Composable
 fun SwitchPreference(
     title: String,
-    subtitle: AnnotatedString,
+    subtitle: AnnotatedString?,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -77,15 +77,17 @@ fun SwitchPreference(
                 },
             )
 
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (!enabled) {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.74f)
-                },
-            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (!enabled) {
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    } else {
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.74f)
+                    },
+                )
+            }
         }
 
         Switch(
@@ -96,7 +98,6 @@ fun SwitchPreference(
     }
 }
 
-@Suppress("AssignedValueIsNeverRead")
 @Preview(showBackground = true)
 @Composable
 private fun SwitchPreferencePreview() {
