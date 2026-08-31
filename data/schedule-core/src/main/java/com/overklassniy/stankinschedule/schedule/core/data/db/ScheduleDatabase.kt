@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ScheduleEntity::class,
         PairEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class ScheduleDatabase : RoomDatabase() {
@@ -64,6 +64,29 @@ abstract class ScheduleDatabase : RoomDatabase() {
         }
 
         /**
+         * Миграция с версии 3 на 4: обновление времён звонков до актуального расписания.
+         *
+         * Заменяет старые значения времени начала и окончания пар в столбце time
+         * (формат "H:mm-H:mm") на новые. Начала и окончания обновляются раздельно,
+         * так как значение "15:50" является одновременно новым временем начала (из "16:00")
+         * и старым временем окончания (→ "15:40").
+         */
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Старые времена начала пар → новые (заменяются по префиксу "H:mm-")
+                db.execSQL("UPDATE schedule_pair_entities SET time = REPLACE(time, '10:20-', '10:15-') WHERE time LIKE '10:20-%'")
+                db.execSQL("UPDATE schedule_pair_entities SET time = REPLACE(time, '14:10-', '14:05-') WHERE time LIKE '14:10-%'")
+                db.execSQL("UPDATE schedule_pair_entities SET time = REPLACE(time, '16:00-', '15:50-') WHERE time LIKE '16:00-%'")
+                // Старые времена окончания пар → новые (заменяются по суффиксу "-H:mm")
+                db.execSQL("UPDATE schedule_pair_entities SET time = REPLACE(time, '-10:10', '-10:05') WHERE time LIKE '%-10:10'")
+                db.execSQL("UPDATE schedule_pair_entities SET time = REPLACE(time, '-12:00', '-11:50') WHERE time LIKE '%-12:00'")
+                db.execSQL("UPDATE schedule_pair_entities SET time = REPLACE(time, '-14:00', '-13:55') WHERE time LIKE '%-14:00'")
+                db.execSQL("UPDATE schedule_pair_entities SET time = REPLACE(time, '-15:50', '-15:40') WHERE time LIKE '%-15:50'")
+                db.execSQL("UPDATE schedule_pair_entities SET time = REPLACE(time, '-17:40', '-17:25') WHERE time LIKE '%-17:40'")
+            }
+        }
+
+        /**
          * Получает или создает экземпляр базы данных.
          * Использует паттерн Singleton с двойной проверкой блокировки.
          *
@@ -87,7 +110,7 @@ abstract class ScheduleDatabase : RoomDatabase() {
                     ScheduleDatabase::class.java,
                     "schedule_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration(true)
 
                 val database = databaseBuilder.build()

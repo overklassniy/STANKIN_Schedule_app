@@ -21,14 +21,19 @@ class Time(startTime: String, endTime: String) {
 
     init {
         val formatter = DateTimeFormat.forPattern(TIME_PATTERN)
-        start = LocalTime.parse(startTime, formatter)
-        end = LocalTime.parse(endTime, formatter)
+        // Миграция старых времён звонков (до версии 3.3.1) к актуальным значениям.
+        // Раздельные карты для начал и окончаний, так как значение "15:50" является
+        // одновременно новым временем начала (из старого "16:00") и старым временем окончания.
+        val migratedStart = LEGACY_STARTS_MAP[startTime] ?: startTime
+        val migratedEnd = LEGACY_ENDS_MAP[endTime] ?: endTime
+        start = LocalTime.parse(migratedStart, formatter)
+        end = LocalTime.parse(migratedEnd, formatter)
         if (!STARTS.contains(start.toString(TIME_PATTERN))
             || !ENDS.contains(end.toString(TIME_PATTERN))
         ) {
             throw IllegalArgumentException("Not parse time: $startTime - $endTime")
         }
-        duration = ENDS.indexOf(endTime) - STARTS.indexOf(startTime) + 1
+        duration = ENDS.indexOf(migratedEnd) - STARTS.indexOf(migratedStart) + 1
     }
 
     /**
@@ -114,5 +119,31 @@ class Time(startTime: String, endTime: String) {
         /** Список допустимых времен окончания пар. */
         val ENDS =
             listOf("10:05", "11:50", "13:55", "15:40", "17:25", "19:30", "21:10", "22:50")
+
+        /**
+         * Карта миграции старых времён начала пар (до версии 3.3.1) к актуальным значениям.
+         *
+         * Используется для обратной совместимости при чтении данных из БД и JSON,
+         * созданных в предыдущих версиях приложения.
+         */
+        private val LEGACY_STARTS_MAP: Map<String, String> = mapOf(
+            "10:20" to "10:15",
+            "14:10" to "14:05",
+            "16:00" to "15:50",
+        )
+
+        /**
+         * Карта миграции старых времён окончания пар (до версии 3.3.1) к актуальным значениям.
+         *
+         * Разделена от [LEGACY_STARTS_MAP], так как значение "15:50" является одновременно
+         * новым временем начала (из старого "16:00") и старым временем окончания (→ "15:40").
+         */
+        private val LEGACY_ENDS_MAP: Map<String, String> = mapOf(
+            "10:10" to "10:05",
+            "12:00" to "11:50",
+            "14:00" to "13:55",
+            "15:50" to "15:40",
+            "17:40" to "17:25",
+        )
     }
 }

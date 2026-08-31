@@ -53,6 +53,18 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            val localProps = rootProject.file("local.properties")
+                .takeIf { it.exists() }
+                ?.let { Properties().apply { it.inputStream().use { s -> load(s) } } }
+            storeFile = rootProject.file(localProps?.getProperty("RELEASE_STORE_FILE", "release.keystore") ?: "release.keystore")
+            storePassword = localProps?.getProperty("RELEASE_STORE_PASSWORD", "") ?: ""
+            keyAlias = localProps?.getProperty("RELEASE_KEY_ALIAS", "release") ?: "release"
+            keyPassword = localProps?.getProperty("RELEASE_KEY_PASSWORD", "") ?: ""
+        }
+    }
+
     buildTypes {
         debug {
             versionNameSuffix = "-debug"
@@ -86,6 +98,7 @@ android {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
