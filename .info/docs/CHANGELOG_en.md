@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.3.1 (31.08.26)
+- Updated class start and end times according to the new schedule
+
 ## Version 3.3.0 (13.08.26)
 - Migrated settings storage from SharedPreferences to DataStore
 - Markdown viewer screen rewritten with Compose
