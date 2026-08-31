@@ -20,6 +20,7 @@ import com.overklassniy.stankinschedule.news.widget.ui.glance.NewsWidgetUpdater
 import com.overklassniy.stankinschedule.news.widget.ui.worker.NewsWidgetWorkerScheduler
 import com.overklassniy.stankinschedule.schedule.widget.ui.glance.ScheduleWidgetUpdater
 import dagger.hilt.android.HiltAndroidApp
+import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +74,25 @@ class MainApplication : Application(), WorkConfiguration.Provider {
             // В режиме отладки отключаем отправку событий в Sentry
             if (isDebug) {
                 options.setEnabled(false)
+            }
+
+            // Фильтруем неактуальные исключения, которые не являются реальными ошибками
+            options.beforeSend = SentryOptions.BeforeSendCallback { event, _ ->
+                val exceptions = event.exceptions ?: return@BeforeSendCallback event
+                for (ex in exceptions) {
+                    val type = ex.type ?: continue
+                    // CancellationException и его подклассы (включая LeftCompositionCancellationException)
+                    // возникают при нормальной отмене корутин в жизненном цикле Compose
+                    if (type.endsWith("CancellationException")) {
+                        return@BeforeSendCallback null
+                    }
+                    // DiagnosticCoroutineContextException — диагностическое исключение корутин,
+                    // не является реальной ошибкой
+                    if (type == "kotlinx.coroutines.DiagnosticCoroutineContextException") {
+                        return@BeforeSendCallback null
+                    }
+                }
+                event
             }
         }
 

@@ -10,15 +10,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import com.overklassniy.stankinschedule.core.ui.components.LocalCrashReporter
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.news.review.ui.R
 
 /**
  * Компонент ошибки новостей.
  *
- * Показывает описание ошибки и кнопку «Повторить», записывает исключение
- * в аналитику.
+ * Показывает описание ошибки и кнопку «Повторить».
  *
  * @param error Возникшее исключение.
  * @param onRetry Обработчик повторной попытки.
@@ -30,11 +28,6 @@ fun NewsError(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val crashReporter = LocalCrashReporter.current
-
-    // Записываем исключение в краш-репортинг
-    crashReporter.recordException(error)
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,

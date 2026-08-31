@@ -10,15 +10,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import com.overklassniy.stankinschedule.core.ui.components.LocalCrashReporter
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.journal.viewer.ui.R
 
 /**
  * Компонент отображения ошибки журнала.
  *
- * Показывает текст ошибки и кнопку «Повторить». Также записывает исключение
- * в аналитику для последующей диагностики.
+ * Показывает текст ошибки и кнопку «Повторить».
  *
  * @param error Исключение, возникшее при загрузке/обработке данных.
  * @param onRetry Обработчик нажатия на кнопку повторной попытки.
@@ -30,11 +28,6 @@ fun JournalError(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val crashReporter = LocalCrashReporter.current
-
-    // Записываем исключение в краш-репортинг
-    crashReporter.recordException(error)
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,

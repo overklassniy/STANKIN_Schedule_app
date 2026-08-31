@@ -56,7 +56,7 @@ class ParserUseCase @Inject constructor(
     /**
      * Определяет границы временных слотов (столбцов) на основе ключевых меток времени.
      *
-     * Ищет координаты времени "8:30" и "10:20" для вычисления ширины столбца и начальной позиции.
+     * Ищет координаты времени "8:30" и "10:15" для вычисления ширины столбца и начальной позиции.
      *
      * @param cells Список всех текстовых ячеек, найденных в PDF.
      * @return Список границ временных ячеек [TimeCellBound].
@@ -70,7 +70,7 @@ class ParserUseCase @Inject constructor(
             if (cell.text.contains("8:30")) {
                 middleFirst = cell.x + cell.w / 2
             }
-            if (cell.text.contains("10:20")) {
+            if (cell.text.contains("10:15")) {
                 middleSecond = cell.x + cell.w / 2
             }
         }

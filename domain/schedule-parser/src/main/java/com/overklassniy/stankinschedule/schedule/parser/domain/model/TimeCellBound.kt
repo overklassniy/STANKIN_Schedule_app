@@ -6,7 +6,7 @@ package com.overklassniy.stankinschedule.schedule.parser.domain.model
  * @property startX Координата X начала временного слота.
  * @property endX Координата X конца временного слота.
  * @property startTime Строковое представление времени начала занятия (например, "08:30").
- * @property endTime Строковое представление времени окончания занятия (например, "10:10").
+ * @property endTime Строковое представление времени окончания занятия (например, "10:05").
  */
 class TimeCellBound(
     val startX: Float,

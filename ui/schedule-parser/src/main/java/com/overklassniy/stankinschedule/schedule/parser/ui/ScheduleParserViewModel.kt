@@ -224,7 +224,15 @@ class ScheduleParserViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 _parserState.value = ParserState.ParserResult(UIState.failed(e))
-                crashReporter.recordException(e)
+
+                // Ожидаемые ошибки парсера (неправильный формат PDF) уже отображаются
+                // пользователю через ParserErrorMapper и не являются реальными крашами
+                val isExpectedParserError = e is IllegalArgumentException &&
+                    e.message?.contains("Time not found", ignoreCase = true) == true
+
+                if (!isExpectedParserError) {
+                    crashReporter.recordException(e)
+                }
             }
         }
     }

@@ -30,12 +30,15 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
      * Получает описание репозитория расписаний.
      *
      * Определяет текущий учебный год на основе текущей даты.
+     * Переход на новый учебный год происходит с 1 августа, так как
+     * расписания нового года публикуются на Moodle в течение лета,
+     * и студенты уже должны видеть фильтры для нового курса.
      *
      * @return Объект [RepositoryDescription] с информацией об обновлении и категориях.
      */
     override suspend fun description(): RepositoryDescription = withContext(Dispatchers.IO) {
         val now = DateTime.now()
-        val academicYearStart = if (now.monthOfYear >= 9) now.year else now.year - 1
+        val academicYearStart = if (now.monthOfYear >= 8) now.year else now.year - 1
 
         return@withContext RepositoryDescription(
             lastUpdate = "Moodle",

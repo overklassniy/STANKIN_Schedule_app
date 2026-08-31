@@ -10,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import com.overklassniy.stankinschedule.core.ui.components.LocalCrashReporter
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.journal.login.ui.R
@@ -26,11 +25,6 @@ fun LoginError(
     error: Throwable,
     modifier: Modifier = Modifier,
 ) {
-    val crashReporter = LocalCrashReporter.current
-
-    // Записываем исключение в краш-репортинг
-    crashReporter.recordException(error)
-
     Row(
         horizontalArrangement = Arrangement.spacedBy(Dimen.ContentPadding),
         modifier = modifier

@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.overklassniy.stankinschedule.core.ui.components.LocalCrashReporter
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.core.ui.utils.exceptionDescription
 import com.overklassniy.stankinschedule.schedule.repository.ui.R
@@ -30,11 +29,6 @@ fun RepositoryError(
     onRetryClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val crashReporter = LocalCrashReporter.current
-
-    // Записываем исключение в краш-репортинг
-    crashReporter.recordException(error)
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Dimen.ContentPadding),
