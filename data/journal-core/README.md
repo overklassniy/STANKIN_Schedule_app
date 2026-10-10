@@ -43,7 +43,7 @@ src/main/java/com/overklassniy/stankinschedule/journal/core/data/
 - `JournalPreferenceImpl` - реализация настроек журнала
 - `JournalSecureRepositoryImpl` - безопасное хранение токена доступа
 - `JournalServiceRepositoryImpl` - реализация сервисного репозитория
-- `JournalStorageRepositoryImpl` - локальное хранение данных журнала
+- `JournalStorageRepositoryImpl` - локальное хранение данных журнала; несовместимый кэш от старых версий считается отсутствующим
 
 ### source
 - `SemesterMarksSource` - источник данных оценок для Paging

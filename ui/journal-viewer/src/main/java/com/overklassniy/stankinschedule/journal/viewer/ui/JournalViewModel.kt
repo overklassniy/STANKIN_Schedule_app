@@ -1,5 +1,6 @@
 package com.overklassniy.stankinschedule.journal.viewer.ui
 
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.lifecycle.ViewModel
@@ -125,6 +126,8 @@ class JournalViewModel @Inject constructor(
                     if (t is StudentAuthorizedException) {
                         _isSignIn.value = false
                     } else {
+                        Log.e(TAG, "Не удалось загрузить данные студента", t)
+                        crashReporter.recordException(t)
                         _student.value = UIState.failed(t)
                     }
                 }
@@ -228,5 +231,9 @@ class JournalViewModel @Inject constructor(
             }
             _isSignIn.value = false
         }
+    }
+
+    private companion object {
+        const val TAG = "JournalViewModel"
     }
 }

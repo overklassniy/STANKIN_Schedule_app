@@ -1,5 +1,6 @@
 package com.overklassniy.stankinschedule.journal.core.data.repository
 
+import android.util.Log
 import com.overklassniy.stankinschedule.core.data.cache.CacheManager
 import com.overklassniy.stankinschedule.core.domain.cache.CacheContainer
 import com.overklassniy.stankinschedule.journal.core.data.mapper.MarkTypeTypeConverter
@@ -43,19 +44,29 @@ class JournalStorageRepositoryImpl @Inject constructor(
      * Семестры нормализуются по убыванию (от новых к старым), чтобы кэши,
      * записанные со старым порядком, отображались единообразно.
      *
-     * @return Контейнер [CacheContainer] с данными студента или null, если кэш отсутствует/пуст.
+     * Кэш, записанный старыми версиями приложения, несовместим с текущей моделью:
+     * семестры были строками, а имена полей в JSON обфусцированы R8. Gson не бросает
+     * исключение для отсутствующих полей и создает объект с null-полями, поэтому
+     * такой кэш считается отсутствующим — данные будут загружены из сети заново.
+     *
+     * @return Контейнер [CacheContainer] с данными студента или null, если кэш отсутствует/пуст/устарел.
      */
     override suspend fun loadStudent(): CacheContainer<Student>? {
         val container = cache.loadFromCache(Student::class.java, "student") ?: return null
-        val student = container.data
-        return CacheContainer(
-            data = Student(
-                name = student.name,
-                group = student.group,
-                semesters = student.semesters.sortedDescending()
-            ),
-            cacheTime = container.cacheTime
-        )
+        return try {
+            val student = container.data
+            CacheContainer(
+                data = Student(
+                    name = student.name,
+                    group = student.group,
+                    semesters = student.semesters.sortedDescending()
+                ),
+                cacheTime = container.cacheTime
+            )
+        } catch (e: Exception) {
+            Log.d(TAG, "loadStudent: ignored incompatible cache", e)
+            null
+        }
     }
 
     /**
@@ -85,5 +96,9 @@ class JournalStorageRepositoryImpl @Inject constructor(
      */
     override suspend fun clear() {
         cache.clearAll()
+    }
+
+    private companion object {
+        const val TAG = "JournalStorageRepositoryImpl"
     }
 }

@@ -43,7 +43,7 @@ src/main/java/com/overklassniy/stankinschedule/journal/core/data/
 - `JournalPreferenceImpl` - journal preferences implementation
 - `JournalSecureRepositoryImpl` - secure access token storage
 - `JournalServiceRepositoryImpl` - service repository implementation
-- `JournalStorageRepositoryImpl` - local journal data storage
+- `JournalStorageRepositoryImpl` - local journal data storage; incompatible caches written by older versions are treated as missing
 
 ### source
 - `SemesterMarksSource` - Paging data source for marks
