@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.journal.core.domain.repository
 
 import com.overklassniy.stankinschedule.core.domain.cache.CacheContainer
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
 
@@ -28,18 +29,18 @@ interface JournalStorageRepository {
     /**
      * Загружает кэшированные оценки за семестр.
      *
-     * @param semester Название семестра.
+     * @param semester Семестр, для которого нужны оценки.
      * @return Контейнер [CacheContainer] с оценками или `null`, если кэш отсутствует.
      */
-    suspend fun loadSemester(semester: String): CacheContainer<SemesterMarks>?
+    suspend fun loadSemester(semester: JournalSemester): CacheContainer<SemesterMarks>?
 
     /**
      * Сохраняет оценки за семестр в кэш.
      *
-     * @param semester Название семестра.
+     * @param semester Семестр, для которого сохраняются оценки.
      * @param marks Объект [SemesterMarks] для сохранения.
      */
-    suspend fun saveSemester(semester: String, marks: SemesterMarks)
+    suspend fun saveSemester(semester: JournalSemester, marks: SemesterMarks)
 
     /**
      * Очищает всё локальное хранилище журнала (удаляет все кэшированные данные).

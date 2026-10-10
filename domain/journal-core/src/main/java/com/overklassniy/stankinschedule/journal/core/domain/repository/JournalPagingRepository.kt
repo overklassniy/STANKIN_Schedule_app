@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.journal.core.domain.repository
 
 import androidx.paging.PagingSource
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 
 /**
@@ -14,13 +15,13 @@ interface JournalPagingRepository {
      * Создает источник данных PagingSource для загрузки оценок по семестрам.
      *
      * @param journal Репозиторий журнала для загрузки данных.
-     * @param semesters Список названий семестров, которые нужно загрузить.
+     * @param semesters Список семестров, которые нужно загрузить.
      * @param semesterExpireHours Время жизни кэша семестра в часах.
-     * @return Объект [PagingSource], предоставляющий страницы данных типа [SemesterMarks] с ключами типа [String] (названия семестров).
+     * @return Объект [PagingSource], предоставляющий страницы данных типа [SemesterMarks] с ключами типа [JournalSemester].
      */
     fun semesterSource(
         journal: JournalRepository,
-        semesters: List<String>,
+        semesters: List<JournalSemester>,
         semesterExpireHours: Int
-    ): PagingSource<String, SemesterMarks>
+    ): PagingSource<JournalSemester, SemesterMarks>
 }

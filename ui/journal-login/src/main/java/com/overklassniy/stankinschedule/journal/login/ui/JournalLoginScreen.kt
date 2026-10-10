@@ -1,30 +1,20 @@
 package com.overklassniy.stankinschedule.journal.login.ui
 
-import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.border
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,32 +24,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.components.TrackCurrentScreen
 import com.overklassniy.stankinschedule.core.ui.ext.Zero
 import com.overklassniy.stankinschedule.core.ui.theme.Dimen
 import com.overklassniy.stankinschedule.core.ui.utils.BrowserUtils
 import com.overklassniy.stankinschedule.journal.core.domain.utils.Constants
+import com.overklassniy.stankinschedule.journal.login.ui.components.AuthWebView
 import com.overklassniy.stankinschedule.journal.login.ui.components.LoginError
 import com.overklassniy.stankinschedule.journal.login.ui.components.LoginToolBar
 
 
 /**
- * Экран входа в модуль «Журнал»: поля логина/пароля, ошибки и прогресс входа.
+ * Экран входа в модуль «Журнал».
+ *
+ * Авторизация проходит через OIDC в WebView: сначала выполняется
+ * бесшовная попытка входа (при живой SSO-сессии), затем — при необходимости —
+ * интерактивный вход на странице личного кабинета.
  *
  * @param viewModel ViewModel экрана.
  * @param navigateToJournal Навигация в модуль журнала после успешного входа.
@@ -74,7 +61,6 @@ fun JournalLoginScreen(
 ) {
     TrackCurrentScreen(screen = "JournalLoginScreen")
 
-    val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
     val loginState by viewModel.loginState.collectAsState()
@@ -84,24 +70,15 @@ fun JournalLoginScreen(
         }
     }
 
+    val authRequest by viewModel.authRequest.collectAsState()
+    val webAuthVisible by viewModel.webAuthVisible.collectAsState()
     val isLogging by viewModel.isLogging.collectAsState()
     val loginError by viewModel.loginError.collectAsState()
+    val silentFinished by viewModel.silentFinished.collectAsState()
 
-    var login by rememberSaveable { mutableStateOf("") }
-    var isLoginError by remember { mutableStateOf(false) }
-
-    var password by rememberSaveable { mutableStateOf("") }
-    var isPasswordError by remember { mutableStateOf(false) }
-
-    val submitForm: () -> Unit = {
-        isLoginError = login.isEmpty()
-        isPasswordError = password.isEmpty()
-
-        if (!isLoginError && !isPasswordError) {
-            viewModel.login(login, password)
-        }
-
-        focusManager.clearFocus()
+    // Кнопка "Назад" во время интерактивного входа закрывает WebView
+    BackHandler(enabled = webAuthVisible) {
+        viewModel.cancelWebAuth()
     }
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(
@@ -122,212 +99,96 @@ fun JournalLoginScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            AnimatedVisibility(
-                visible = isLogging,
-                enter = slideInVertically(),
-                exit = slideOutVertically()
-            ) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp)
-                    .verticalScroll(rememberScrollState())
-                    .padding(Dimen.ContentPadding)
-            ) {
-
-                loginError?.let { error ->
-                    LoginError(
-                        error = error,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.error,
-                                shape = RoundedCornerShape(size = 4.dp)
-                            )
-                            .padding(16.dp)
+            val request = authRequest
+            when {
+                // Интерактивный вход: страница авторизации на весь экран
+                request != null && webAuthVisible -> {
+                    AuthWebView(
+                        url = request.url,
+                        onCallback = viewModel::onAuthCallback,
+                        onError = viewModel::onAuthError,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
-                LoginField(
-                    login = login,
-                    onLoginChanged = {
-                        login = it
-                        isLoginError = login.isEmpty()
-                    },
-                    isLogging = isLogging,
-                    isLoginError = isLoginError,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Dimen.ContentPadding)
-                )
-
-                PasswordField(
-                    password = password,
-                    onPasswordChanged = {
-                        password = it
-                        isPasswordError = password.isEmpty()
-                    },
-                    isLogging = isLogging,
-                    isPasswordError = isPasswordError,
-                    onFormSubmit = { submitForm() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Dimen.ContentPadding)
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    TextButton(
-                        onClick = { BrowserUtils.openLink(context, Constants.MODULE_JOURNAL_URL) },
-                        enabled = !isLogging
-                    ) {
-                        Text(text = stringResource(R.string.forget_password))
+                // Бесшовная попытка входа или обмен кода на токен
+                request != null || isLogging || !silentFinished -> {
+                    // Скрытый WebView для бесшовной попытки (prompt=none)
+                    if (request != null) {
+                        AuthWebView(
+                            url = request.url,
+                            onCallback = viewModel::onAuthCallback,
+                            onError = viewModel::onAuthError,
+                            modifier = Modifier.size(1.dp)
+                        )
                     }
 
-                    Button(
-                        onClick = { submitForm() },
-                        enabled = !isLogging && !(isLoginError || isPasswordError)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(text = stringResource(R.string.sign_in))
+                        CircularProgressIndicator()
+                        Text(
+                            text = stringResource(R.string.journal_login_progress),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = Dimen.ContentPadding)
+                        )
+                    }
+                }
+
+                // Экран входа: кнопка авторизации через личный кабинет
+                else -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(Dimen.ContentPadding)
+                    ) {
+
+                        loginError?.let { error ->
+                            LoginError(
+                                error = error,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = Dimen.ContentPadding)
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(R.string.journal_login_hint),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = Dimen.ContentPadding)
+                        )
+
+                        Button(
+                            onClick = { viewModel.beginSignIn() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = stringResource(R.string.journal_sign_in_lk))
+                        }
+
+                        TextButton(
+                            onClick = { BrowserUtils.openLink(context, Constants.LKO_WEB_URL) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = stringResource(R.string.journal_open_lk))
+                        }
                     }
                 }
             }
+
+            if (isLogging) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                )
+            }
         }
     }
-}
-
-
-/**
- * Поле ввода логина с валидацией и supportingText при пустом значении.
- *
- * @param login Текущее значение логина.
- * @param onLoginChanged Коллбэк изменения логина.
- * @param isLogging Идёт ли процесс входа (блокирует ввод).
- * @param isLoginError Ошибка валидации для логина.
- * @param modifier Модификатор.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LoginField(
-    login: String,
-    onLoginChanged: (login: String) -> Unit,
-    isLogging: Boolean,
-    isLoginError: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    OutlinedTextField(
-        value = login,
-        onValueChange = onLoginChanged,
-        enabled = !isLogging,
-        singleLine = true,
-        isError = isLoginError,
-        supportingText = {
-            AnimatedVisibility(
-                visible = isLoginError,
-                enter = slideInVertically(),
-                exit = slideOutVertically()
-            ) {
-                Text(
-                    text = stringResource(R.string.field_is_empty),
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        },
-        label = { Text(text = stringResource(R.string.login)) },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Next
-        ),
-        modifier = modifier
-    )
-}
-
-/**
- * Поле ввода пароля с переключением видимости и валидацией.
- *
- * @param password Текущее значение пароля.
- * @param onPasswordChanged Коллбэк изменения пароля.
- * @param isLogging Идёт ли процесс входа (блокирует ввод).
- * @param isPasswordError Ошибка валидации для пароля.
- * @param onFormSubmit Отправка формы (IME action Done).
- * @param modifier Модификатор.
- */
-@Suppress("AssignedValueIsNeverRead")
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PasswordField(
-    password: String,
-    onPasswordChanged: (password: String) -> Unit,
-    isLogging: Boolean,
-    isPasswordError: Boolean,
-    onFormSubmit: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var passwordVisible by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = password,
-        onValueChange = onPasswordChanged,
-        enabled = !isLogging,
-        singleLine = true,
-        isError = isPasswordError,
-        label = { Text(text = stringResource(R.string.password)) },
-        supportingText = {
-            AnimatedVisibility(
-                visible = isPasswordError,
-                enter = slideInVertically(),
-                exit = slideOutVertically(),
-            ) {
-                Text(
-                    text = stringResource(R.string.field_is_empty),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Done
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { onFormSubmit() }
-        ),
-        visualTransformation = if (passwordVisible) {
-            VisualTransformation.None
-        } else {
-            PasswordVisualTransformation()
-        },
-        trailingIcon = {
-            @DrawableRes
-            val image = if (passwordVisible) {
-                R.drawable.ic_password_visibility
-            } else {
-                R.drawable.ic_password_visibility_off
-            }
-
-            val description = if (passwordVisible) {
-                stringResource(id = R.string.password_hide)
-            } else {
-                stringResource(id = R.string.password_show)
-            }
-
-            IconButton(
-                onClick = {
-                    passwordVisible = !passwordVisible
-                },
-                enabled = !isLogging,
-            ) {
-                Icon(
-                    painter = painterResource(image),
-                    contentDescription = description
-                )
-            }
-        },
-        modifier = modifier
-    )
 }

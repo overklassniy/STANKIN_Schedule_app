@@ -2,6 +2,7 @@ package com.overklassniy.stankinschedule.journal.core.data.source
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalRepository
 
@@ -10,14 +11,14 @@ import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalRe
  * Позволяет загружать оценки семестр за семестром, поддерживая навигацию "предыдущий/следующий".
  *
  * @param journal Репозиторий журнала для получения данных об оценках.
- * @param semesters Список идентификаторов всех доступных семестров (в порядке отображения).
+ * @param semesters Список всех доступных семестров (в порядке отображения).
  * @param semesterExpireHours Время жизни кэша оценок в часах.
  */
 class SemesterMarksSource(
     private val journal: JournalRepository,
-    private val semesters: List<String>,
+    private val semesters: List<JournalSemester>,
     private val semesterExpireHours: Int,
-) : PagingSource<String, SemesterMarks>() {
+) : PagingSource<JournalSemester, SemesterMarks>() {
 
     /**
      * Загружает данные для запрошенной страницы (семестра).
@@ -32,8 +33,8 @@ class SemesterMarksSource(
      * @return [LoadResult] с данными оценок, ключами навигации и информацией о позиции.
      */
     override suspend fun load(
-        params: LoadParams<String>,
-    ): LoadResult<String, SemesterMarks> {
+        params: LoadParams<JournalSemester>,
+    ): LoadResult<JournalSemester, SemesterMarks> {
         return try {
             // Определение текущего семестра (по умолчанию - первый)
             val semester = params.key ?: semesters.first()
@@ -65,7 +66,7 @@ class SemesterMarksSource(
      * @param state Текущее состояние пагинации.
      * @return Ключ (семестр), который нужно перезагрузить, или null.
      */
-    override fun getRefreshKey(state: PagingState<String, SemesterMarks>): String? {
+    override fun getRefreshKey(state: PagingState<JournalSemester, SemesterMarks>): JournalSemester? {
         return state.anchorPosition?.let { anchorPosition -> semesters[anchorPosition] }
     }
 }

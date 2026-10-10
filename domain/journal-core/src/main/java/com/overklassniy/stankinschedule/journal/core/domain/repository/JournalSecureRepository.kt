@@ -1,36 +1,36 @@
 package com.overklassniy.stankinschedule.journal.core.domain.repository
 
 import com.overklassniy.stankinschedule.journal.core.domain.exceptions.StudentAuthorizedException
-import com.overklassniy.stankinschedule.journal.core.domain.model.StudentCredentials
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalAuthToken
 import java.security.GeneralSecurityException
 
 /**
- * Репозиторий для безопасного хранения и управления учетными данными студента.
+ * Репозиторий для безопасного хранения и управления токеном доступа студента.
  *
- * Отвечает за шифрование, сохранение и восстановление логина и пароля.
+ * Отвечает за шифрование, сохранение и восстановление токена авторизации.
  */
 interface JournalSecureRepository {
 
     /**
-     * Выполняет вход (сохранение учетных данных).
+     * Выполняет вход (сохранение токена доступа).
      *
-     * @param credentials Учетные данные студента.
+     * @param token Токен доступа студента.
      * @throws GeneralSecurityException Если возникла ошибка при шифровании или сохранении.
      */
     @Throws(GeneralSecurityException::class)
-    suspend fun signIn(credentials: StudentCredentials)
+    suspend fun signIn(token: JournalAuthToken)
 
     /**
-     * Выполняет выход (удаление учетных данных).
+     * Выполняет выход (удаление токена).
      */
     suspend fun signOut()
 
     /**
-     * Возвращает сохраненные учетные данные.
+     * Возвращает сохраненный токен доступа.
      *
-     * @return Объект [StudentCredentials].
-     * @throws StudentAuthorizedException Если данные не найдены или произошла ошибка дешифровки.
+     * @return Объект [JournalAuthToken].
+     * @throws StudentAuthorizedException Если токен не найден, истек или произошла ошибка дешифровки.
      */
     @Throws(StudentAuthorizedException::class)
-    suspend fun signCredentials(): StudentCredentials
+    suspend fun signCredentials(): JournalAuthToken
 }

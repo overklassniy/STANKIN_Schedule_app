@@ -1,5 +1,7 @@
 package com.overklassniy.stankinschedule.journal.viewer.ui
 
+import android.webkit.CookieManager
+import android.webkit.WebStorage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -9,6 +11,7 @@ import androidx.paging.cachedIn
 import com.overklassniy.stankinschedule.core.domain.repository.CrashReporter
 import com.overklassniy.stankinschedule.core.ui.components.UIState
 import com.overklassniy.stankinschedule.journal.core.domain.exceptions.StudentAuthorizedException
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
 import com.overklassniy.stankinschedule.journal.core.domain.usecase.JournalUseCase
@@ -99,7 +102,7 @@ class JournalViewModel @Inject constructor(
      * @param data Данные студента.
      * @return Pager для получения [SemesterMarks].
      */
-    private fun createPager(data: Student): Pager<String, SemesterMarks> {
+    private fun createPager(data: Student): Pager<JournalSemester, SemesterMarks> {
         return Pager(
             config = PagingConfig(pageSize = 1),
             initialKey = data.semesters.first(),
@@ -205,12 +208,21 @@ class JournalViewModel @Inject constructor(
 
     /**
      * Выполняет выход из аккаунта и переводит состояние авторизации в false.
+     *
+     * Помимо токена и кэша очищает cookies и хранилище WebView — иначе при живой
+     * SSO-сессии следующий вход пройдет автоматически под тем же аккаунтом.
      * При ошибке записывает исключение в аналитику.
      */
     fun signOut() {
         viewModelScope.launch {
             try {
                 login.signOut()
+
+                CookieManager.getInstance().apply {
+                    removeAllCookies(null)
+                    flush()
+                }
+                WebStorage.getInstance().deleteAllData()
             } catch (e: Exception) {
                 crashReporter.recordException(e)
             }

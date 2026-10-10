@@ -9,7 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.overklassniy.stankinschedule.journal.core.domain.exceptions.StudentAuthorizedException
-import com.overklassniy.stankinschedule.journal.core.domain.model.StudentCredentials
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalAuthToken
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalSecureRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
@@ -25,7 +25,7 @@ private val Context.journalSecureStore by preferencesDataStore(
 )
 
 /**
- * Реализация репозитория для безопасного хранения учетных данных журнала [JournalSecureRepository].
+ * Реализация репозитория для безопасного хранения токена доступа журнала [JournalSecureRepository].
  * Использует Android Keystore для шифрования и DataStore для сохранения зашифрованных данных.
  *
  * @param context Контекст приложения, необходимый для доступа к DataStore.
@@ -34,7 +34,7 @@ class JournalSecureRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : JournalSecureRepository {
 
-    private var cachedCredentials: StudentCredentials? = null
+    private var cachedToken: JournalAuthToken? = null
 
     /**
      * Получает или создает секретный ключ для шифрования.
@@ -128,40 +128,40 @@ class JournalSecureRepositoryImpl @Inject constructor(
      */
     private suspend fun clearSecureStore() {
         context.journalSecureStore.edit { it.clear() }
-        cachedCredentials = null
+        cachedToken = null
     }
 
 
     /**
-     * Сохраняет учетные данные студента.
+     * Сохраняет токен доступа студента.
      *
      * Алгоритм:
-     * 1. Шифрует логин и пароль.
+     * 1. Шифрует access token и время его получения.
      * 2. Сохраняет зашифрованные данные в DataStore.
      * 3. Обновляет кэш в памяти.
      * 4. В случае ошибки пытается очистить хранилище и повторить попытку.
      *
-     * @param credentials Учетные данные студента (логин и пароль).
+     * @param token Токен доступа студента.
      * @throws StudentAuthorizedException Если произошла ошибка авторизации.
      */
     @kotlin.jvm.Throws(StudentAuthorizedException::class)
-    override suspend fun signIn(credentials: StudentCredentials) {
+    override suspend fun signIn(token: JournalAuthToken) {
         try {
             context.journalSecureStore.edit { prefs ->
-                prefs[LOGIN] = encrypt(credentials.login)
-                prefs[PASSWORD] = encrypt(credentials.password)
+                prefs[ACCESS_TOKEN] = encrypt(token.accessToken)
+                prefs[OBTAINED_AT] = token.obtainedAtMillis.toString()
             }
-            cachedCredentials = credentials
+            cachedToken = token
         } catch (e: StudentAuthorizedException) {
             throw e
         } catch (e: Exception) {
             Log.d("JournalSecureRepositoryImpl", "signIn: clear secure store and retry", e)
             clearSecureStore()
             context.journalSecureStore.edit { prefs ->
-                prefs[LOGIN] = encrypt(credentials.login)
-                prefs[PASSWORD] = encrypt(credentials.password)
+                prefs[ACCESS_TOKEN] = encrypt(token.accessToken)
+                prefs[OBTAINED_AT] = token.obtainedAtMillis.toString()
             }
-            cachedCredentials = credentials
+            cachedToken = token
         }
     }
 
@@ -180,37 +180,30 @@ class JournalSecureRepositoryImpl @Inject constructor(
     }
 
     /**
-     * Получает сохраненные учетные данные.
+     * Получает сохраненный токен доступа.
      *
      * Алгоритм:
      * 1. Проверяет кэш в памяти.
      * 2. Читает зашифрованные данные из DataStore.
-     * 3. Дешифрует логин и пароль.
-     * 4. При ошибке дешифровки очищает хранилище и выбрасывает исключение.
+     * 3. Дешифрует токен и время его получения.
+     * 4. Проверяет, не истек ли токен.
+     * 5. При ошибке дешифровки очищает хранилище и выбрасывает исключение.
      *
-     * @return Объект [StudentCredentials] с расшифрованными данными.
-     * @throws StudentAuthorizedException Если данные отсутствуют или повреждены.
+     * @return Объект [JournalAuthToken] с расшифрованными данными.
+     * @throws StudentAuthorizedException Если токен отсутствует, истек или поврежден.
      */
     @kotlin.jvm.Throws(StudentAuthorizedException::class)
-    override suspend fun signCredentials(): StudentCredentials {
-        val cache = cachedCredentials
-        if (cache != null) return cache
-
-        val prefs = context.journalSecureStore.data.first()
-        val loginEnc = prefs[LOGIN]
-        val passwordEnc = prefs[PASSWORD]
-
-        if (loginEnc == null || passwordEnc == null) {
-            throw StudentAuthorizedException("Credentials is null")
-        }
+    override suspend fun signCredentials(): JournalAuthToken {
+        val cache = cachedToken
+        if (cache != null && !cache.isExpired(System.currentTimeMillis())) return cache
 
         return try {
-            val credentials = StudentCredentials(
-                login = decrypt(loginEnc),
-                password = decrypt(passwordEnc)
-            )
-            cachedCredentials = credentials
-            credentials
+            val token = tokenFromStore()
+
+            cachedToken = token
+            token
+        } catch (e: StudentAuthorizedException) {
+            throw e
         } catch (e: Exception) {
             Log.d(
                 "JournalSecureRepositoryImpl",
@@ -222,9 +215,48 @@ class JournalSecureRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Читает, дешифрует и валидирует токен из хранилища.
+     *
+     * @return Действительный [JournalAuthToken].
+     * @throws StudentAuthorizedException Если токен отсутствует или истек.
+     */
+    private suspend fun tokenFromStore(): JournalAuthToken {
+        val prefs = context.journalSecureStore.data.first()
+        val tokenEnc = prefs[ACCESS_TOKEN]
+        val obtainedAt = prefs[OBTAINED_AT]?.toLongOrNull()
+
+        if (tokenEnc == null || obtainedAt == null) {
+            // Заодно удаляет legacy-ключи (логин/пароль старого API)
+            clearSecureStore()
+            throw StudentAuthorizedException("Credentials is null")
+        }
+
+        val token = JournalAuthToken(
+            accessToken = decrypt(tokenEnc),
+            obtainedAtMillis = obtainedAt,
+        )
+
+        checkNotExpired(token)
+
+        return token
+    }
+
+    /**
+     * Проверяет, что токен не истек.
+     *
+     * @param token Токен доступа.
+     * @throws StudentAuthorizedException Если токен истек.
+     */
+    private fun checkNotExpired(token: JournalAuthToken) {
+        if (token.isExpired(System.currentTimeMillis())) {
+            throw StudentAuthorizedException("Token is expired")
+        }
+    }
+
     companion object {
-        private val LOGIN = stringPreferencesKey("login")
-        private val PASSWORD = stringPreferencesKey("password")
+        private val ACCESS_TOKEN = stringPreferencesKey("access_token")
+        private val OBTAINED_AT = stringPreferencesKey("obtained_at")
 
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val KEY_ALIAS = "journal_secure_credentials_aes"

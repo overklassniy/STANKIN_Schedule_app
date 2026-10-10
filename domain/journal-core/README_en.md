@@ -1,6 +1,6 @@
 # Module domain/journal-core (`:domain:journal-core`)
 
-Domain layer for the module journal. Contains domain models (student, marks, disciplines), repository interfaces (authentication, storage, pagination), use cases (login, update, grade prediction).
+Domain layer for the module journal. Contains domain models (student, marks, disciplines, semester, OIDC token), repository interfaces (OIDC authentication, storage, pagination), use cases (login, update, grade prediction).
 
 ## Directory structure
 
@@ -21,16 +21,19 @@ src/main/java/com/overklassniy/stankinschedule/journal/core/domain/
 
 ### model
 - `Student` - student model
-- `StudentCredentials` - student credentials
+- `JournalSemester` - semester identifier (course, semester)
+- `JournalAuthToken` - personal account API access token
+- `JournalAuthRequest` - prepared OIDC authorization request
 - `Discipline` - discipline model
 - `MarkType` - mark type
 - `SemesterMarks` - semester marks
 
 ### repository
+- `JournalAuthRepository` - OIDC authorization interface (PKCE)
 - `JournalRepository` - journal repository interface
 - `JournalPagingRepository` - mark pagination interface
 - `JournalPreference` - journal preferences interface
-- `JournalSecureRepository` - secure storage interface
+- `JournalSecureRepository` - secure token storage interface
 - `JournalServiceRepository` - service repository interface
 - `JournalStorageRepository` - local storage interface
 

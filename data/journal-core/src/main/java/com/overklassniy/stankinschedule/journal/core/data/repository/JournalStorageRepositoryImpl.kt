@@ -3,6 +3,7 @@ package com.overklassniy.stankinschedule.journal.core.data.repository
 import com.overklassniy.stankinschedule.core.data.cache.CacheManager
 import com.overklassniy.stankinschedule.core.domain.cache.CacheContainer
 import com.overklassniy.stankinschedule.journal.core.data.mapper.MarkTypeTypeConverter
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.MarkType
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
@@ -47,23 +48,23 @@ class JournalStorageRepositoryImpl @Inject constructor(
 
     /**
      * Сохраняет оценки за семестр в кэш.
-     * Использует идентификатор семестра в качестве ключа.
+     * Использует ключ семестра [JournalSemester.cacheKey].
      *
-     * @param semester Идентификатор семестра (ключ кэша).
+     * @param semester Семестр (ключ кэша).
      * @param marks Объект [SemesterMarks] с оценками.
      */
-    override suspend fun saveSemester(semester: String, marks: SemesterMarks) {
-        cache.saveToCache(marks, semester)
+    override suspend fun saveSemester(semester: JournalSemester, marks: SemesterMarks) {
+        cache.saveToCache(marks, semester.cacheKey())
     }
 
     /**
      * Загружает оценки за семестр из кэша.
      *
-     * @param semester Идентификатор семестра (ключ кэша).
+     * @param semester Семестр (ключ кэша).
      * @return Контейнер [CacheContainer] с оценками или null, если данные не найдены.
      */
-    override suspend fun loadSemester(semester: String): CacheContainer<SemesterMarks>? {
-        return cache.loadFromCache(SemesterMarks::class.java, semester)
+    override suspend fun loadSemester(semester: JournalSemester): CacheContainer<SemesterMarks>? {
+        return cache.loadFromCache(SemesterMarks::class.java, semester.cacheKey())
     }
 
     /**

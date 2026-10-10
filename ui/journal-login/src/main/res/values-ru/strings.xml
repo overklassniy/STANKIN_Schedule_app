@@ -2,13 +2,9 @@
 <resources>
     <!-- Login screen -->
     <string name="journal_login_title">Модульный журнал</string>
-    <string name="password">Пароль</string>
-    <string name="login">Логин</string>
-    <string name="password_hide">Скрыть пароль</string>
-    <string name="password_show">Показать пароль</string>
-    <string name="sign_in">Войти</string>
-    <string name="sign_out">Выйти</string>
-    <string name="forget_password">Забыли пароль?</string>
-    <string name="field_is_empty">Поле пустое</string>
+    <string name="journal_login_hint">Войдите с учетными данными личного кабинета stankin.ru</string>
+    <string name="journal_sign_in_lk">Войти через личный кабинет</string>
+    <string name="journal_open_lk">Открыть lko.stankin.ru</string>
+    <string name="journal_login_progress">Выполняется вход…</string>
 
 </resources>

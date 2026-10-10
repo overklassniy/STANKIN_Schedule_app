@@ -1,6 +1,6 @@
 # Модуль domain/journal-core (`:domain:journal-core`)
 
-Domain-слой модульного журнала. Содержит доменные модели (студент, оценки, дисциплины), интерфейсы репозиториев (авторизация, хранение, пагинация), use case (логин, обновление, прогноз оценок).
+Domain-слой модульного журнала. Содержит доменные модели (студент, оценки, дисциплины, семестр, OIDC-токен), интерфейсы репозиториев (OIDC-авторизация, хранение, пагинация), use case (логин, обновление, прогноз оценок).
 
 ## Структура каталогов
 
@@ -21,16 +21,19 @@ src/main/java/com/overklassniy/stankinschedule/journal/core/domain/
 
 ### model
 - `Student` - модель студента
-- `StudentCredentials` - учётные данные студента
+- `JournalSemester` - идентификатор семестра (курс, семестр)
+- `JournalAuthToken` - токен доступа к API личного кабинета
+- `JournalAuthRequest` - подготовленный OIDC-запрос авторизации
 - `Discipline` - модель дисциплины
 - `MarkType` - тип оценки
 - `SemesterMarks` - оценки за семестр
 
 ### repository
+- `JournalAuthRepository` - интерфейс OIDC-авторизации (PKCE)
 - `JournalRepository` - интерфейс репозитория журнала
 - `JournalPagingRepository` - интерфейс пагинации оценок
 - `JournalPreference` - интерфейс настроек журнала
-- `JournalSecureRepository` - интерфейс безопасного хранения
+- `JournalSecureRepository` - интерфейс безопасного хранения токена
 - `JournalServiceRepository` - интерфейс сервисного репозитория
 - `JournalStorageRepository` - интерфейс локального хранилища
 

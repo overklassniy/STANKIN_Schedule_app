@@ -1,8 +1,9 @@
 package com.overklassniy.stankinschedule.journal.core.domain.usecase
 
 
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalAuthRequest
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
-import com.overklassniy.stankinschedule.journal.core.domain.model.StudentCredentials
+import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalAuthRepository
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalSecureRepository
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalServiceRepository
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalStorageRepository
@@ -15,33 +16,50 @@ import javax.inject.Inject
 /**
  * UseCase для авторизации студента в системе журнала.
  *
- * Отвечает за вход (с валидацией через загрузку данных) и выход из системы.
+ * Реализует OIDC-поток Authorization Code + PKCE через WebView:
+ * создание запроса авторизации, обмен кода на токен и выход из системы.
  */
 class LoginUseCase @Inject constructor(
     private val service: JournalServiceRepository,
     private val secure: JournalSecureRepository,
     private val storage: JournalStorageRepository,
+    private val auth: JournalAuthRepository,
 ) {
 
     /**
-     * Выполняет вход в систему.
+     * Подготавливает интерактивный запрос авторизации (с формой логина).
      *
-     * 1. Создает объект учетных данных.
-     * 2. Пытается загрузить данные студента (семестры) для проверки валидности логина/пароля.
-     * 3. В случае успеха сохраняет учетные данные в безопасное хранилище и данные студента в кэш.
-     *
-     * @param login Логин студента.
-     * @param password Пароль студента.
-     * @return [Flow] с загруженным объектом [Student].
-     * @throws Exception Если логин/пароль неверны или произошла ошибка сети (пробрасывается из репозитория).
+     * @return Запрос с URL для открытия в WebView и state.
      */
-    fun signIn(login: String, password: String): Flow<Student> = flow {
-        val possibleCredentials = StudentCredentials(login, password)
+    fun beginSignIn(): JournalAuthRequest = auth.createAuthRequest(silent = false)
 
-        // Если не верны, то тут будет исключение с Http 401
-        val student = service.loadSemesters(possibleCredentials)
+    /**
+     * Подготавливает неинтерактивный запрос авторизации (prompt=none).
+     *
+     * При живой SSO-сессии провайдер сразу вернет код без показа формы.
+     * Иначе callback вернет ошибку interaction_required.
+     *
+     * @return Запрос с URL для открытия в скрытом WebView и state.
+     */
+    fun beginSilentSignIn(): JournalAuthRequest = auth.createAuthRequest(silent = true)
 
-        secure.signIn(possibleCredentials)
+    /**
+     * Завершает вход: обменивает код авторизации на токен и загружает данные студента.
+     *
+     * 1. Обменивает code+state на токен доступа.
+     * 2. Сохраняет токен в безопасное хранилище.
+     * 3. Загружает данные студента (проверка токена заодно) и кэширует их.
+     *
+     * @param code Код авторизации из callback URL.
+     * @param state Значение state из callback URL.
+     * @return [Flow] с загруженным объектом [Student].
+     * @throws Exception Если обмен кода или загрузка завершились ошибкой (пробрасывается из репозиториев).
+     */
+    fun completeSignIn(code: String, state: String): Flow<Student> = flow {
+        val token = auth.exchangeCode(code, state)
+        secure.signIn(token)
+
+        val student = service.loadStudentInfo(token)
         storage.saveStudent(student)
 
         emit(student)
@@ -50,7 +68,7 @@ class LoginUseCase @Inject constructor(
     /**
      * Выполняет выход из системы.
      *
-     * Очищает локальный кэш и удаляет сохраненные учетные данные.
+     * Очищает локальный кэш и удаляет сохраненный токен.
      */
     suspend fun signOut() {
         storage.clear()

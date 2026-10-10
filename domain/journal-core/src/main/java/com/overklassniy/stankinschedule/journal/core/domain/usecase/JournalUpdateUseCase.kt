@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.journal.core.domain.usecase
 
 import com.overklassniy.stankinschedule.core.domain.ext.subHours
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.MarkType
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalRepository
@@ -26,9 +27,9 @@ class JournalUpdateUseCase @Inject constructor(
      *
      * @return Пара:
      * 1. [Student]? - обновленные данные студента (или null, если обновление не требовалось).
-     * 2. [Set]<[String]> - список названий новых семестров (разница между новыми и старыми).
+     * 2. [Set]<[JournalSemester]> - набор новых семестров (разница между новыми и старыми).
      */
-    suspend fun updateSemesters(): Pair<Student?, Set<String>> {
+    suspend fun updateSemesters(): Pair<Student?, Set<JournalSemester>> {
         val cache = storage.loadStudent()
         if (cache == null || (cache.cacheTime subHours DateTime.now() < 1)) {
             return cache?.data to emptySet()
@@ -44,10 +45,10 @@ class JournalUpdateUseCase @Inject constructor(
      * Сравнивает кэшированные оценки с актуальными данными с сервера.
      * Если с момента последнего кэширования прошло меньше часа, обновление не выполняется.
      *
-     * @param semester Название семестра для проверки.
+     * @param semester Семестр для проверки.
      * @return Набор строк с описанием изменений (например, "Математика: 45 (М1)").
      */
-    suspend fun updateSemesterMarks(semester: String): Set<String> {
+    suspend fun updateSemesterMarks(semester: JournalSemester): Set<String> {
         val cache = storage.loadSemester(semester)
         if (cache == null || (cache.cacheTime subHours DateTime.now() < 1)) {
             return emptySet()

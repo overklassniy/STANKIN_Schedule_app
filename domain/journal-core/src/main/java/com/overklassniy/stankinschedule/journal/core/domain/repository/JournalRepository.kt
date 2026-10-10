@@ -1,5 +1,6 @@
 package com.overklassniy.stankinschedule.journal.core.domain.repository
 
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
 
@@ -22,13 +23,13 @@ interface JournalRepository {
     /**
      * Получает оценки за указанный семестр.
      *
-     * @param semester Название семестра.
+     * @param semester Семестр, за который нужны оценки.
      * @param semesterExpireHours Время жизни кэша в часах (по умолчанию 2 часа).
      * @param useCache Использовать ли кэш (по умолчанию `true`).
      * @return Объект [SemesterMarks] с оценками.
      */
     suspend fun semesterMarks(
-        semester: String,
+        semester: JournalSemester,
         semesterExpireHours: Int = 2,
         useCache: Boolean = true,
     ): SemesterMarks

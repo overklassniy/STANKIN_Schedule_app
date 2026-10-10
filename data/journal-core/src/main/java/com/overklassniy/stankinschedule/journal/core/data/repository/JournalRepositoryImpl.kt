@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.overklassniy.stankinschedule.core.domain.ext.subHours
 import com.overklassniy.stankinschedule.core.domain.ext.subMinutes
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalRepository
@@ -64,8 +65,8 @@ class JournalRepositoryImpl @Inject constructor(
         }
 
         // Загрузка данных с сервера при отсутствии валидного кэша
-        val studentCredentials = secure.signCredentials()
-        val student = service.loadSemesters(studentCredentials)
+        val token = secure.signCredentials()
+        val student = service.loadStudentInfo(token)
         storage.saveStudent(student)
 
         return student
@@ -81,13 +82,13 @@ class JournalRepositoryImpl @Inject constructor(
      * 3. Если кэш свежий (менее [semesterExpireHours]), возвращает его.
      * 4. Иначе загружает данные с сервера и обновляет кэш.
      *
-     * @param semester Идентификатор семестра (строка).
+     * @param semester Семестр, за который нужны оценки.
      * @param semesterExpireHours Время жизни кэша в часах.
      * @param useCache Флаг использования кэша.
      * @return Объект [SemesterMarks] с оценками за семестр.
      */
     override suspend fun semesterMarks(
-        semester: String,
+        semester: JournalSemester,
         semesterExpireHours: Int,
         useCache: Boolean,
     ): SemesterMarks = semesterLocker.withLock {
@@ -104,8 +105,8 @@ class JournalRepositoryImpl @Inject constructor(
         }
 
         // Загрузка оценок с сервера
-        val studentCredentials = secure.signCredentials()
-        val marks = service.loadMarks(studentCredentials, semester)
+        val token = secure.signCredentials()
+        val marks = service.loadMarks(token, semester)
         storage.saveSemester(semester, marks)
 
         return marks

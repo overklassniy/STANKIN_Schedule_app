@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.journal.core.domain.usecase
 
 import androidx.paging.PagingSource
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalPagingRepository
@@ -42,7 +43,7 @@ class JournalUseCase @Inject constructor(
      * @param student Объект студента, содержащий список семестров.
      * @return [PagingSource] для загрузки данных семестров.
      */
-    fun semesterSource(student: Student): PagingSource<String, SemesterMarks> {
+    fun semesterSource(student: Student): PagingSource<JournalSemester, SemesterMarks> {
         return paging.semesterSource(
             journal = journal,
             semesters = student.semesters,

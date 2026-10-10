@@ -51,6 +51,7 @@ dependencies {
 
     // Kotlin
     implementation(libs.androidx.core)
+    implementation(libs.compose.activity)
 
     // Jetpack Compose & Material 3
     implementation(platform(libs.compose.bom))

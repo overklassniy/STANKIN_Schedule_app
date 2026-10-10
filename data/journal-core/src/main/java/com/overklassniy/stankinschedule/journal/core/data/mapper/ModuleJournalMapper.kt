@@ -1,42 +1,73 @@
 package com.overklassniy.stankinschedule.journal.core.data.mapper
 
-import com.overklassniy.stankinschedule.journal.core.data.model.MarkResponse
-import com.overklassniy.stankinschedule.journal.core.data.model.SemestersResponse
+import com.overklassniy.stankinschedule.journal.core.data.model.AllowedSemesterResponse
+import com.overklassniy.stankinschedule.journal.core.data.model.DisciplineResponse
+import com.overklassniy.stankinschedule.journal.core.data.model.ExternalStudyProgressResponse
+import com.overklassniy.stankinschedule.journal.core.data.model.PeriodResponse
+import com.overklassniy.stankinschedule.journal.core.domain.model.Discipline
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
+import com.overklassniy.stankinschedule.journal.core.domain.model.MarkType
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
-import com.overklassniy.stankinschedule.journal.core.domain.model.Student
+import kotlin.math.roundToInt
 
 /**
- * Преобразует ответ сервера со списком семестров в доменную модель студента.
+ * Преобразует идентификатор семестра из ответа API в доменную модель.
  *
- * Алгоритм:
- * 1. Формирует полное имя из фамилии и инициалов.
- * 2. Копирует название группы.
- * 3. Переворачивает список семестров (от новых к старым).
- *
- * @return Объект [Student] с данными о студенте и списком семестров
+ * @return Объект [JournalSemester].
  */
-fun SemestersResponse.toStudent(): Student {
-    return Student(
-        name = "$surname $initials",
-        group = group,
-        semesters = semesters.reversed()
+fun AllowedSemesterResponse.toJournalSemester(): JournalSemester {
+    return JournalSemester(course = course, semester = semester)
+}
+
+/**
+ * Извлекает отсортированный список доступных семестров из ответа API.
+ *
+ * @return Список [JournalSemester] по возрастанию (от старых к новым).
+ */
+fun ExternalStudyProgressResponse.toSemesters(): List<JournalSemester> {
+    return allowedSemesters
+        .map { it.toJournalSemester() }
+        .sorted()
+}
+
+/**
+ * Преобразует дисциплину из ответа API в доменную модель.
+ *
+ * Отсутствующие (null) оценки не добавляются в словарь оценок —
+ * контрольная точка по такому типу считается неприменимой.
+ *
+ * @return Объект [Discipline].
+ */
+fun DisciplineResponse.toDiscipline(): Discipline {
+    val marks = linkedMapOf<MarkType, Int>()
+    module1?.let { marks[MarkType.FIRST_MODULE] = it }
+    module2?.let { marks[MarkType.SECOND_MODULE] = it }
+    coursework?.let { marks[MarkType.COURSEWORK] = it }
+    credit?.let { marks[MarkType.CREDIT] = it }
+    exam?.let { marks[MarkType.EXAM] = it }
+
+    return Discipline(
+        title = disciplineName,
+        marks = marks,
+        factor = coefficient ?: Discipline.NO_FACTOR
     )
 }
 
 /**
- * Преобразует список ответов с оценками в доменную модель оценок за семестр.
+ * Преобразует данные периода из ответа API в доменную модель оценок за семестр.
  *
- * Алгоритм:
- * 1. Создает пустой объект [SemesterMarks].
- * 2. Проходит по списку [MarkResponse] и добавляет каждую оценку в объект.
- *    При добавлении учитывается название предмета, тип оценки, значение и коэффициент.
- *
- * @return Объект [SemesterMarks], содержащий сгруппированные оценки
+ * @return Объект [SemesterMarks] с дисциплинами и рейтингами;
+ * для отсутствующего периода — пустой объект.
  */
-fun List<MarkResponse>.toSemesterMarks(): SemesterMarks {
-    return SemesterMarks().apply {
-        this@toSemesterMarks.forEach { mark ->
-            addMark(mark.title, mark.type, mark.value, mark.factor)
-        }
-    }
+fun PeriodResponse?.toSemesterMarks(): SemesterMarks {
+    if (this == null) return SemesterMarks()
+
+    val marks = SemesterMarks(
+        disciplines = ArrayList(disciplines.map { it.toDiscipline() })
+    )
+
+    rating?.let { marks.addMark(SemesterMarks.RATING, "", it.roundToInt(), 0.0) }
+    accumulatedRating?.let { marks.addMark(SemesterMarks.ACCUMULATED_RATING, "", it.roundToInt(), 0.0) }
+
+    return marks
 }

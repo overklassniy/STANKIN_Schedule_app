@@ -3,6 +3,7 @@ package com.overklassniy.stankinschedule.journal.predict.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.overklassniy.stankinschedule.journal.core.domain.model.Discipline
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.usecase.PredictUseCase
 import com.overklassniy.stankinschedule.journal.predict.ui.model.PredictMark
@@ -18,10 +19,10 @@ class PredictViewModel @Inject constructor(
     private val useCase: PredictUseCase,
 ) : ViewModel() {
 
-    private val _semesters = MutableStateFlow<List<String>>(emptyList())
+    private val _semesters = MutableStateFlow<List<JournalSemester>>(emptyList())
     val semesters = _semesters.asStateFlow()
 
-    private val _currentSemester = MutableStateFlow("")
+    private val _currentSemester = MutableStateFlow<JournalSemester?>(null)
     val currentSemester = _currentSemester.asStateFlow()
 
     private val _predictMarks = MutableStateFlow<Map<String, List<PredictMark>>>(emptyMap())
@@ -89,7 +90,7 @@ class PredictViewModel @Inject constructor(
         }
     }
 
-    fun changeSemester(semester: String) {
+    fun changeSemester(semester: JournalSemester) {
         viewModelScope.launch {
             _currentSemester.value = semester
             val newMarks = useCase.semesterMarks(semester).first()

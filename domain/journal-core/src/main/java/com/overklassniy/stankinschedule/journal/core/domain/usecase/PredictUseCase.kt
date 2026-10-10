@@ -1,5 +1,6 @@
 package com.overklassniy.stankinschedule.journal.core.domain.usecase
 
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalRepository
@@ -64,10 +65,10 @@ class PredictUseCase @Inject constructor(
     /**
      * Загружает оценки за указанный семестр.
      *
-     * @param semester Название семестра.
+     * @param semester Семестр, за который нужны оценки.
      * @return [Flow] с объектом [SemesterMarks].
      */
-    fun semesterMarks(semester: String): Flow<SemesterMarks> = flow {
+    fun semesterMarks(semester: JournalSemester): Flow<SemesterMarks> = flow {
         val semesterMarks = journal.semesterMarks(semester)
         emit(semesterMarks)
     }.flowOn(Dispatchers.IO)
@@ -75,9 +76,9 @@ class PredictUseCase @Inject constructor(
     /**
      * Получает список семестров студента.
      *
-     * @return [Flow] со списком названий семестров.
+     * @return [Flow] со списком семестров.
      */
-    fun semesters(): Flow<List<String>> = flow {
+    fun semesters(): Flow<List<JournalSemester>> = flow {
         val student = journal.student()
         emit(student.semesters)
     }.flowOn(Dispatchers.IO)

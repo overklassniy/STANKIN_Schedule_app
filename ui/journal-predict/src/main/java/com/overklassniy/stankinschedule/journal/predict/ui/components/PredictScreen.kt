@@ -96,7 +96,9 @@ fun PredictScreen(
     AppScaffold(
         topBar = {
             PredictToolBar(
-                subTitle = formatSemesterName(context, currentSemester),
+                subTitle = currentSemester
+                    ?.let { formatSemesterName(context, it.course, it.semester) }
+                    .orEmpty(),
                 onBackPressed = onBackPressed,
                 onTitleClicked = { scope.launch { bottomState.show() } }
             )
@@ -123,8 +125,10 @@ fun PredictScreen(
                 containerColor = MaterialTheme.colorScheme.background,
             ) {
                 SemesterSelectorBottomSheet(
-                    currentSemester = formatSemesterName(context, currentSemester),
-                    semesters = semesters.map { formatSemesterName(context, it) },
+                    currentSemester = currentSemester
+                        ?.let { formatSemesterName(context, it.course, it.semester) }
+                        .orEmpty(),
+                    semesters = semesters.map { formatSemesterName(context, it.course, it.semester) },
                     onSemesterSelected = { index ->
                         viewModel.changeSemester(semesters[index])
                         scope.launch { bottomState.hide() }

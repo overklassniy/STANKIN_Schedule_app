@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.overklassniy.stankinschedule.core.ui.utils.formatSemesterName
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import kotlinx.coroutines.launch
 
 /**
@@ -17,14 +18,14 @@ import kotlinx.coroutines.launch
  * Отображает список семестров с возможностью прокрутки и выбора активной вкладки.
  * По клику запускает прокрутку на выбранный индекс, вызывая [onPageScrolled].
  *
- * @param semesters Список названий семестров.
+ * @param semesters Список семестров (по возрастанию).
  * @param currentPage Индекс текущей активной вкладки.
  * @param onPageScrolled Суспенд‑обработчик прокрутки на выбранный индекс.
  * @param modifier Модификатор для внешнего оформления.
  */
 @Composable
 fun SemesterTabRow(
-    semesters: List<String>,
+    semesters: List<JournalSemester>,
     currentPage: Int,
     onPageScrolled: suspend (index: Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -42,7 +43,9 @@ fun SemesterTabRow(
             Tab(
                 selected = index == currentPage,
                 onClick = { pagerScroller.launch { onPageScrolled(index) } },
-                text = { Text(text = formatSemesterName(context, semester)) }
+                text = {
+                    Text(text = formatSemesterName(context, semester.course, semester.semester))
+                }
             )
         }
     }

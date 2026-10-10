@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.journal.core.domain.usecase.predict
 
 import com.overklassniy.stankinschedule.journal.core.domain.model.Discipline
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.MarkType
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
@@ -56,7 +57,7 @@ object PredictCalculater {
      */
     suspend fun rating(
         student: Student,
-        loadSemester: suspend (semester: String) -> SemesterMarks,
+        loadSemester: suspend (semester: JournalSemester) -> SemesterMarks,
     ): Double {
         for (semester in student.semesters) {
             val marks = loadSemester(semester)
@@ -154,7 +155,7 @@ object PredictCalculater {
      */
     suspend fun predictRating(
         student: Student,
-        loadSemester: suspend (semester: String) -> SemesterMarks,
+        loadSemester: suspend (semester: JournalSemester) -> SemesterMarks,
     ): Double {
         if (student.semesters.isEmpty()) return 0.0
 

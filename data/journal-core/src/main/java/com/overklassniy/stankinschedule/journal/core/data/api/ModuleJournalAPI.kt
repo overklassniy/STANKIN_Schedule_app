@@ -1,49 +1,63 @@
 package com.overklassniy.stankinschedule.journal.core.data.api
 
-import com.overklassniy.stankinschedule.journal.core.data.model.MarkResponse
-import com.overklassniy.stankinschedule.journal.core.data.model.SemestersResponse
+import com.overklassniy.stankinschedule.journal.core.data.model.EduGroupResponse
+import com.overklassniy.stankinschedule.journal.core.data.model.ExternalStudyProgressResponse
+import com.overklassniy.stankinschedule.journal.core.data.model.TokenResponse
 import retrofit2.Call
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.Headers
-import retrofit2.http.POST
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Query
 
 /**
- * Интерфейс API модульного журнала.
- * Используется для взаимодействия с веб-сервисом университета (получение семестров и оценок).
- * Все запросы выполняются методом POST с передачей учетных данных.
+ * Интерфейс API личного кабинета студента (lko-api.stankin.ru).
+ * Используется для взаимодействия с веб-сервисом университета
+ * (получение успеваемости, данных студента и обмен кода авторизации на токен).
+ *
+ * Авторизация запросов выполняется Bearer-токеном в заголовке Authorization.
  */
 interface ModuleJournalAPI {
 
     /**
-     * Получает список доступных семестров для студента.
+     * Получает данные успеваемости студента.
      *
-     * @param login Логин студента (обычно номер зачетной книжки или студенческого билета)
-     * @param password Пароль от личного кабинета
-     * @return Объект Call, содержащий ответ сервера со списком семестров [SemestersResponse]
+     * Без параметров возвращает последний доступный период;
+     * с параметрами — указанные курс и семестр.
+     *
+     * @param bearer Заголовок авторизации вида "Bearer <token>".
+     * @param course Номер курса (опционально).
+     * @param semester Номер семестра внутри курса (опционально).
+     * @return Объект Call с данными успеваемости [ExternalStudyProgressResponse].
      */
-    @POST("/webapi/api2/semesters/")
-    @Headers("Content-Type: application/x-www-form-urlencoded; charset=UTF-8")
-    @FormUrlEncoded
-    fun getSemesters(
-        @Field("student") login: String,
-        @Field("password") password: String,
-    ): Call<SemestersResponse>
+    @GET("lkstudent/api/externalStudyProgress")
+    fun getStudyProgress(
+        @Header("Authorization") bearer: String,
+        @Query("course") course: Int? = null,
+        @Query("semester") semester: Int? = null,
+    ): Call<ExternalStudyProgressResponse>
 
     /**
-     * Получает оценки (баллы) студента за определенный семестр.
+     * Получает учебную группу студента.
      *
-     * @param login Логин студента
-     * @param password Пароль от личного кабинета
-     * @param semester Идентификатор семестра, за который нужно получить оценки
-     * @return Объект Call, содержащий список оценок [MarkResponse]
+     * @param bearer Заголовок авторизации вида "Bearer <token>".
+     * @return Объект Call с данными группы [EduGroupResponse].
      */
-    @POST("/webapi/api2/marks/")
-    @Headers("Content-Type: application/x-www-form-urlencoded; charset=UTF-8")
-    @FormUrlEncoded
-    fun getMarks(
-        @Field("student") login: String,
-        @Field("password") password: String,
-        @Field("semester") semester: String,
-    ): Call<List<MarkResponse>>
+    @GET("lkstudent/studedugroup/GetStudEduGroup/")
+    fun getEduGroup(
+        @Header("Authorization") bearer: String,
+    ): Call<EduGroupResponse>
+
+    /**
+     * Обменивает код авторизации OIDC на токен доступа.
+     *
+     * @param code Код авторизации из callback-редиректа.
+     * @param clientId Идентификатор клиента личного кабинета.
+     * @param codeVerifier PKCE code_verifier, соответствующий code_challenge запроса авторизации.
+     * @return Объект Call с токеном [TokenResponse].
+     */
+    @GET("auth/gettoken")
+    fun getToken(
+        @Query("code") code: String,
+        @Query("clientId") clientId: String,
+        @Query("codeVerifier") codeVerifier: String,
+    ): Call<TokenResponse>
 }

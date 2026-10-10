@@ -2,52 +2,73 @@ package com.overklassniy.stankinschedule.journal.core.data.repository
 
 import com.overklassniy.stankinschedule.journal.core.data.api.ModuleJournalAPI
 import com.overklassniy.stankinschedule.journal.core.data.mapper.toSemesterMarks
-import com.overklassniy.stankinschedule.journal.core.data.mapper.toStudent
+import com.overklassniy.stankinschedule.journal.core.data.mapper.toSemesters
 import com.overklassniy.stankinschedule.journal.core.domain.exceptions.StudentAuthorizedException
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalAuthToken
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks
 import com.overklassniy.stankinschedule.journal.core.domain.model.Student
-import com.overklassniy.stankinschedule.journal.core.domain.model.StudentCredentials
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalServiceRepository
+import retrofit2.HttpException
 import retrofit2.await
-import javax.net.ssl.HttpsURLConnection
 import javax.inject.Inject
+import javax.net.ssl.HttpsURLConnection
 
 
 /**
  * Реализация репозитория сервиса журнала [JournalServiceRepository].
- * Отвечает за взаимодействие с сетевым API модульного журнала.
+ * Отвечает за взаимодействие с сетевым API личного кабинета.
  *
- * @param api Интерфейс API для выполнения запросов к серверу журнала.
+ * @param api Интерфейс API для выполнения запросов к серверу.
  */
 class JournalServiceRepositoryImpl @Inject constructor(
     private val api: ModuleJournalAPI,
 ) : JournalServiceRepository {
 
     /**
-     * Загружает список семестров и информацию о студенте.
+     * Загружает информацию о студенте и список доступных семестров.
      *
      * Алгоритм:
-     * 1. Выполняет запрос к API `api.getSemesters` с переданными учетными данными.
-     * 2. Ожидает ответ сервера.
-     * 3. При HTTP 401 выбрасывает [StudentAuthorizedException] — сессия истекла.
-     * 4. Преобразует ответ (DTO) в доменную модель [Student] с помощью маппера [toStudent].
+     * 1. Запрашивает успеваемость без параметров — ответ содержит
+     *    ФИО студента и список `allowedSemesters`.
+     * 2. Запрашивает учебную группу (best-effort: при ошибке группа пустая).
+     * 3. При HTTP 401 выбрасывает [StudentAuthorizedException] — токен истек.
      *
-     * @param credentials Учетные данные студента (логин и пароль).
-     * @return Объект [Student], содержащий информацию о студенте и список доступных семестров.
-     * @throws StudentAuthorizedException если сервер вернул HTTP 401 (сессия истекла).
+     * @param token Токен доступа к API.
+     * @return Объект [Student] с ФИО, группой и списком семестров.
+     * @throws StudentAuthorizedException если сервер вернул HTTP 401 (токен истек).
      */
-    override suspend fun loadSemesters(
-        credentials: StudentCredentials,
-    ): Student {
+    override suspend fun loadStudentInfo(token: JournalAuthToken): Student {
         return try {
-            api.getSemesters(credentials.login, credentials.password)
-                .await()
-                .toStudent()
-        } catch (e: retrofit2.HttpException) {
+            val bearer = bearer(token)
+            val progress = api.getStudyProgress(bearer).await()
+
+            Student(
+                name = progress.data?.fio.orEmpty(),
+                group = loadGroup(bearer),
+                semesters = progress.toSemesters(),
+            )
+        } catch (e: HttpException) {
             if (e.code() == HttpsURLConnection.HTTP_UNAUTHORIZED) {
                 throw StudentAuthorizedException(e)
             }
             throw e
+        }
+    }
+
+    /**
+     * Загружает название учебной группы (best-effort).
+     *
+     * @param bearer Заголовок авторизации вида "Bearer <token>".
+     * @return Название группы или пустая строка при ошибке запроса.
+     * @throws HttpException при HTTP 401 — обрабатывается вызывающим кодом как потеря авторизации.
+     */
+    private suspend fun loadGroup(bearer: String): String {
+        return try {
+            api.getEduGroup(bearer).await().eduGroup?.groupName.orEmpty()
+        } catch (e: HttpException) {
+            if (e.code() == HttpsURLConnection.HTTP_UNAUTHORIZED) throw e
+            ""
         }
     }
 
@@ -55,29 +76,36 @@ class JournalServiceRepositoryImpl @Inject constructor(
      * Загружает оценки за конкретный семестр.
      *
      * Алгоритм:
-     * 1. Выполняет запрос к API `api.getMarks` с учетными данными и ID семестра.
-     * 2. Ожидает ответ сервера.
-     * 3. При HTTP 401 выбрасывает [StudentAuthorizedException] — сессия истекла.
-     * 4. Преобразует ответ (DTO) в доменную модель [SemesterMarks] с помощью маппера [toSemesterMarks].
+     * 1. Запрашивает успеваемость по паре (курс, семестр).
+     * 2. При HTTP 401 выбрасывает [StudentAuthorizedException] — токен истек.
+     * 3. Преобразует период ответа в [SemesterMarks].
      *
-     * @param credentials Учетные данные студента.
-     * @param semester Идентификатор семестра, за который нужно получить оценки.
-     * @return Объект [SemesterMarks], содержащий список оценок за выбранный семестр.
-     * @throws StudentAuthorizedException если сервер вернул HTTP 401 (сессия истекла).
+     * @param token Токен доступа к API.
+     * @param semester Семестр, за который нужны оценки.
+     * @return Объект [SemesterMarks] с оценками за семестр.
+     * @throws StudentAuthorizedException если сервер вернул HTTP 401 (токен истек).
      */
     override suspend fun loadMarks(
-        credentials: StudentCredentials,
-        semester: String,
+        token: JournalAuthToken,
+        semester: JournalSemester,
     ): SemesterMarks {
         return try {
-            api.getMarks(credentials.login, credentials.password, semester)
-                .await()
-                .toSemesterMarks()
-        } catch (e: retrofit2.HttpException) {
+            api.getStudyProgress(
+                bearer = bearer(token),
+                course = semester.course,
+                semester = semester.semester,
+            ).await()
+                .data?.period.toSemesterMarks()
+        } catch (e: HttpException) {
             if (e.code() == HttpsURLConnection.HTTP_UNAUTHORIZED) {
                 throw StudentAuthorizedException(e)
             }
             throw e
         }
     }
+
+    /**
+     * Формирует значение заголовка Authorization из токена.
+     */
+    private fun bearer(token: JournalAuthToken): String = "Bearer ${token.accessToken}"
 }

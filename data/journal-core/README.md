@@ -1,6 +1,6 @@
 # Модуль data/journal-core (`:data:journal-core`)
 
-Data-слой модульного журнала. Реализует репозитории для работы с журналом: авторизация, загрузка оценок, пагинация, безопасное хранение учётных данных, локальное кеширование.
+Data-слой модульного журнала. Реализует репозитории для работы с журналом: OIDC-авторизация (PKCE) в личном кабинете lko.stankin.ru, загрузка оценок, пагинация, безопасное хранение токена, локальное кеширование.
 
 ## Структура каталогов
 
@@ -9,15 +9,16 @@ src/main/java/com/overklassniy/stankinschedule/journal/core/data/
   api/                         - API-интерфейс модульного журнала
   di/                          - DI-модуль журнала
   mapper/                      - Мапперы (MarkType, ModuleJournal)
-  model/                       - Сетевые модели (MarkResponse, SemestersResponse)
+  model/                       - Сетевые модели (ответы API успеваемости, группы, токена)
   repository/                  - Реализации репозиториев журнала
   source/                      - Источники данных (SemesterMarksSource)
+  utils/                       - Утилиты (PkceGenerator)
 ```
 
 ## Ключевые компоненты
 
 ### api
-- `ModuleJournalAPI` - Retrofit-интерфейс API модульного журнала
+- `ModuleJournalAPI` - Retrofit-интерфейс API lko-api.stankin.ru (Bearer-авторизация)
 
 ### di
 - `JournalCoreModule` - Hilt-модуль: API, репозитории, мапперы
@@ -27,19 +28,28 @@ src/main/java/com/overklassniy/stankinschedule/journal/core/data/
 - `ModuleJournalMapper` - маппер между сетевыми и доменными моделями
 
 ### model
-- `MarkResponse` - модель ответа с оценками
-- `SemestersResponse` - модель ответа со списком семестров
+- `ExternalStudyProgressResponse` - ответ API успеваемости
+- `AllowedSemesterResponse` - идентификатор разрешённого семестра
+- `PeriodResponse` - период успеваемости (семестр)
+- `DisciplineResponse` - дисциплина с оценками
+- `StudyProgressData` - данные студента из ответа успеваемости
+- `EduGroupResponse` - данные учебной группы
+- `TokenResponse` - ответ обмена кода на токен
 
 ### repository
+- `JournalAuthRepositoryImpl` - OIDC-авторизация: URL авторизации, обмен кода на токен
 - `JournalRepositoryImpl` - основная реализация репозитория журнала
 - `JournalPagingRepositoryImpl` - реализация пагинации оценок
 - `JournalPreferenceImpl` - реализация настроек журнала
-- `JournalSecureRepositoryImpl` - безопасное хранение учётных данных
+- `JournalSecureRepositoryImpl` - безопасное хранение токена доступа
 - `JournalServiceRepositoryImpl` - реализация сервисного репозитория
 - `JournalStorageRepositoryImpl` - локальное хранение данных журнала
 
 ### source
 - `SemesterMarksSource` - источник данных оценок для Paging
+
+### utils
+- `PkceGenerator` - генератор PKCE-параметров (code_verifier, code_challenge, state)
 
 ## Зависимости
 

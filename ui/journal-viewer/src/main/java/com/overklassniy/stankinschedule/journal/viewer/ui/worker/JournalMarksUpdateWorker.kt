@@ -16,7 +16,9 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.overklassniy.stankinschedule.core.ui.notification.NotificationUtils
+import com.overklassniy.stankinschedule.core.ui.utils.formatSemesterName
 import com.overklassniy.stankinschedule.journal.core.domain.exceptions.StudentAuthorizedException
+import com.overklassniy.stankinschedule.journal.core.domain.model.JournalSemester
 import com.overklassniy.stankinschedule.journal.core.domain.usecase.JournalUpdateUseCase
 import com.overklassniy.stankinschedule.journal.viewer.ui.R
 import dagger.assisted.Assisted
@@ -63,6 +65,9 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
             Result.success()
 
         } catch (_: StudentAuthorizedException) {
+            // Токен истек: тихо прекращаем фоновые обновления.
+            // После повторного входа пользователя воркер запустится снова.
+            cancelWorker(applicationContext)
             Result.failure()
         } catch (_: Exception) {
             Result.retry()
@@ -102,13 +107,16 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
      * Отправляет уведомление о появлении новых семестров.
      *
      * @param manager Менеджер уведомлений.
-     * @param newSemesters Набор названий новых семестров.
+     * @param newSemesters Набор новых семестров.
      */
     private fun sendSemestersNotification(
         manager: NotificationManagerCompat,
-        newSemesters: Set<String>
+        newSemesters: Set<JournalSemester>
     ) {
-        val content = getString(R.string.journal_new_semester) + newSemesters.joinToString(", ")
+        val semesterNames = newSemesters.joinToString(", ") {
+            formatSemesterName(applicationContext, it.course, it.semester)
+        }
+        val content = getString(R.string.journal_new_semester) + semesterNames
         val notification = NotificationUtils.createModuleJournalNotification(applicationContext)
             .setContentTitle(getString(R.string.journal_notification))
             .setContentText(content)

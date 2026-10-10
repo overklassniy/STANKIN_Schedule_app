@@ -2,12 +2,14 @@ package com.overklassniy.stankinschedule.journal.core.data.di
 
 import com.google.gson.GsonBuilder
 import com.overklassniy.stankinschedule.journal.core.data.api.ModuleJournalAPI
+import com.overklassniy.stankinschedule.journal.core.data.repository.JournalAuthRepositoryImpl
 import com.overklassniy.stankinschedule.journal.core.data.repository.JournalPagingRepositoryImpl
 import com.overklassniy.stankinschedule.journal.core.data.repository.JournalPreferenceImpl
 import com.overklassniy.stankinschedule.journal.core.data.repository.JournalRepositoryImpl
 import com.overklassniy.stankinschedule.journal.core.data.repository.JournalSecureRepositoryImpl
 import com.overklassniy.stankinschedule.journal.core.data.repository.JournalServiceRepositoryImpl
 import com.overklassniy.stankinschedule.journal.core.data.repository.JournalStorageRepositoryImpl
+import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalAuthRepository
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalPagingRepository
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalPreference
 import com.overklassniy.stankinschedule.journal.core.domain.repository.JournalRepository
@@ -44,7 +46,7 @@ object JournalCoreModule {
     @Provides
     fun provideModuleJournalService(client: OkHttpClient): ModuleJournalAPI {
         return Retrofit.Builder()
-            .baseUrl(Constants.MODULE_JOURNAL_URL)
+            .baseUrl(Constants.JOURNAL_API_URL)
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .client(client)
             .build()
@@ -61,6 +63,17 @@ object JournalCoreModule {
     fun provideServiceRepository(
         repository: JournalServiceRepositoryImpl,
     ): JournalServiceRepository = repository
+
+    /**
+     * Предоставляет репозиторий OIDC-авторизации в личном кабинете.
+     *
+     * @param repository Реализация репозитория [JournalAuthRepositoryImpl]
+     * @return Интерфейс репозитория [JournalAuthRepository]
+     */
+    @Provides
+    fun provideAuthRepository(
+        repository: JournalAuthRepositoryImpl,
+    ): JournalAuthRepository = repository
 
     /**
      * Предоставляет репозиторий для работы с локальным хранилищем (БД) журнала.
