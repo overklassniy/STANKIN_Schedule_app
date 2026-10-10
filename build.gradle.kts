@@ -32,6 +32,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.detekt) apply false
 }
 
 allprojects {
@@ -62,6 +63,14 @@ subprojects {
         javaCompiler.set(javaToolchains.compilerFor {
             languageVersion.set(JavaLanguageVersion.of(25))
         })
+    }
+
+    apply(plugin = "dev.detekt")
+    extensions.configure<dev.detekt.gradle.extensions.DetektExtension> {
+        buildUponDefaultConfig.set(true)
+        parallel.set(true)
+        ignoreFailures.set(true)
+        config.setFrom(rootProject.layout.projectDirectory.file("detekt.yml"))
     }
 }
 

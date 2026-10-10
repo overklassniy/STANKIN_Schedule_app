@@ -1,0 +1,46 @@
+# detekt-конфигурация для STANKIN Schedule app.
+# Применяется поверх дефолтных правил (buildUponDefaultConfig = true),
+# поэтому здесь только переопределённые пороги.
+# Имена свойств — для detekt 2.x (dev.detekt).
+
+complexity:
+  LongMethod:
+    allowedLines: 60
+    # Composable-функции по конвенции собирают UI-дерево декларативно и
+    # законно длиннее 60 строк — не считаем это дефектом.
+    ignoreAnnotated: ['Composable']
+  CyclomaticComplexMethod:
+    # У Composable-функций ветвления — это отображение состояний UI.
+    ignoreAnnotated: ['Composable']
+  NestedBlockDepth:
+    allowedDepth: 5
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    allowedFunctionsPerClass: 15
+    allowedFunctionsPerInterface: 15
+    ignorePrivate: true
+
+style:
+  MaxLineLength:
+    maxLineLength: 140
+    excludeCommentStatements: true
+  ReturnCount:
+    # Несколько ранних return в начале функции (guard clauses) — нормальный
+    # паттерн проекта, не считаем их нарушением.
+    excludeGuardClauses: true
+  ThrowsCount:
+    excludeGuardClauses: true
+  MagicNumber:
+    # Числовые литералы в UI-модулях — размеры и отступы Compose/Glance
+    # (16.dp, 8.dp и т.п.); выносить их в именованные константы не требуем.
+    # В data/domain-слоях правило остаётся активным.
+    excludes: ['**/ui/**/*.kt']
+
+naming:
+  FunctionNaming:
+    # Composable-функции именуются в PascalCase по конвенции Compose.
+    ignoreAnnotated: ['Composable']
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
