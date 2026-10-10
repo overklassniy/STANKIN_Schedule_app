@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 3.4.0 (10.10.26)
+- Module journal migrated to the new lko.stankin.ru personal account (replacing the closing lk.stankin.ru)
+- Journal authorization via WebView using OIDC (PKCE) with automatic sign-in when the session is alive
+- Journal semester names displayed in the "Year N, Semester N" format
+
 ## Version 3.3.2 (31.08.26)
 - Updated class start and end times according to the new schedule
 

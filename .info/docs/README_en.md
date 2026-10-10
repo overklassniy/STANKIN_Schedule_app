@@ -86,7 +86,7 @@ Without these files, the app builds and runs: Sentry will be disabled, news sect
 
 ## Changelog
 
-**v3.3.0** — DataStore migration, screens rewritten with Compose, dependency updates
+**v3.4.0** — module journal migrated to the new lko.stankin.ru personal account
 
 Full changelog — [CHANGELOG_en.md](CHANGELOG_en.md)
 

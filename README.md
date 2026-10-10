@@ -86,7 +86,7 @@ cp stankin.secret.example stankin.secret
 
 ## История изменений
 
-**v3.3.0** — миграция на DataStore, переписывание экранов на Compose, обновление зависимостей
+**v3.4.0** — переход модульного журнала на новый личный кабинет lko.stankin.ru
 
 Полный список — [CHANGELOG.md](CHANGELOG.md)
 
