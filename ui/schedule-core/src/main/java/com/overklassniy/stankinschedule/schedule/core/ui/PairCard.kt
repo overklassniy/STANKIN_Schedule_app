@@ -132,12 +132,12 @@ fun PairCard(
                 )
 
                 if (pair.lecturer.isNotEmpty() || pair.classroom.isNotEmpty()) {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         val lecturerModifier = Modifier
-                            .padding(end = itemSpacing)
+                            .weight(1f)
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = LocalIndication.current,
