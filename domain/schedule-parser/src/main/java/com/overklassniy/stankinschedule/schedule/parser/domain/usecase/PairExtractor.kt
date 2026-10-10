@@ -49,24 +49,25 @@ class PairExtractor {
             .toList()
 
         if (textPairs.isEmpty()) {
-            if (cell.text.isEmpty()) {
-                return emptyList()
+            return if (cell.text.isEmpty()) {
+                emptyList()
+            } else {
+                listOf(ParseResult.Missing(cell.text))
             }
-            return listOf(ParseResult.Missing(cell.text))
         }
 
         val cellTime = detectTimeFromCell(cell.x, cell.x + cell.w, timeCells)
-        if (cellTime.duration < 1) {
-            return textPairs.map { textPair ->
+        return if (cellTime.duration < 1) {
+            textPairs.map { textPair ->
                 ParseResult.Error(error = "Invalid time: $cellTime", context = textPair)
             }
-        }
-
-        return textPairs.map { textPair ->
-            try {
-                ParseResult.Success(extractPairFromCell(textPair, cellTime))
-            } catch (e: Exception) {
-                ParseResult.Error(error = e.message ?: e.toString(), context = textPair)
+        } else {
+            textPairs.map { textPair ->
+                try {
+                    ParseResult.Success(extractPairFromCell(textPair, cellTime))
+                } catch (e: Exception) {
+                    ParseResult.Error(error = e.message ?: e.toString(), context = textPair)
+                }
             }
         }
     }
@@ -120,13 +121,13 @@ class PairExtractor {
             ?: throw IllegalArgumentException("Pair not found: '$data'")
 
         return PairModel(
-            title = extractTitle(pairMatch.groupValues[1]),
-            lecturer = extractLecturer(pairMatch.groupValues[2]),
-            type = extractType(pairMatch.groupValues[4]),
-            subgroup = extractSubgroup(pairMatch.groupValues[5]),
-            classroom = extractClassroom(pairMatch.groupValues[6]),
+            title = extractTitle(pairMatch.groupValues[GROUP_TITLE]),
+            lecturer = extractLecturer(pairMatch.groupValues[GROUP_LECTURER]),
+            type = extractType(pairMatch.groupValues[GROUP_TYPE]),
+            subgroup = extractSubgroup(pairMatch.groupValues[GROUP_SUBGROUP]),
+            classroom = extractClassroom(pairMatch.groupValues[GROUP_CLASSROOM]),
             time = time,
-            date = extractDate(pairMatch.groupValues[7])
+            date = extractDate(pairMatch.groupValues[GROUP_DATE])
         )
     }
 
@@ -206,34 +207,33 @@ class PairExtractor {
 
         for (textDate in textDates) {
             val matchRange = dateRangeRegex.matchEntire(textDate)
-            if (matchRange != null) {
-                val frequency = when (val frequencyText = matchRange.groupValues[3]) {
-                    "к.н." -> Frequency.EVERY
-                    "ч.н." -> Frequency.THROUGHOUT
-                    else -> throw IllegalArgumentException("Unknown frequency: '$frequencyText'")
+            val matchSingle = dateSingleRegex.matchEntire(textDate)
+
+            when {
+                matchRange != null -> {
+                    val frequency = when (val frequencyText = matchRange.groupValues[GROUP_RANGE_FREQUENCY]) {
+                        "к.н." -> Frequency.EVERY
+                        "ч.н." -> Frequency.THROUGHOUT
+                        else -> throw IllegalArgumentException("Unknown frequency: '$frequencyText'")
+                    }
+
+                    val item = DateRange(
+                        firstDate = dateConvertor(matchRange.groupValues[GROUP_RANGE_FIRST]),
+                        secondDate = dateConvertor(matchRange.groupValues[GROUP_RANGE_SECOND]),
+                        frequencyDate = frequency
+                    )
+                    date.add(item)
                 }
 
-                val item = DateRange(
-                    firstDate = dateConvertor(matchRange.groupValues[1]),
-                    secondDate = dateConvertor(matchRange.groupValues[2]),
-                    frequencyDate = frequency
-                )
-                date.add(item)
+                matchSingle != null -> {
+                    val item = DateSingle(
+                        date = dateConvertor(matchSingle.groupValues[GROUP_SINGLE_DATE])
+                    )
+                    date.add(item)
+                }
 
-                continue
+                else -> throw IllegalArgumentException("Unknown date: '$textDate'")
             }
-            val matchSingle = dateSingleRegex.matchEntire(textDate)
-            if (matchSingle != null) {
-
-                val item = DateSingle(
-                    date = dateConvertor(matchSingle.groupValues[1])
-                )
-                date.add(item)
-
-                continue
-            }
-
-            throw IllegalArgumentException("Unknown date: '$textDate'")
         }
 
         return date
@@ -246,20 +246,36 @@ class PairExtractor {
     private fun dateConvertor(date: String): LocalDate {
         val parsedDate = dateFormatter.parseLocalDate("$date.$dateYear")
         val now = LocalDate.now()
-
         val previousYearDate = dateFormatter.parseLocalDate("$date.${dateYear - 1}")
-        if (abs(daysBetween(now, parsedDate)) > abs(daysBetween(now, previousYearDate))) {
-            if (previousYearDate.dayOfWeek != DateTimeConstants.SUNDAY) {
-                return previousYearDate
-            }
-        }
 
-        if (parsedDate.dayOfWeek == DateTimeConstants.SUNDAY) {
-            if (previousYearDate.dayOfWeek != DateTimeConstants.SUNDAY) {
-                return previousYearDate
-            }
+        val preferPreviousYear =
+            abs(daysBetween(now, parsedDate)) > abs(daysBetween(now, previousYearDate)) ||
+                    parsedDate.dayOfWeek == DateTimeConstants.SUNDAY
+
+        return if (preferPreviousYear && previousYearDate.dayOfWeek != DateTimeConstants.SUNDAY) {
+            previousYearDate
+        } else {
+            parsedDate
         }
-        return parsedDate
+    }
+
+    private companion object {
+
+        /** Индексы групп захвата в [ParserPatterns.COMMON]. */
+        const val GROUP_TITLE = 1
+        const val GROUP_LECTURER = 2
+        const val GROUP_TYPE = 4
+        const val GROUP_SUBGROUP = 5
+        const val GROUP_CLASSROOM = 6
+        const val GROUP_DATE = 7
+
+        /** Индексы групп захвата в [ParserPatterns.DATE_RANGE]. */
+        const val GROUP_RANGE_FIRST = 1
+        const val GROUP_RANGE_SECOND = 2
+        const val GROUP_RANGE_FREQUENCY = 3
+
+        /** Индекс группы захвата даты в [ParserPatterns.DATE_SINGLE]. */
+        const val GROUP_SINGLE_DATE = 1
     }
 
     /**

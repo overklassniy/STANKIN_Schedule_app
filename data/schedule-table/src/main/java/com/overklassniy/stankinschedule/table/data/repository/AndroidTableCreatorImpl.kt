@@ -11,6 +11,7 @@ import com.overklassniy.stankinschedule.schedule.table.domain.model.TableMode
 import com.overklassniy.stankinschedule.schedule.table.domain.model.toDraw
 import com.overklassniy.stankinschedule.schedule.table.domain.repository.AndroidTableCreator
 import com.overklassniy.stankinschedule.schedule.table.domain.usecase.drawScheduleTable
+import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDate
 import javax.inject.Inject
 import kotlin.math.sqrt
@@ -92,8 +93,8 @@ class AndroidTableCreatorImpl @Inject constructor() : AndroidTableCreator {
             }
 
             TableMode.Weekly -> {
-                var from = startDate.withDayOfWeek(1)
-                val to = endDate.withDayOfWeek(7)
+                var from = startDate.withDayOfWeek(DateTimeConstants.MONDAY)
+                val to = endDate.withDayOfWeek(DateTimeConstants.SUNDAY)
 
                 var pageNumber = 1
                 while (from.isBefore(to)) {
@@ -110,7 +111,7 @@ class AndroidTableCreatorImpl @Inject constructor() : AndroidTableCreator {
                         )
                     }
 
-                    from = from.plusDays(7)
+                    from = from.plusWeeks(1)
                     ++pageNumber
                 }
             }

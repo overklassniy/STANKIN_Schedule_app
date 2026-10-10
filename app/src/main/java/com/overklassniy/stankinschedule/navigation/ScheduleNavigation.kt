@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -97,65 +98,13 @@ object ScheduleViewerNavEntry : DestinationNavEntry(
  * @param navController [NavController] Контроллер навигации для управления переходами.
  * @param showSnackBarState Callback для отображения всплывающих уведомлений (Snackbar).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.schedule(
     navController: NavController,
     showSnackBarState: (message: String) -> Unit
 ) {
     // Экран списка расписаний (Главная страница раздела)
     composable(route = ScheduleNavEntry.route) {
-        val sheetState = rememberModalBottomSheetState()
-        val scope = rememberCoroutineScope()
-        val (showCreatorSheet, setShowCreatorSheet) = remember { mutableStateOf(false) }
-
-        ScheduleScreen(
-            // Переход к созданию нового расписания (открытие шторки)
-            onScheduleCreate = {
-                setShowCreatorSheet(true)
-            },
-            // Переход к просмотру выбранного расписания
-            onScheduleClicked = { id ->
-                navController.navigate(route = ScheduleViewerNavEntry.routeWithArgs(id))
-            },
-            viewModel = hiltViewModel(),
-            modifier = Modifier.fillMaxSize()
-        )
-
-        if (showCreatorSheet) {
-            val context = LocalContext.current
-
-            ModalBottomSheet(
-                onDismissRequest = { setShowCreatorSheet(false) },
-                sheetState = sheetState
-            ) {
-                ScheduleCreatorSheet(
-                    onNavigateBack = {
-                        scope.launch {
-                            sheetState.hide()
-                            setShowCreatorSheet(false)
-                        }
-                    },
-                    // Переход к репозиторию готовых расписаний (отдельная Activity)
-                    onRepositoryClicked = {
-                        context.startActivity(
-                            Intent(
-                                context,
-                                ScheduleRepositoryActivity::class.java
-                            )
-                        )
-                        setShowCreatorSheet(false)
-                    },
-                    // Переход к импорту расписания (парсинг) (отдельная Activity)
-                    onImportClicked = {
-                        context.startActivity(Intent(context, ScheduleParserActivity::class.java))
-                        setShowCreatorSheet(false)
-                    },
-                    onShowSnackBar = showSnackBarState,
-                    viewModel = hiltViewModel(),
-                    modifier = Modifier.navigationBarsPadding()
-                )
-            }
-        }
+        ScheduleListRoute(navController, showSnackBarState)
     }
 
     // Экран просмотра конкретного расписания
@@ -188,5 +137,68 @@ fun NavGraphBuilder.schedule(
             },
             modifier = Modifier.fillMaxSize()
         )
+    }
+}
+
+/**
+ * Маршрут списка расписаний с шторкой создания нового расписания.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ScheduleListRoute(
+    navController: NavController,
+    showSnackBarState: (message: String) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    val (showCreatorSheet, setShowCreatorSheet) = remember { mutableStateOf(false) }
+
+    ScheduleScreen(
+        // Переход к созданию нового расписания (открытие шторки)
+        onScheduleCreate = {
+            setShowCreatorSheet(true)
+        },
+        // Переход к просмотру выбранного расписания
+        onScheduleClicked = { id ->
+            navController.navigate(route = ScheduleViewerNavEntry.routeWithArgs(id))
+        },
+        viewModel = hiltViewModel(),
+        modifier = Modifier.fillMaxSize()
+    )
+
+    if (showCreatorSheet) {
+        val context = LocalContext.current
+
+        ModalBottomSheet(
+            onDismissRequest = { setShowCreatorSheet(false) },
+            sheetState = sheetState
+        ) {
+            ScheduleCreatorSheet(
+                onNavigateBack = {
+                    scope.launch {
+                        sheetState.hide()
+                        setShowCreatorSheet(false)
+                    }
+                },
+                // Переход к репозиторию готовых расписаний (отдельная Activity)
+                onRepositoryClicked = {
+                    context.startActivity(
+                        Intent(
+                            context,
+                            ScheduleRepositoryActivity::class.java
+                        )
+                    )
+                    setShowCreatorSheet(false)
+                },
+                // Переход к импорту расписания (парсинг) (отдельная Activity)
+                onImportClicked = {
+                    context.startActivity(Intent(context, ScheduleParserActivity::class.java))
+                    setShowCreatorSheet(false)
+                },
+                onShowSnackBar = showSnackBarState,
+                viewModel = hiltViewModel(),
+                modifier = Modifier.navigationBarsPadding()
+            )
+        }
     }
 }

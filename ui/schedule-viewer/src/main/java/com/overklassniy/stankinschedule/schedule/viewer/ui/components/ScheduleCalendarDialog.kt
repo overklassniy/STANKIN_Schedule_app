@@ -42,17 +42,6 @@ import com.overklassniy.stankinschedule.schedule.core.ui.PairColors
 import org.joda.time.LocalDate
 
 /**
- * Данные о парах дня для отображения в календаре.
- *
- * @property pairTypes Список типов пар в этот день (для отрисовки точек).
- * @property isDayOff Признак выходного дня по данным isdayoff.ru.
- */
-data class CalendarDayData(
-    val pairTypes: List<Type> = emptyList(),
-    val isDayOff: Boolean = false,
-)
-
-/**
  * Диалог календаря расписания с точками пар и пометкой выходных дней.
  *
  * @param selectedDate Текущая выбранная дата.

@@ -3,6 +3,7 @@ package com.overklassniy.stankinschedule.schedule.table.domain.model
 import android.graphics.Color
 import android.graphics.Paint
 import android.text.TextPaint
+import com.overklassniy.stankinschedule.schedule.core.domain.model.DateItem
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateRange
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DateSingle
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DayOfWeek
@@ -10,6 +11,12 @@ import com.overklassniy.stankinschedule.schedule.core.domain.model.Frequency
 import com.overklassniy.stankinschedule.schedule.core.domain.model.PairModel
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Subgroup
 import com.overklassniy.stankinschedule.schedule.core.domain.model.Type
+
+/** Базовая ширина страницы, относительно которой вычисляется масштаб таблицы. */
+private const val BASE_PAGE_WIDTH = 1920f
+
+/** Доля высоты страницы, используемая как внутренний отступ. */
+private const val PAGE_PADDING_RATIO = 0.05f
 
 /**
  * Модель для отрисовки таблицы расписания на Canvas.
@@ -30,8 +37,8 @@ class DrawScheduleTable(
     val pageHeight: Float,
     val pageWidth: Float,
     val tableColor: Int = Color.BLACK,
-    scale: Float = pageWidth / 1920f,
-    val pagePadding: Float = pageHeight * 0.05f
+    scale: Float = pageWidth / BASE_PAGE_WIDTH,
+    val pagePadding: Float = pageHeight * PAGE_PADDING_RATIO
 ) {
     val textPaint: TextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
@@ -106,46 +113,52 @@ class DrawScheduleTable(
             return buildString {
                 append(pair.title)
                 append(". ")
-                append(if (pair.lecturer.isEmpty()) "" else pair.lecturer + ". ")
-                append(
-                    when (pair.type) {
-                        Type.LECTURE -> "Лекция"
-                        Type.SEMINAR -> "Семинар"
-                        Type.LABORATORY -> "Лабораторные занятия"
-                    }
-                )
+                if (pair.lecturer.isNotEmpty()) append(pair.lecturer).append(". ")
+                append(typeLabel(pair.type))
                 append(". ")
-                append(
-                    if (pair.subgroup.isShow()) {
-                        when (pair.subgroup) {
-                            Subgroup.A -> "(А)"
-                            Subgroup.B -> "(Б)"
-                            Subgroup.COMMON -> ""
-                        } + ". "
-                    } else {
-                        ""
-                    }
-                )
-                append(if (pair.classroom.isEmpty()) "" else pair.classroom + ". ")
+                if (pair.subgroup.isShow()) append(subgroupLabel(pair.subgroup)).append(". ")
+                if (pair.classroom.isNotEmpty()) append(pair.classroom).append(". ")
                 append("[")
-                append(pair.date.joinToString(", ") { date ->
-                    when (date) {
-                        is DateSingle -> {
-                            date.toString("dd.MM")
-                        }
-
-                        is DateRange -> {
-                            date.toString(
-                                "dd.MM", "-"
-                            ) + " " + when (date.frequency()) {
-                                Frequency.ONCE -> ""
-                                Frequency.EVERY -> "к.н."
-                                Frequency.THROUGHOUT -> "ч.н."
-                            }
-                        }
-                    }
-                })
+                append(pair.date.joinToString(", ", transform = ::dateLabel))
                 append("]")
+            }
+        }
+
+        /**
+         * Возвращает русское название типа занятия.
+         */
+        private fun typeLabel(type: Type): String {
+            return when (type) {
+                Type.LECTURE -> "Лекция"
+                Type.SEMINAR -> "Семинар"
+                Type.LABORATORY -> "Лабораторные занятия"
+            }
+        }
+
+        /**
+         * Возвращает обозначение подгруппы для ячейки.
+         */
+        private fun subgroupLabel(subgroup: Subgroup): String {
+            return when (subgroup) {
+                Subgroup.A -> "(А)"
+                Subgroup.B -> "(Б)"
+                Subgroup.COMMON -> ""
+            }
+        }
+
+        /**
+         * Форматирует элемент даты пары (одиночная дата или диапазон с периодичностью).
+         */
+        private fun dateLabel(date: DateItem): String {
+            return when (date) {
+                is DateSingle -> date.toString("dd.MM")
+                is DateRange -> date.toString("dd.MM", "-") + " " + when (date.frequency()) {
+                    Frequency.ONCE -> ""
+                    Frequency.EVERY -> "к.н."
+                    Frequency.THROUGHOUT -> "ч.н."
+                }
+
+                else -> ""
             }
         }
     }

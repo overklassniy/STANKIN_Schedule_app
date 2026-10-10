@@ -118,7 +118,7 @@ class JournalSecureRepositoryImpl @Inject constructor(
         cipher.init(
             Cipher.DECRYPT_MODE,
             getOrCreateSecretKey(),
-            GCMParameterSpec(128, iv)
+            GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv)
         )
         return cipher.doFinal(cipherText).toString(Charsets.UTF_8)
     }
@@ -229,5 +229,8 @@ class JournalSecureRepositoryImpl @Inject constructor(
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val KEY_ALIAS = "journal_secure_credentials_aes"
         private const val CIPHER_TRANSFORMATION = "AES/GCM/NoPadding"
+
+        /** Длина тега аутентификации GCM в битах. */
+        private const val GCM_TAG_LENGTH_BITS = 128
     }
 }

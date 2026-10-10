@@ -55,25 +55,8 @@ object WidgetStateKeys {
         val isDisplay = prefs[display] ?: true
         val preset = prefs[themePresetTag]?.let { ThemePreset.from(it) } ?: ThemePreset.System
 
-        val keyColors = prefs[keyPrimary]?.let { primary ->
-            KeyColors(
-                primary = primary,
-                secondary = prefs[keySecondary] ?: KeyColors.lightDefault().secondary,
-                tertiary = prefs[keyTertiary] ?: KeyColors.lightDefault().tertiary,
-                background = prefs[keyBackground] ?: KeyColors.lightDefault().background,
-                surface = prefs[keySurface] ?: KeyColors.lightDefault().surface,
-                error = prefs[keyError] ?: KeyColors.lightDefault().error,
-            )
-        }
-
-        val pairColorGroup = PairColorGroup(
-            lectureColor = prefs[pairLecture] ?: PairColorType.Lecture.hex,
-            seminarColor = prefs[pairSeminar] ?: PairColorType.Seminar.hex,
-            laboratoryColor = prefs[pairLaboratory] ?: PairColorType.Laboratory.hex,
-            subgroupAColor = prefs[pairSubgroupA] ?: PairColorType.SubgroupA.hex,
-            subgroupBColor = prefs[pairSubgroupB] ?: PairColorType.SubgroupB.hex,
-        )
-
+        val keyColors = prefs.readKeyColors()
+        val pairColorGroup = prefs.readPairColorGroup()
         val textColorOverride = prefs[textColor]?.takeIf { it.isNotEmpty() }
         val isDark = prefs[isDarkTheme] ?: false
 
@@ -87,6 +70,36 @@ object WidgetStateKeys {
             pairColorGroup = pairColorGroup,
             textColor = textColorOverride,
             isDarkTheme = isDark,
+        )
+    }
+
+    /**
+     * Читает пользовательские ключевые цвета из настроек или null, если не заданы.
+     */
+    private fun Preferences.readKeyColors(): KeyColors? {
+        val defaults = KeyColors.lightDefault()
+        return this@readKeyColors[keyPrimary]?.let { primary ->
+            KeyColors(
+                primary = primary,
+                secondary = this[keySecondary] ?: defaults.secondary,
+                tertiary = this[keyTertiary] ?: defaults.tertiary,
+                background = this[keyBackground] ?: defaults.background,
+                surface = this[keySurface] ?: defaults.surface,
+                error = this[keyError] ?: defaults.error,
+            )
+        }
+    }
+
+    /**
+     * Читает цвета типов пар из настроек с подстановкой значений по умолчанию.
+     */
+    private fun Preferences.readPairColorGroup(): PairColorGroup {
+        return PairColorGroup(
+            lectureColor = this[pairLecture] ?: PairColorType.Lecture.hex,
+            seminarColor = this[pairSeminar] ?: PairColorType.Seminar.hex,
+            laboratoryColor = this[pairLaboratory] ?: PairColorType.Laboratory.hex,
+            subgroupAColor = this[pairSubgroupA] ?: PairColorType.SubgroupA.hex,
+            subgroupBColor = this[pairSubgroupB] ?: PairColorType.SubgroupB.hex,
         )
     }
 

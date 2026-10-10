@@ -43,7 +43,7 @@ class AndroidPublicProviderImpl @Inject constructor(
 
         val file = File(folder, "$name.jpeg")
         file.outputStream().use { stream ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, stream)
         }
 
         return FileProvider.getUriForFile(context, fileProviderAuthority, file)
@@ -99,7 +99,7 @@ class AndroidPublicProviderImpl @Inject constructor(
         val contentResolver = context.contentResolver
         contentResolver.openOutputStream(uri).use { stream ->
             if (stream == null) throw IllegalAccessException("Failed to get file descriptor")
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, stream)
         }
     }
 
@@ -116,6 +116,12 @@ class AndroidPublicProviderImpl @Inject constructor(
         folder.mkdirs()
 
         return folder
+    }
+
+    companion object {
+
+        /** Качество сжатия JPEG при экспорте изображений. */
+        private const val JPEG_QUALITY = 90
     }
 
 }

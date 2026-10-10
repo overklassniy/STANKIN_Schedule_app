@@ -25,6 +25,7 @@ src/main/java/com/overklassniy/stankinschedule/
 
 ### navigation
 - `AppNavigation` - main application navigation graph
+- `HomeNavEntry` - home screen navigation entry
 - `ModuleJournalNavigation` - navigation to module journal screens
 - `ScheduleNavigation` - navigation to schedule screens
 - `entry/BottomNavEntry` - bottom navigation bar item

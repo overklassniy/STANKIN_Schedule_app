@@ -24,6 +24,9 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.ISODateTimeFormat
 import javax.inject.Inject
 
+/** Конец дня для даты завершения повторяющегося события iCal. */
+private val END_OF_DAY = LocalTime(23, 59, 59)
+
 class ICalExporterUseCase @Inject constructor(
     private val exporter: ICalExporter
 ) {
@@ -64,7 +67,7 @@ class ICalExporterUseCase @Inject constructor(
                     startTime = date.start.toDateTime(time.start).toString(dateTimeFormat),
                     endTime = date.start.toDateTime(time.end).toString(dateTimeFormat),
                     frequency = date.frequency().toICalFrequency(),
-                    untilDate = date.end.toDateTime(LocalTime(23, 59, 59))
+                    untilDate = date.end.toDateTime(END_OF_DAY)
                         .toString(dateFormat),
                     byDay = date.dayOfWeek().toByDay()
                 )

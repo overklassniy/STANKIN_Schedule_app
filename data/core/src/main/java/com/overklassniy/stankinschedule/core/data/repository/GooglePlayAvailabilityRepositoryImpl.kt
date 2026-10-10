@@ -31,7 +31,7 @@ class GooglePlayAvailabilityRepositoryImpl @Inject constructor(
                 val body = response.body?.string() ?: ""
                 response.close()
 
-                if (code != 200) {
+                if (code != HTTP_OK) {
                     false
                 } else {
                     // Страница приложения в Play Store содержит itemprop="name" в разметке
@@ -45,6 +45,8 @@ class GooglePlayAvailabilityRepositoryImpl @Inject constructor(
     }
 
     companion object {
-        private const val USER_AGENT = "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+        private const val HTTP_OK = 200
+        private const val USER_AGENT =
+            "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
     }
 }

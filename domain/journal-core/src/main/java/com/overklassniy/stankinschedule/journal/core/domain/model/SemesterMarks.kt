@@ -10,23 +10,23 @@ import com.overklassniy.stankinschedule.journal.core.domain.model.SemesterMarks.
  * Содержит список дисциплин и общий рейтинг студента за семестр.
  *
  * @property disciplines Список дисциплин [Discipline] с оценками.
- * @property _rating Рейтинг за текущий семестр.
- * @property _accumulatedRating Накопленный рейтинг за все время обучения.
+ * @property semesterRating Рейтинг за текущий семестр.
+ * @property totalRating Накопленный рейтинг за все время обучения.
  */
 data class SemesterMarks(
     @SerializedName("disciplines")
     private val disciplines: ArrayList<Discipline> = arrayListOf(),
     @SerializedName("rating")
-    private var _rating: Int? = null,
+    private var semesterRating: Int? = null,
     @SerializedName("accumulatedRating")
-    private var _accumulatedRating: Int? = null,
+    private var totalRating: Int? = null,
 ) : Iterable<Discipline> {
 
     /** Рейтинг за семестр (доступ только для чтения). */
-    val rating: Int? get() = _rating
+    val rating: Int? get() = semesterRating
 
     /** Накопленный рейтинг (доступ только для чтения). */
-    val accumulatedRating: Int? get() = _accumulatedRating
+    val accumulatedRating: Int? get() = totalRating
 
     /**
      * Добавляет или обновляет оценку по дисциплине.
@@ -42,11 +42,11 @@ data class SemesterMarks(
      */
     fun addMark(disciplineTitle: String, type: String, value: Int, factor: Double) {
         if (disciplineTitle == RATING) {
-            _rating = value
+            semesterRating = value
             return
         }
         if (disciplineTitle == ACCUMULATED_RATING) {
-            _accumulatedRating = value
+            totalRating = value
             return
         }
 

@@ -16,25 +16,7 @@ import com.overklassniy.stankinschedule.core.domain.settings.ApplicationPreferen
 import com.overklassniy.stankinschedule.core.domain.settings.ThemeColors
 import com.overklassniy.stankinschedule.core.domain.settings.ThemePreset
 import com.overklassniy.stankinschedule.core.ui.ext.parse
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.components.SingletonComponent
-
-/**
- * Точка входа Hilt для получения [ApplicationPreference] без ViewModel.
- *
- * Используется внутри [AppTheme] для доступа к сохранённой теме оформления
- * через LocalContext, не требуя передачи параметра в каждую Activity.
- */
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface AppThemeEntryPoint {
-    /**
-     * Предоставляет экземпляр [ApplicationPreference].
-     */
-    fun applicationPreference(): ApplicationPreference
-}
 
 /**
  * Схема цветов для светлой темы на основе md_theme_light_* палитры.

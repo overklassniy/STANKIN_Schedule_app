@@ -7,7 +7,7 @@
 ```
 src/main/java/com/overklassniy/stankinschedule/core/domain/
   cache/                       - Контейнеры кеша
-  ext/                         - Расширения (Collections, JodaTime)
+  ext/                         - Расширения (Collections, JodaTime, Version)
   model/                       - Доменные модели (AppUpdate)
   repository/                  - Интерфейсы репозиториев и заглушки
   settings/                    - Настройки приложения
@@ -22,6 +22,7 @@ src/main/java/com/overklassniy/stankinschedule/core/domain/
 ### ext
 - `CollectionExtentions` - расширения коллекций
 - `JodaTimeExtentions` - расширения Joda-Time
+- `VersionExtentions` - сравнение версий приложения (`isOlderVersionThan`)
 
 ### model
 - `AppUpdate` - модель обновления приложения

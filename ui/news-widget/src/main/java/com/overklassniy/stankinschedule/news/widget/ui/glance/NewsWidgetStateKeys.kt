@@ -54,17 +54,7 @@ object NewsWidgetStateKeys {
 
         val preset = prefs[themePresetTag]?.let { ThemePreset.from(it) } ?: ThemePreset.System
 
-        val keyColors = prefs[keyPrimary]?.let { primary ->
-            KeyColors(
-                primary = primary,
-                secondary = prefs[keySecondary] ?: KeyColors.lightDefault().secondary,
-                tertiary = prefs[keyTertiary] ?: KeyColors.lightDefault().tertiary,
-                background = prefs[keyBackground] ?: KeyColors.lightDefault().background,
-                surface = prefs[keySurface] ?: KeyColors.lightDefault().surface,
-                error = prefs[keyError] ?: KeyColors.lightDefault().error,
-            )
-        }
-
+        val keyColors = prefs.readKeyColors()
         val textColorOverride = prefs[textColor]?.takeIf { it.isNotEmpty() }
         val announcementsColorOverride = prefs[announcementsColor]?.takeIf { it.isNotEmpty() }
         val isDark = prefs[isDarkTheme] ?: false
@@ -77,6 +67,23 @@ object NewsWidgetStateKeys {
             announcementsColor = announcementsColorOverride,
             isDarkTheme = isDark,
         )
+    }
+
+    /**
+     * Читает пользовательские ключевые цвета из настроек или null, если не заданы.
+     */
+    private fun Preferences.readKeyColors(): KeyColors? {
+        val defaults = KeyColors.lightDefault()
+        return this@readKeyColors[keyPrimary]?.let { primary ->
+            KeyColors(
+                primary = primary,
+                secondary = this[keySecondary] ?: defaults.secondary,
+                tertiary = this[keyTertiary] ?: defaults.tertiary,
+                background = this[keyBackground] ?: defaults.background,
+                surface = this[keySurface] ?: defaults.surface,
+                error = this[keyError] ?: defaults.error,
+            )
+        }
     }
 
     /**

@@ -17,7 +17,7 @@ src/main/java/com/overklassniy/stankinschedule/schedule/viewer/ui/
 - `ScheduleViewerViewModel` - schedule viewer ViewModel
 - `components/ScheduleViewerToolBar` - viewer toolbar
 - `components/ScheduleCalendarDialog` - calendar date selection dialog
-- `components/ScheduleCreateDialog` - schedule creation dialog
+- `components/ScheduleRenameDialog` - schedule rename dialog
 - `components/ScheduleRemoveDialog` - schedule removal dialog
 - `components/ScheduleState` - viewer screen state
 - `components/RenameEvent` - rename event

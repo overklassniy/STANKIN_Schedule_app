@@ -47,73 +47,94 @@ fun Canvas.drawScheduleTable(
         drawScheduleTable.textPaint
     )
 
-    val rowHeight = drawScheduleTable.rowHeight
+    drawDayHeaders(drawScheduleTable, x, y, headerFontSize)
+    drawTimeHeaders(drawScheduleTable, x, y, headerFontSize)
+    drawTableCells(drawScheduleTable, x, y)
+}
+
+/**
+ * Рисует заголовки строк с названиями дней недели.
+ */
+private fun Canvas.drawDayHeaders(
+    table: DrawScheduleTable,
+    x: Float,
+    y: Float,
+    headerFontSize: Float,
+) {
+    val rowHeight = table.rowHeight
     val daysOfWeek = listOf("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота")
 
     for (i in 0 until DrawScheduleTable.ROW_COUNT) {
-        val cellY = y + drawScheduleTable.headerSize + i * rowHeight
+        val cellY = y + table.headerSize + i * rowHeight
 
-        drawRect(
-            x,
-            cellY,
-            x + drawScheduleTable.headerSize,
-            cellY + rowHeight,
-            drawScheduleTable.linePaint
-        )
+        drawRect(x, cellY, x + table.headerSize, cellY + rowHeight, table.linePaint)
         drawCenterText(
             text = daysOfWeek[i],
             x = x,
             y = cellY,
-            w = drawScheduleTable.headerSize,
+            w = table.headerSize,
             h = rowHeight,
             fontSize = headerFontSize,
             rotate = -90,
-            paint = drawScheduleTable.textPaint
+            paint = table.textPaint
         )
     }
+}
 
-    val columnWidth = drawScheduleTable.columnWidth
+/**
+ * Рисует заголовки колонок с интервалами времени пар.
+ */
+private fun Canvas.drawTimeHeaders(
+    table: DrawScheduleTable,
+    x: Float,
+    y: Float,
+    headerFontSize: Float,
+) {
+    val columnWidth = table.columnWidth
     val times = Time.STARTS.zip(Time.ENDS) { a, b -> "$a - $b" }
 
     for (i in 0 until DrawScheduleTable.COLUMN_COUNT) {
-        val cellX = x + drawScheduleTable.headerSize + i * columnWidth
-        val cellY = y
+        val cellX = x + table.headerSize + i * columnWidth
 
-        drawRect(
-            cellX,
-            cellY,
-            cellX + columnWidth,
-            cellY + drawScheduleTable.headerSize,
-            drawScheduleTable.linePaint
-        )
+        drawRect(cellX, y, cellX + columnWidth, y + table.headerSize, table.linePaint)
         drawCenterText(
             text = times[i],
             x = cellX,
-            y = cellY,
+            y = y,
             w = columnWidth,
-            h = drawScheduleTable.headerSize,
+            h = table.headerSize,
             fontSize = headerFontSize,
-            paint = drawScheduleTable.textPaint
+            paint = table.textPaint
         )
     }
+}
 
-    for ((index, rowCount) in drawScheduleTable.lines.withIndex()) {
+/**
+ * Рисует содержимое ячеек расписания с учётом объединения строк и колонок.
+ */
+private fun Canvas.drawTableCells(
+    table: DrawScheduleTable,
+    x: Float,
+    y: Float,
+) {
+    val columnWidth = table.columnWidth
+    val rowHeight = table.rowHeight
 
-        val cells = drawScheduleTable[DayOfWeek.entries[index]]
+    for ((index, rowCount) in table.lines.withIndex()) {
+        val cells = table[DayOfWeek.entries[index]]
         val subRowHeight = rowHeight / rowCount
 
         for (cell in cells) {
-            val cellX = x + drawScheduleTable.headerSize + cell.column * columnWidth
-            val cellY =
-                y + drawScheduleTable.headerSize + index * rowHeight + cell.row * subRowHeight
+            val cellX = x + table.headerSize + cell.column * columnWidth
+            val cellY = y + table.headerSize + index * rowHeight + cell.row * subRowHeight
             val cellW = cellX + columnWidth * cell.columnSpan
             val cellH = cellY + subRowHeight * cell.rowSpan
 
-            drawRect(cellX, cellY, cellW, cellH, drawScheduleTable.linePaint)
+            drawRect(cellX, cellY, cellW, cellH, table.linePaint)
             cell.layout?.let { layout ->
                 withTranslation(
-                    x = cellX + drawScheduleTable.textPadding,
-                    y = cellY + drawScheduleTable.textPadding,
+                    x = cellX + table.textPadding,
+                    y = cellY + table.textPadding,
                 ) {
                     layout.draw(this)
                 }

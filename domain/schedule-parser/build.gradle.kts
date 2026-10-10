@@ -49,4 +49,7 @@ dependencies {
     // DI
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Tests
+    testImplementation(libs.junit)
 }

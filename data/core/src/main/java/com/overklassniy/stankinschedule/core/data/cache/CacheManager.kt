@@ -99,32 +99,30 @@ class CacheManager @Inject constructor(
      * @return Контейнер с данными [CacheContainer] или null, если загрузка не удалась
      */
     fun <T : Any> loadFromCache(type: Class<T>, vararg paths: String): CacheContainer<T>? {
-        try {
+        return try {
             val filePath = fileFromPaths(paths)
             if (!filePath.exists()) {
-                return null
-            }
-
-            val raw = filePath.reader().use { reader ->
-                gson.fromJson(reader, CacheObject::class.java)
-            }
-
-            return if (raw.data != null && raw.time != null) {
-                CacheContainer(
-                    data = gson.fromJson(raw.data, type),
-                    cacheTime = raw.time
-                )
-            } else {
                 null
-            }
+            } else {
+                val raw = filePath.reader().use { reader ->
+                    gson.fromJson(reader, CacheObject::class.java)
+                }
 
+                if (raw.data != null && raw.time != null) {
+                    CacheContainer(
+                        data = gson.fromJson(raw.data, type),
+                        cacheTime = raw.time
+                    )
+                } else {
+                    null
+                }
+            }
         } catch (ignored: Exception) {
             if (isDebug) {
                 Log.e(TAG, "loadFromCache: ", ignored)
             }
+            null
         }
-
-        return null
     }
 
     /**

@@ -282,12 +282,12 @@ fun RootSettingsScreen(
                                 .replace(
                                     Regex("^-\\s*", RegexOption.MULTILINE),
                                     "• "
-                                ) // Replace - with bullet
+                                ) // Заменяем дефис пунктом списка
                                 .replace(
                                     Regex("\\[([^]]+)]\\([^)]+\\)"),
                                     "$1"
-                                ) // Remove links [text](url)
-                                .replace(Regex("\n{3,}"), "\n\n") // Reduce multiple newlines
+                                ) // Убираем ссылки вида [текст](url)
+                                .replace(Regex("\n{3,}"), "\n\n") // Схлопываем множественные переводы строк
                                 .trim()
                         }
                         Spacer(modifier = Modifier.height(8.dp))

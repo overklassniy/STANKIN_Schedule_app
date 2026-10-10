@@ -39,52 +39,11 @@ class ScheduleTableDay {
             for (columnIndex in rows[rowIndex].indices) {
                 val ids = rows[rowIndex][columnIndex]
                 if (ids.isNotEmpty() && rawCells.all { it.ids != ids }) {
-
                     val pairsInCell = pairsFromIds(ids)
                     val duration = pairsInCell.first().time.duration
-                    rawCells.add(RawTableCell(ids, rowIndex, 1, columnIndex, duration))
-
-                    var prevRow = rowIndex - 1 >= 0
-                    var nextRow = rowIndex + 1 < rows.size
-
-                    for (k in 0 until duration) {
-                        rows[rowIndex][columnIndex + k].addAll(ids)
-                        if (nextRow && rows[rowIndex + 1][columnIndex + k].isNotEmpty()) {
-                            nextRow = false
-                        }
-                        if (prevRow && rows[rowIndex - 1][columnIndex + k].isNotEmpty()) {
-                            prevRow = false
-                        }
-                    }
-
-                    var m = rowIndex + 1
-                    while (nextRow) {
-                        nextRow = m + 1 < rows.size
-                        for (k in 0 until duration) {
-                            rows[m][columnIndex + k].addAll(ids)
-                            if (nextRow && rows[m + 1][columnIndex + k].isNotEmpty()) {
-                                nextRow = false
-                            }
-                        }
-                        ++m
-                        ++rawCells.last().rowSpan
-                    }
-
-                    var n = rowIndex - 1
-                    while (prevRow) {
-                        prevRow = n - 1 >= 0
-                        for (k in 0 until duration) {
-                            rows[n][columnIndex + k].addAll(ids)
-                            if (prevRow && rows[n - 1][columnIndex + k].isNotEmpty()) {
-                                prevRow = false
-                            }
-                        }
-                        --n
-                        rawCells.last().apply {
-                            ++rowSpan
-                            --row
-                        }
-                    }
+                    val cell = RawTableCell(ids, rowIndex, 1, columnIndex, duration)
+                    rawCells.add(cell)
+                    expandCell(rows, cell, duration)
                 }
             }
         }
@@ -93,51 +52,21 @@ class ScheduleTableDay {
         for (rowIndex in rows.indices) {
             for (columnIndex in rows[rowIndex].indices) {
                 if (rows[rowIndex][columnIndex].isEmpty()) {
-                    var prevRow = rowIndex - 1 >= 0
-                    var nextRow = rowIndex + 1 < rows.size
-
                     rows[rowIndex][columnIndex].add(overIndex++)
-                    rawCells.add(
-                        RawTableCell(
-                            ids = rows[rowIndex][columnIndex],
-                            row = rowIndex,
-                            rowSpan = 1,
-                            column = columnIndex,
-                            columnSpan = 1
-                        ),
+                    val cell = RawTableCell(
+                        ids = rows[rowIndex][columnIndex],
+                        row = rowIndex,
+                        rowSpan = 1,
+                        column = columnIndex,
+                        columnSpan = 1
                     )
-
-                    if (nextRow && rows[rowIndex + 1][columnIndex].isNotEmpty()) {
-                        nextRow = false
-                    }
-
-                    if (prevRow && rows[rowIndex - 1][columnIndex].isNotEmpty()) {
-                        prevRow = false
-                    }
-
-                    var m = rowIndex + 1
-                    while (nextRow) {
-                        nextRow = m + 1 < rows.size
-                        rows[m][columnIndex].addAll(rows[rowIndex][columnIndex])
-                        ++rawCells.last().rowSpan
-                        ++m
-                    }
-
-                    var n = rowIndex - 1
-                    while (prevRow) {
-                        prevRow = n - 1 >= 0
-                        rows[n][columnIndex].addAll(rows[rowIndex][columnIndex])
-                        ++rawCells.last().rowSpan
-                        --rawCells.last().row
-                        --n
-                    }
+                    rawCells.add(cell)
+                    expandCell(rows, cell, 1)
                 }
             }
         }
 
         return rawCells.map { rawCell ->
-
-
             ScheduleTableCell(
                 row = rawCell.row,
                 column = rawCell.column,
@@ -145,6 +74,43 @@ class ScheduleTableDay {
                 rowSpan = rawCell.rowSpan,
                 columnSpan = rawCell.columnSpan
             )
+        }
+    }
+
+    /**
+     * Заполняет ячейку таблицы и растягивает её по строкам вниз и вверх,
+     * пока соседние строки свободны в колонках длительности [duration].
+     *
+     * @param rows Матрица идентификаторов пар (строки × колонки).
+     * @param cell Ячейка, чьи `row`/`rowSpan` обновляются в процессе.
+     * @param duration Ширина ячейки в колонках.
+     */
+    private fun expandCell(
+        rows: List<List<MutableSet<Int>>>,
+        cell: RawTableCell,
+        duration: Int,
+    ) {
+        for (k in 0 until duration) {
+            rows[cell.row][cell.column + k].addAll(cell.ids)
+        }
+
+        var m = cell.row + 1
+        while (m < rows.size && (0 until duration).all { rows[m][cell.column + it].isEmpty() }) {
+            for (k in 0 until duration) {
+                rows[m][cell.column + k].addAll(cell.ids)
+            }
+            ++m
+            ++cell.rowSpan
+        }
+
+        var n = cell.row - 1
+        while (n >= 0 && (0 until duration).all { rows[n][cell.column + it].isEmpty() }) {
+            for (k in 0 until duration) {
+                rows[n][cell.column + k].addAll(cell.ids)
+            }
+            --n
+            ++cell.rowSpan
+            --cell.row
         }
     }
 
@@ -177,30 +143,18 @@ class ScheduleTableDay {
                 val idsInCell = line[pair.time.number()]
                 val pairsInTargetCell = pairsFromIds(idsInCell)
 
-                if (pairsInTargetCell.isNotEmpty()
-                    && pairsInTargetCell.first().time.duration == pair.time.duration
-                    && isMerge(pairsInTargetCell, pair)
-                ) {
+                val canMerge = pairsInTargetCell.isNotEmpty()
+                        && pairsInTargetCell.first().time.duration == pair.time.duration
+                        && isMerge(pairsInTargetCell, pair)
+                val isFree = line.none { cell ->
+                    val pairsInCell = pairsFromIds(cell)
+                    pairsInCell.isNotEmpty() && pairsInCell.first().time.isIntersect(pair.time)
+                }
+
+                if (canMerge || isFree) {
                     idsInCell.add(id)
                     isInsert = true
                     break
-                } else {
-                    var isFree = true
-                    for (cell in line) {
-                        val pairsInCell = pairsFromIds(cell)
-                        if (pairsInCell.isNotEmpty()
-                            && pairsInCell.first().time.isIntersect(pair.time)
-                        ) {
-                            isFree = false
-                            break
-                        }
-                    }
-
-                    if (isFree) {
-                        idsInCell.add(id)
-                        isInsert = true
-                        break
-                    }
                 }
             }
 

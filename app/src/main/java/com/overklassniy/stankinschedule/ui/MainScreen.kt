@@ -64,7 +64,9 @@ fun MainScreen(
         intent?.data?.let { uri ->
             // Парсим URI: app://stankinschedule.com/schedule/viewer/{scheduleId}?date={date}
             val segments = uri.pathSegments
-            if (segments.size >= 3 && segments[0] == "schedule" && segments[1] == "viewer") {
+            if (segments.size >= DEEP_LINK_SEGMENTS_COUNT &&
+                segments[0] == "schedule" && segments[1] == "viewer"
+            ) {
                 val scheduleId = segments[2].toLongOrNull()
                 val date = uri.getQueryParameter("date")
                 if (scheduleId != null) {
@@ -118,3 +120,6 @@ fun MainScreen(
         }
     }
 }
+
+/** Ожидаемое число сегментов в deep-link расписания: schedule/viewer/{scheduleId}. */
+private const val DEEP_LINK_SEGMENTS_COUNT = 3

@@ -67,7 +67,7 @@ private fun NotificationUpdateDialogPreview(
     )
 
     // Debug show
-    state._isShow = true
+    state.isShow = true
 
     AppTheme(dark) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -90,7 +90,7 @@ class NotificationUpdateState internal constructor(
     internal val isEnabled: Boolean,
     private val onChanged: (enable: Boolean) -> Unit,
 ) {
-    internal var _isShow by mutableStateOf(false)
+    internal var isShow by mutableStateOf(false)
 
     /**
      * Устанавливает состояние включения уведомлений.
@@ -107,7 +107,7 @@ class NotificationUpdateState internal constructor(
      * Показывает диалог.
      */
     fun showDialog() {
-        _isShow = true
+        isShow = true
     }
 }
 
@@ -143,9 +143,9 @@ fun NotificationUpdateDialog(
     state: NotificationUpdateState,
     modifier: Modifier = Modifier
 ) {
-    if (state._isShow) {
+    if (state.isShow) {
         val context = LocalContext.current
-        val isNotificationEnabled by remember(state._isShow, state.isEnabled) {
+        val isNotificationEnabled by remember(state.isShow, state.isEnabled) {
             derivedStateOf { NotificationUtils.isNotificationAllow(context) }
         }
 
@@ -159,7 +159,7 @@ fun NotificationUpdateDialog(
                 if (isGranted) {
                     state.setEnabled(true)
                 } else {
-                    state._isShow = false
+                    state.isShow = false
                 }
             }
         )
@@ -204,9 +204,9 @@ fun NotificationUpdateDialog(
                     )
                 }
             },
-            onDismissRequest = { state._isShow = false },
+            onDismissRequest = { state.isShow = false },
             confirmButton = {
-                TextButton(onClick = { state._isShow = false }) {
+                TextButton(onClick = { state.isShow = false }) {
                     Text(text = stringResource(R.string.ok))
                 }
             },

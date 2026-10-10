@@ -25,6 +25,7 @@ src/main/java/com/overklassniy/stankinschedule/
 
 ### navigation
 - `AppNavigation` - основной граф навигации приложения
+- `HomeNavEntry` - точка входа главного экрана
 - `ModuleJournalNavigation` - навигация к экранам модульного журнала
 - `ScheduleNavigation` - навигация к экранам расписания
 - `entry/BottomNavEntry` - элемент нижней панели навигации

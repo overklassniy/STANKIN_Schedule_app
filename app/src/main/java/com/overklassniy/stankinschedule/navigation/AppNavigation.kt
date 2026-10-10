@@ -9,20 +9,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.overklassniy.stankinschedule.R
 import com.overklassniy.stankinschedule.core.ui.utils.BrowserUtils
 import com.overklassniy.stankinschedule.home.ui.HomeScreen
-import com.overklassniy.stankinschedule.navigation.entry.BottomNavEntry
 import com.overklassniy.stankinschedule.settings.ui.SettingsActivity
-
-/**
- * Запись навигации для главного экрана приложения.
- *
- * Используется нижней панелью навигации для отображения пункта "Главная".
- */
-object HomeNavEntry : BottomNavEntry(
-    route = "home", nameRes = R.string.nav_home, iconRes = R.drawable.nav_home
-)
 
 /**
  * Базовый URL раздела новостей на официальном сайте МГТУ «СТАНКИН».

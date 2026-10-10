@@ -14,6 +14,7 @@ import com.tom_roush.pdfbox.rendering.PDFRenderer
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -47,19 +48,9 @@ class PDFRepositoryImpl @Inject constructor(
 
         return openInputStream(path).use { stream ->
             if (stream == null) throw PDFParseException.fileNotFound(path)
-            try {
-                ParseDetail(
-                    cells = import(stream, multilineTextThreshold)
-                )
-            } catch (_: InvalidPasswordException) {
-                throw PDFParseException.passwordProtected()
-            } catch (e: IOException) {
-                throw PDFParseException.invalidPDF(e)
-            } catch (e: IllegalStateException) {
-                throw PDFParseException.invalidPDF(e)
-            } catch (e: Exception) {
-                throw PDFParseException.parsingError(e)
-            }
+            ParseDetail(
+                cells = wrapPdfErrors { import(stream, multilineTextThreshold) }
+            )
         }
     }
 
@@ -75,16 +66,22 @@ class PDFRepositoryImpl @Inject constructor(
 
         return openInputStream(path).use { stream ->
             if (stream == null) throw PDFParseException.fileNotFound(path)
-            try {
-                render(stream)
-            } catch (_: InvalidPasswordException) {
-                throw PDFParseException.passwordProtected()
-            } catch (e: IOException) {
-                throw PDFParseException.invalidPDF(e)
-            } catch (e: IllegalStateException) {
-                throw PDFParseException.invalidPDF(e)
-            } catch (e: Exception) {
-                throw PDFParseException.parsingError(e)
+            wrapPdfErrors { render(stream) }
+        }
+    }
+
+    /**
+     * Выполняет [block], преобразуя ошибки PDFBox в [PDFParseException].
+     */
+    private fun <T> wrapPdfErrors(block: () -> T): T {
+        return try {
+            block()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            throw when (e) {
+                is InvalidPasswordException -> PDFParseException.passwordProtected()
+                is IOException, is IllegalStateException -> PDFParseException.invalidPDF(e)
+                else -> PDFParseException.parsingError(e)
             }
         }
     }
@@ -113,8 +110,17 @@ class PDFRepositoryImpl @Inject constructor(
     fun render(pdf: InputStream): Bitmap {
         return PDDocument.load(pdf).use { document ->
             val renderer = PDFRenderer(document)
-            renderer.renderImageWithDPI(0, 300f)
+            renderer.renderImageWithDPI(FIRST_PAGE_INDEX, RENDER_DPI)
         }
+    }
+
+    private companion object {
+
+        /** Индекс первой страницы документа. */
+        const val FIRST_PAGE_INDEX = 0
+
+        /** Разрешение рендеринга страницы в точках на дюйм. */
+        const val RENDER_DPI = 300f
     }
 
     /**

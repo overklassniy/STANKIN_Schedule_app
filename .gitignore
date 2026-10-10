@@ -59,3 +59,6 @@ pepk*
 # Краш-логи JVM
 hs_err_pid*
 *stacktrace*
+
+# Кэш fossil MCP-анализатора
+.fossil/

@@ -52,8 +52,10 @@ class ScheduleDayModel : Iterable<PairModel> {
      * @return Пара (начало, конец) или (null, null) если пар нет.
      */
     private fun computeDateRange(): Pair<LocalDate?, LocalDate?> {
-        dateRangeCache?.let { return it }
+        return dateRangeCache ?: computeAndCacheDateRange()
+    }
 
+    private fun computeAndCacheDateRange(): Pair<LocalDate?, LocalDate?> {
         if (pairs.isEmpty()) {
             return (null to null).also { dateRangeCache = it }
         }

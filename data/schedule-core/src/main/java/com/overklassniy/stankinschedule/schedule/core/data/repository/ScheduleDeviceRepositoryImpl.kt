@@ -7,6 +7,7 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.core.net.toUri
 import com.google.gson.Gson
+import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
 import com.overklassniy.stankinschedule.schedule.core.data.api.PairJson
 import com.overklassniy.stankinschedule.schedule.core.data.mapper.toJson
@@ -68,8 +69,7 @@ class ScheduleDeviceRepositoryImpl @Inject constructor(
         val contentResolver = context.contentResolver
 
         val uri = path.toUri()
-        val scheduleName = uri.extractFileName(contentResolver)?.substringBeforeLast('.')
-            ?: throw FileNotFoundException("Failed to get file name from URI")
+        val scheduleName = resolveScheduleName(uri, contentResolver)
         Log.d(TAG, "loadFromDevice: scheduleName=$scheduleName")
 
         // Читаем содержимое файла
@@ -82,7 +82,7 @@ class ScheduleDeviceRepositoryImpl @Inject constructor(
         // Парсим JSON отдельно от чтения файла для избежания проблем с вложенными use блоками
         val json: List<PairJson> = try {
             Gson().fromJson(content, object : TypeToken<List<PairJson>>() {}.type)
-        } catch (e: Exception) {
+        } catch (e: JsonParseException) {
             Log.e(TAG, "loadFromDevice: JSON parse error", e)
             throw e
         }
@@ -107,6 +107,16 @@ class ScheduleDeviceRepositoryImpl @Inject constructor(
             departments = pair.departments.ifEmpty { employee.departments },
             email = pair.email.ifBlank { employee.email },
         )
+    }
+
+    /**
+     * Определяет имя расписания по URI файла.
+     *
+     * @throws FileNotFoundException Если не удалось извлечь имя файла.
+     */
+    private fun resolveScheduleName(uri: Uri, contentResolver: ContentResolver): String {
+        return uri.extractFileName(contentResolver)?.substringBeforeLast('.')
+            ?: throw FileNotFoundException("Failed to get file name from URI")
     }
 
     /**

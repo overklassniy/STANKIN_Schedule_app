@@ -96,19 +96,14 @@ class ScheduleModel(val info: ScheduleInfo) : Iterable<PairModel> {
      * @return Ограниченная дата.
      */
     fun limitDate(date: LocalDate): LocalDate {
-        startDate()?.let {
-            if (date.isBefore(it)) {
-                return it
-            }
-        }
+        val start = startDate()
+        val end = endDate()
 
-        endDate()?.let {
-            if (date.isAfter(it)) {
-                return it
-            }
+        return when {
+            start != null && date.isBefore(start) -> start
+            end != null && date.isAfter(end) -> end
+            else -> date
         }
-
-        return date
     }
 
     /**

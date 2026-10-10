@@ -43,7 +43,7 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
      * Result.retry при прочих ошибках.
      */
     override suspend fun doWork(): Result {
-        try {
+        return try {
             val manager = NotificationManagerCompat.from(applicationContext)
             val (student, newSemesters) = useCase.updateSemesters()
             if (newSemesters.isNotEmpty()) {
@@ -60,12 +60,12 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
                 }
             }
 
-            return Result.success()
+            Result.success()
 
         } catch (_: StudentAuthorizedException) {
-            return Result.failure()
+            Result.failure()
         } catch (_: Exception) {
-            return Result.retry()
+            Result.retry()
         }
     }
 

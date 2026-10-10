@@ -58,65 +58,71 @@ object RssParser {
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
         parser.setInput(StringReader(xml))
 
-        var insideItem = false
-        var title = ""
-        var link = ""
-        var description = ""
-        var imageUrl: String? = null
-        var category: String? = null
-        var pubDate = ""
+        var item: ItemBuilder? = null
         var currentTag = ""
 
         while (parser.next() != XmlPullParser.END_DOCUMENT) {
             when (parser.eventType) {
                 XmlPullParser.START_TAG -> {
                     currentTag = parser.name
-                    if (currentTag == "item") {
-                        insideItem = true
-                        title = ""
-                        link = ""
-                        description = ""
-                        imageUrl = null
-                        category = null
-                        pubDate = ""
-                    } else if (currentTag == "enclosure" && insideItem) {
-                        imageUrl = parser.getAttributeValue(null, "url")
+                    when (currentTag) {
+                        "item" -> item = ItemBuilder()
+                        "enclosure" -> item?.imageUrl = parser.getAttributeValue(null, "url")
                     }
                 }
 
                 XmlPullParser.TEXT -> {
-                    if (insideItem) {
-                        val text = parser.text?.trim() ?: ""
-                        when (currentTag) {
-                            "title" -> title += text
-                            "link" -> link += text
-                            "description" -> description += text
-                            "category" -> category = (category ?: "") + text
-                            "pubDate" -> pubDate += text
-                        }
-                    }
+                    item?.appendText(currentTag, parser.text?.trim() ?: "")
                 }
 
                 XmlPullParser.END_TAG -> {
-                    if (parser.name == "item" && insideItem) {
-                        insideItem = false
-                        items.add(
-                            RssItem(
-                                title = title.trim(),
-                                link = link.trim(),
-                                description = description.trim(),
-                                imageUrl = imageUrl?.trim(),
-                                category = category?.trim(),
-                                pubDate = convertDate(pubDate.trim()),
-                                rawPubDate = pubDate.trim(),
-                            )
-                        )
+                    if (parser.name == "item") {
+                        item?.let { items.add(it.build()) }
+                        item = null
                     }
                     currentTag = ""
                 }
             }
         }
         return items
+    }
+
+    /**
+     * Накопитель полей элемента RSS во время обхода XML-тегов.
+     */
+    private class ItemBuilder {
+        var title = ""
+        var link = ""
+        var description = ""
+        var imageUrl: String? = null
+        var category: String? = null
+        var pubDate = ""
+
+        /**
+         * Добавляет текстовое содержимое текущего тега к соответствующему полю.
+         */
+        fun appendText(tag: String, text: String) {
+            when (tag) {
+                "title" -> title += text
+                "link" -> link += text
+                "description" -> description += text
+                "category" -> category = (category ?: "") + text
+                "pubDate" -> pubDate += text
+            }
+        }
+
+        /**
+         * Собирает накопленные поля в [RssItem].
+         */
+        fun build() = RssItem(
+            title = title.trim(),
+            link = link.trim(),
+            description = description.trim(),
+            imageUrl = imageUrl?.trim(),
+            category = category?.trim(),
+            pubDate = convertDate(pubDate.trim()),
+            rawPubDate = pubDate.trim(),
+        )
     }
 
     /**

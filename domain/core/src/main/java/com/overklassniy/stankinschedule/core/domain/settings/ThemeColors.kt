@@ -217,6 +217,25 @@ data class ThemeColors(
 
         // Вспомогательные функции для работы с HEX-цветами в чистом Kotlin
 
+        /** Основание шестнадцатеричной системы для разбора компонентов цвета. */
+        private const val HEX_RADIX = 16
+
+        /** Максимальное значение цветового канала RGB. */
+        private const val CHANNEL_MAX = 255
+
+        /** Коэффициенты относительной яркости каналов по формуле W3C. */
+        private const val LUMINANCE_R = 0.2126
+        private const val LUMINANCE_G = 0.7152
+        private const val LUMINANCE_B = 0.0722
+
+        /** Порог яркости для выбора контрастного цвета текста. */
+        private const val LUMINANCE_THRESHOLD = 0.5
+
+        /** Границы компонентов в HEX-строке формата `#RRGGBB`. */
+        private const val GREEN_START = 2
+        private const val GREEN_END = 4
+        private const val BLUE_END = 6
+
         /**
          * Разбирает HEX-строку в компоненты RGB.
          *
@@ -226,9 +245,9 @@ data class ThemeColors(
         private fun parseHex(hex: String): IntArray {
             val clean = hex.removePrefix("#")
             return intArrayOf(
-                clean.substring(0, 2).toInt(16),
-                clean.substring(2, 4).toInt(16),
-                clean.substring(4, 6).toInt(16),
+                clean.substring(0, GREEN_START).toInt(HEX_RADIX),
+                clean.substring(GREEN_START, GREEN_END).toInt(HEX_RADIX),
+                clean.substring(GREEN_END, BLUE_END).toInt(HEX_RADIX),
             )
         }
 
@@ -241,7 +260,12 @@ data class ThemeColors(
          * @return Строка в формате `#RRGGBB`.
          */
         private fun toHex(r: Int, g: Int, b: Int): String =
-            String.format("#%02X%02X%02X", r.coerceIn(0, 255), g.coerceIn(0, 255), b.coerceIn(0, 255))
+            String.format(
+                "#%02X%02X%02X",
+                r.coerceIn(0, CHANNEL_MAX),
+                g.coerceIn(0, CHANNEL_MAX),
+                b.coerceIn(0, CHANNEL_MAX)
+            )
 
         /**
          * Вычисляет относительную яркость (luminance) цвета по формуле W3C.
@@ -251,7 +275,7 @@ data class ThemeColors(
          */
         private fun luminance(hex: String): Double {
             val rgb = parseHex(hex)
-            return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255.0
+            return (LUMINANCE_R * rgb[0] + LUMINANCE_G * rgb[1] + LUMINANCE_B * rgb[2]) / CHANNEL_MAX
         }
 
         /**
@@ -261,7 +285,7 @@ data class ThemeColors(
          * @return `#FFFFFF` если фон тёмный, `#000000` если светлый.
          */
         private fun contrastOn(hex: String): String =
-            if (luminance(hex) < 0.5) "#FFFFFF" else "#000000"
+            if (luminance(hex) < LUMINANCE_THRESHOLD) "#FFFFFF" else "#000000"
 
         /**
          * Осветляет цвет, смешивая его с белым.
@@ -273,9 +297,9 @@ data class ThemeColors(
         private fun lighten(hex: String, amount: Double): String {
             val rgb = parseHex(hex)
             return toHex(
-                (rgb[0] + (255 - rgb[0]) * amount).toInt(),
-                (rgb[1] + (255 - rgb[1]) * amount).toInt(),
-                (rgb[2] + (255 - rgb[2]) * amount).toInt(),
+                (rgb[0] + (CHANNEL_MAX - rgb[0]) * amount).toInt(),
+                (rgb[1] + (CHANNEL_MAX - rgb[1]) * amount).toInt(),
+                (rgb[2] + (CHANNEL_MAX - rgb[2]) * amount).toInt(),
             )
         }
 

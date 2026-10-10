@@ -1,5 +1,6 @@
 package com.overklassniy.stankinschedule.core.data.api
 
+import com.google.gson.annotations.SerializedName
 import retrofit2.http.GET
 
 /**
@@ -19,9 +20,9 @@ interface GitHubApi {
  * Модель ответа GitHub Release API.
  */
 data class GitHubRelease(
-    val tag_name: String,
+    @SerializedName("tag_name") val tagName: String,
     val name: String,
     val body: String,
-    val html_url: String,
-    val published_at: String
+    @SerializedName("html_url") val htmlUrl: String,
+    @SerializedName("published_at") val publishedAt: String
 )

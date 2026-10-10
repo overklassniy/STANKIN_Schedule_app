@@ -74,20 +74,26 @@ private fun exceptionDescriptionRes(t: Throwable): Int? {
         is JSONException -> R.string.ex_parse_error
 
         // HTTP ошибка (retrofit2)
-        is HttpException -> {
-            when (t.code()) {
-                HttpsURLConnection.HTTP_UNAUTHORIZED -> R.string.ex_failed_unauthorized
-                HttpsURLConnection.HTTP_GATEWAY_TIMEOUT -> R.string.ex_socket_timeout
-                HttpsURLConnection.HTTP_NOT_FOUND -> R.string.ex_not_found
-                HttpsURLConnection.HTTP_FORBIDDEN -> R.string.ex_forbidden
-                in 500..599 -> R.string.ex_unknown // Для серверных ошибок используем общий текст
-                else -> null
-            }
-        }
+        is HttpException -> httpErrorRes(t.code())
 
         // Общая ошибка ввода-вывода (после более специфичных)
         is IOException -> R.string.ex_io_error
 
+        else -> null
+    }
+}
+
+/**
+ * Подбирает идентификатор строкового ресурса для HTTP-кода ошибки.
+ */
+@StringRes
+private fun httpErrorRes(code: Int): Int? {
+    return when (code) {
+        HttpsURLConnection.HTTP_UNAUTHORIZED -> R.string.ex_failed_unauthorized
+        HttpsURLConnection.HTTP_GATEWAY_TIMEOUT -> R.string.ex_socket_timeout
+        HttpsURLConnection.HTTP_NOT_FOUND -> R.string.ex_not_found
+        HttpsURLConnection.HTTP_FORBIDDEN -> R.string.ex_forbidden
+        in 500..599 -> R.string.ex_unknown // Для серверных ошибок используем общий текст
         else -> null
     }
 }

@@ -10,6 +10,8 @@ import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -21,10 +23,14 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
 
     private val moodleUrl = "https://edu.stankin.ru/course/view.php?id=11557"
     private val loginUrl = "https://edu.stankin.ru/login/index.php"
-    private val TAG = "MoodleRemoteService"
-    private val USER_AGENT =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    private val TIMEOUT_MS = 60_000
+
+    private companion object {
+        const val TAG = "MoodleRemoteService"
+        const val USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        const val TIMEOUT_MS = 60_000
+        val HTTP_REDIRECT_CODES = listOf(302, 303)
+    }
 
     /**
      * Получает описание репозитория расписаний.
@@ -69,44 +75,8 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
             val cookies = mutableMapOf<String, String>()
 
             try {
-                // Шаг 1: Подключение и авторизация
-                Log.d(TAG, "Connecting to Moodle URL: $moodleUrl")
-                val response = Jsoup.connect(moodleUrl)
-                    .userAgent(USER_AGENT)
-                    .timeout(TIMEOUT_MS)
-                    .execute()
-
-                cookies.putAll(response.cookies())
-                var doc = response.parse()
-                Log.d(TAG, "Initial connection successful. Title: ${doc.title()}")
-
-                if (doc.title().contains("Вход") || doc.select(".login-form").isNotEmpty()) {
-                    Log.d(TAG, "Login page detected. Attempting guest login...")
-                    doc = performGuestLogin(doc, cookies)
-                    Log.d(TAG, "Page title after login flow: ${doc.title()}")
-                }
-
-                // Шаг 2: Поиск разделов курса
-                // Разделы доступны через ссылки вида course/section.php?id=...
-                // Названия: Бакалавриат, Специалитет, Магистратура, Аспирантура
-                val sectionLinks = doc.select("a[href*='course/section.php']")
-                val scheduleSections = mutableListOf<Pair<String, String>>()
-                val sectionKeywords = listOf(
-                    "Бакалавриат", "Специалитет", "Магистратура", "Аспирантура"
-                )
-
-                for (link in sectionLinks) {
-                    val text = link.text().trim()
-                    if (sectionKeywords.any { text.contains(it, ignoreCase = true) }) {
-                        val href = link.attr("href")
-                        // Избегаем дублирования ссылок
-                        if (scheduleSections.none { it.second == href }) {
-                            scheduleSections.add(text to href)
-                            Log.d(TAG, "Schedule section found: $text -> $href")
-                        }
-                    }
-                }
-                Log.d(TAG, "Found ${scheduleSections.size} schedule sections")
+                val doc = fetchMainPage(cookies)
+                val scheduleSections = findScheduleSections(doc)
 
                 // Если разделы не найдены, пробуем старый метод поиска папок на главной странице
                 if (scheduleSections.isEmpty()) {
@@ -116,72 +86,140 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
                         extractScheduleFiles(folderUrl, category, cookies, items)
                     }
                 } else {
-                    // Шаг 3: Обход каждого раздела
+                    // Обход каждого раздела
                     for ((sectionName, sectionUrl) in scheduleSections) {
-                        try {
-                            Log.d(TAG, "Processing section: $sectionName -> $sectionUrl")
-                            val sectionResponse = Jsoup.connect(sectionUrl)
-                                .userAgent(USER_AGENT)
-                                .timeout(TIMEOUT_MS)
-                                .cookies(cookies)
-                                .execute()
-
-                            cookies.putAll(sectionResponse.cookies())
-                            val sectionDoc = sectionResponse.parse()
-
-                            // Ищем папки внутри раздела
-                            val folderLinks =
-                                sectionDoc.select("a[href*='mod/folder/view.php']")
-                            Log.d(
-                                TAG,
-                                "Section '$sectionName' has ${folderLinks.size} folder links"
-                            )
-
-                            for (folderLink in folderLinks) {
-                                val folderText = folderLink.text().trim()
-                                val folderHref = folderLink.attr("href")
-
-                                // Пропускаем списки групп
-                                if (folderText.contains(
-                                        "Списки групп",
-                                        ignoreCase = true
-                                    )
-                                ) {
-                                    Log.d(TAG, "Skipped group list folder: $folderText")
-                                    continue
-                                }
-
-                                Log.d(TAG, "Processing folder: $folderText -> $folderHref")
-                                extractScheduleFiles(folderHref, category, cookies, items)
-                            }
-
-                            // Также ищем прямые ссылки на ресурсы/файлы внутри раздела
-                            // (для случаев, когда файлы лежат не в папках, а как отдельные
-                            // ресурсы, например Расписание занятий)
-                            val directFolders =
-                                sectionDoc.select("a[href*='mod/folder/view.php']")
-                            for (link in directFolders) {
-                                val text = link.text().trim()
-                                if (text.contains("Расписание", ignoreCase = true)) {
-                                    val href = link.attr("href")
-                                    Log.d(TAG, "Direct schedule folder: $text -> $href")
-                                    extractScheduleFiles(href, category, cookies, items)
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error processing section $sectionName", e)
-                        }
+                        processSection(sectionName, sectionUrl, category, cookies, items)
                     }
                 }
 
             } catch (e: Exception) {
                 Log.e(TAG, "Fatal error in scraping", e)
-                throw Exception("Failed to load schedule from Moodle: ${e.message}", e)
+                throw IOException("Failed to load schedule from Moodle: ${e.message}", e)
             }
 
             Log.d(TAG, "Scraping finished. Total items found: ${items.size}")
             return@withContext items
         }
+
+    /**
+     * Загружает главную страницу курса Moodle и при необходимости авторизуется как гость.
+     *
+     * @param cookies Cookies текущей сессии (обновляются в процессе).
+     * @return Документ главной страницы курса.
+     */
+    private fun fetchMainPage(cookies: MutableMap<String, String>): Document {
+        Log.d(TAG, "Connecting to Moodle URL: $moodleUrl")
+        val response = Jsoup.connect(moodleUrl)
+            .userAgent(USER_AGENT)
+            .timeout(TIMEOUT_MS)
+            .execute()
+
+        cookies.putAll(response.cookies())
+        var doc = response.parse()
+        Log.d(TAG, "Initial connection successful. Title: ${doc.title()}")
+
+        if (doc.title().contains("Вход") || doc.select(".login-form").isNotEmpty()) {
+            Log.d(TAG, "Login page detected. Attempting guest login...")
+            doc = performGuestLogin(doc, cookies)
+            Log.d(TAG, "Page title after login flow: ${doc.title()}")
+        }
+
+        return doc
+    }
+
+    /**
+     * Ищет на странице курса разделы с расписанием.
+     *
+     * Разделы доступны через ссылки вида `course/section.php?id=...`
+     * с названиями Бакалавриат, Специалитет, Магистратура, Аспирантура.
+     *
+     * @param doc Документ страницы курса.
+     * @return Список пар «название раздела — URL» без дубликатов.
+     */
+    private fun findScheduleSections(doc: Document): List<Pair<String, String>> {
+        val sectionLinks = doc.select("a[href*='course/section.php']")
+        val scheduleSections = mutableListOf<Pair<String, String>>()
+        val sectionKeywords = listOf(
+            "Бакалавриат", "Специалитет", "Магистратура", "Аспирантура"
+        )
+
+        for (link in sectionLinks) {
+            val text = link.text().trim()
+            if (sectionKeywords.any { text.contains(it, ignoreCase = true) }) {
+                val href = link.attr("href")
+                // Избегаем дублирования ссылок
+                if (scheduleSections.none { it.second == href }) {
+                    scheduleSections.add(text to href)
+                    Log.d(TAG, "Schedule section found: $text -> $href")
+                }
+            }
+        }
+        Log.d(TAG, "Found ${scheduleSections.size} schedule sections")
+        return scheduleSections
+    }
+
+    /**
+     * Обрабатывает один раздел курса: загружает страницу раздела,
+     * находит папки и прямые ссылки с расписанием и извлекает из них файлы.
+     *
+     * @param sectionName Название раздела.
+     * @param sectionUrl URL раздела.
+     * @param category Категория расписания.
+     * @param cookies Cookies текущей сессии (обновляются в процессе).
+     * @param items Список для добавления найденных элементов.
+     */
+    private fun processSection(
+        sectionName: String,
+        sectionUrl: String,
+        category: String,
+        cookies: MutableMap<String, String>,
+        items: MutableList<RepositoryItem>
+    ) {
+        try {
+            Log.d(TAG, "Processing section: $sectionName -> $sectionUrl")
+            val sectionResponse = Jsoup.connect(sectionUrl)
+                .userAgent(USER_AGENT)
+                .timeout(TIMEOUT_MS)
+                .cookies(cookies)
+                .execute()
+
+            cookies.putAll(sectionResponse.cookies())
+            val sectionDoc = sectionResponse.parse()
+
+            // Ищем папки внутри раздела
+            val folderLinks = sectionDoc.select("a[href*='mod/folder/view.php']")
+            Log.d(TAG, "Section '$sectionName' has ${folderLinks.size} folder links")
+
+            for (folderLink in folderLinks) {
+                val folderText = folderLink.text().trim()
+                val folderHref = folderLink.attr("href")
+
+                // Пропускаем списки групп
+                if (folderText.contains("Списки групп", ignoreCase = true)) {
+                    Log.d(TAG, "Skipped group list folder: $folderText")
+                    continue
+                }
+
+                Log.d(TAG, "Processing folder: $folderText -> $folderHref")
+                extractScheduleFiles(folderHref, category, cookies, items)
+            }
+
+            // Также ищем прямые ссылки на ресурсы/файлы внутри раздела
+            // (для случаев, когда файлы лежат не в папках, а как отдельные
+            // ресурсы, например Расписание занятий)
+            val directFolders = sectionDoc.select("a[href*='mod/folder/view.php']")
+            for (link in directFolders) {
+                val text = link.text().trim()
+                if (text.contains("Расписание", ignoreCase = true)) {
+                    val href = link.attr("href")
+                    Log.d(TAG, "Direct schedule folder: $text -> $href")
+                    extractScheduleFiles(href, category, cookies, items)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error processing section $sectionName", e)
+        }
+    }
 
     /**
      * Выполняет гостевую авторизацию на Moodle.
@@ -191,9 +229,9 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
      * @return Документ страницы после авторизации.
      */
     private fun performGuestLogin(
-        loginDoc: org.jsoup.nodes.Document,
+        loginDoc: Document,
         cookies: MutableMap<String, String>
-    ): org.jsoup.nodes.Document {
+    ): Document {
         val loginForm = loginDoc.select("form[action*='login/index.php']").first()
         val loginAction = loginForm?.attr("action") ?: loginUrl
         val loginToken =
@@ -219,7 +257,7 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
         cookies.putAll(loginResponse.cookies())
         Log.d(TAG, "Login response code: ${loginResponse.statusCode()}")
 
-        if (loginResponse.statusCode() == 303 || loginResponse.statusCode() == 302) {
+        if (loginResponse.statusCode() in HTTP_REDIRECT_CODES) {
             val location = loginResponse.header("Location")
             if (location != null) {
                 Log.d(TAG, "Login successful (Redirect). Location: $location")
@@ -272,11 +310,10 @@ class MoodleRemoteService @Inject constructor() : ScheduleRemoteService {
             val isExam = text.contains("Экзамен", ignoreCase = true) ||
                     text.contains("Зачет", ignoreCase = true)
             val isGroupList = text.contains("Списки групп", ignoreCase = true)
+            val isScheduleFolder = text.contains("Расписание", ignoreCase = true) ||
+                    text.contains("курс", ignoreCase = true)
 
-            if ((text.contains("Расписание", ignoreCase = true) ||
-                        text.contains("курс", ignoreCase = true))
-                && !isExam && !isGroupList
-            ) {
+            if (isScheduleFolder && !isExam && !isGroupList) {
                 val href = link.attr("href")
                 relevantFolders.add(href)
                 Log.d(TAG, "Relevant folder found: $text -> $href")

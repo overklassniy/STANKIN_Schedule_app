@@ -54,7 +54,7 @@ class JournalRepositoryImpl @Inject constructor(
 
         val cache = storage.loadStudent()
         // Проверка валидности кэша (существует, разрешено использование, не устарел - 24 часа)
-        if (cache != null && useCache && (cache.cacheTime subHours DateTime.now() < 24)) {
+        if (cache != null && useCache && (cache.cacheTime subHours DateTime.now() < STUDENT_CACHE_TTL_HOURS)) {
             if (isDebug) {
                 val minutes = cache.cacheTime subMinutes DateTime.now()
                 Log.d(TAG, "Student cache time: $minutes minute(-s)")
@@ -113,5 +113,8 @@ class JournalRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "JournalRepositoryImpl"
+
+        /** Срок жизни кэша данных студента в часах. */
+        private const val STUDENT_CACHE_TTL_HOURS = 24
     }
 }

@@ -74,7 +74,7 @@ class ScheduleParserViewModel @Inject constructor(
                 _selectedFile = selectedFile
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                crashReporter.recordException(e)
             }
         }
     }
@@ -97,7 +97,6 @@ class ScheduleParserViewModel @Inject constructor(
                 _scheduleName = fileName
 
             } catch (e: Exception) {
-                e.printStackTrace()
                 crashReporter.recordException(e)
             }
         }
@@ -253,7 +252,7 @@ class ScheduleParserViewModel @Inject constructor(
             try {
                 schedule.add(it.pair)
             } catch (e: Exception) {
-                e.printStackTrace()
+                crashReporter.recordException(e)
             }
         }
         return schedule

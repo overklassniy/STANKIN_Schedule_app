@@ -7,7 +7,7 @@ Base domain layer of the application. Contains shared domain models, repository 
 ```
 src/main/java/com/overklassniy/stankinschedule/core/domain/
   cache/                       - Cache containers
-  ext/                         - Extensions (Collections, JodaTime)
+  ext/                         - Extensions (Collections, JodaTime, Version)
   model/                       - Domain models (AppUpdate)
   repository/                  - Repository interfaces and stubs
   settings/                    - App settings
@@ -22,6 +22,7 @@ src/main/java/com/overklassniy/stankinschedule/core/domain/
 ### ext
 - `CollectionExtentions` - collection extensions
 - `JodaTimeExtentions` - Joda-Time extensions
+- `VersionExtentions` - app version comparison (`isOlderVersionThan`)
 
 ### model
 - `AppUpdate` - app update model

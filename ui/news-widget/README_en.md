@@ -39,3 +39,11 @@ src/main/java/com/overklassniy/stankinschedule/news/widget/ui/
 - Glance (widget)
 - WorkManager (widget updates)
 - Hilt (DI)
+
+## Architecture note
+
+The module is intentionally symmetrical with `:ui:schedule-widget`: the structure of
+the configuration screens, Glance components and state keys mirrors the schedule
+widget with news-specific details. This is an architectural decision — symmetry
+simplifies maintenance of the paired widgets, so duplication between them (jscpd
+findings) is not eliminated by merging the modules.

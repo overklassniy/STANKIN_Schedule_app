@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         // Держим сплеш-экран пока анимация не завершится (600ms + запас)
         val startTime = System.currentTimeMillis()
         splashScreen.setKeepOnScreenCondition {
-            System.currentTimeMillis() - startTime < 800
+            System.currentTimeMillis() - startTime < SPLASH_HOLD_MS
         }
 
         // Отключение стандартных отступов системных окон для реализации edge-to-edge интерфейса
@@ -91,5 +91,11 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         currentIntent.value = intent
+    }
+
+    private companion object {
+
+        /** Длительность удержания сплеш-экрана в миллисекундах. */
+        const val SPLASH_HOLD_MS = 800L
     }
 }

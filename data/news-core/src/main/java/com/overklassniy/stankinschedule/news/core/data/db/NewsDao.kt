@@ -77,12 +77,10 @@ interface NewsDao {
      * Используется для сохранения порядка отображения новостей при подгрузке.
      *
      * @param newsSubdivision ID подразделения новостей.
-     * @return Следующий индекс (максимальный текущий + 1) или null (если записей нет, SQL вернет NULL, Room сконвертирует в 0 или 1?
-     * В данном случае, если MAX вернет NULL, выражение `NULL + 1` будет NULL.
-     * Тип возвращаемого значения Int, Room может выбросить исключение или вернуть 0 по умолчанию, если не nullable.
-     * Однако, обычно используется coalesce в SQL или обработка на уровне кода. В данном случае предполагается, что метод вернет корректный индекс.
-     * Примечание: В SQLite `MAX(col)` возвращает NULL если нет строк.
+     * @return Следующий индекс: максимальный текущий `index_order + 1`,
+     *         либо 0, если для подразделения ещё нет записей
+     *         (`COALESCE` заменяет NULL-результат `MAX` значением -1).
      */
-    @Query("SELECT MAX(index_order) + 1 FROM news_posts WHERE news_subdivision = :newsSubdivision")
+    @Query("SELECT COALESCE(MAX(index_order), -1) + 1 FROM news_posts WHERE news_subdivision = :newsSubdivision")
     suspend fun nextIndexInResponse(newsSubdivision: Int): Int
 }

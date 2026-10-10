@@ -19,6 +19,12 @@ complexity:
     allowedFunctionsPerClass: 15
     allowedFunctionsPerInterface: 15
     ignorePrivate: true
+    # ApplicationPreference — фасад доступа к DataStore-настройкам, множество
+    # мелких getter/setter-функций неизбежно; DateModel — доменная модель дат
+    # с набором мелких операций. Искусственное разбиение не требуем.
+    excludes:
+      - '**/ApplicationPreference.kt'
+      - '**/DateModel.kt'
 
 style:
   MaxLineLength:
@@ -35,11 +41,25 @@ style:
     # (16.dp, 8.dp и т.п.); выносить их в именованные константы не требуем.
     # В data/domain-слоях правило остаётся активным.
     excludes: ['**/ui/**/*.kt']
+    # Литералы в объявлениях свойств уже имеют имя самого свойства
+    # (цвета ThemeColors, ключи, пороги) — дополнительная константа избыточна.
+    ignorePropertyDeclaration: true
+    ignoreNamedArgument: true
+    # Числа в объявлениях enum-элементов семантически привязаны к имени
+    # элемента (Frequency.EVERY=7, курсы, типы оценок) — отдельные константы
+    # не требуются.
+    ignoreEnums: true
 
 naming:
   FunctionNaming:
     # Composable-функции именуются в PascalCase по конвенции Compose.
     ignoreAnnotated: ['Composable']
+
+empty-blocks:
+  EmptyFunctionBlock:
+    # Переопределённые колбэки Android-жизненного цикла, которые не нужны
+    # (onLowMemory, onTrimMemory и т.п.), законно остаются пустыми.
+    ignoreOverridden: true
 
 exceptions:
   TooGenericExceptionCaught:

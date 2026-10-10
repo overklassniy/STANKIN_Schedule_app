@@ -1,6 +1,7 @@
 package com.overklassniy.stankinschedule.schedule.viewer.data.source
 
 import android.content.Context
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -54,36 +55,53 @@ class EmployeeDataSource @Inject constructor(
 
     private fun loadEmployees(): Map<String, EmployeeInfo> {
         return try {
-            context.assets.open("employee/academic_deps_employee.csv").use { input ->
+            context.assets.open(EMPLOYEES_FILE).use { input ->
                 BufferedReader(InputStreamReader(input, Charsets.UTF_8)).use { reader ->
-                    val lines = reader.readLines()
-                    if (lines.size < 2) return emptyMap()
-
-                    val result = mutableMapOf<String, EmployeeInfo>()
-                    for (i in 1 until lines.size) {
-                        val parts = lines[i].split(";")
-                        if (parts.size >= 7) {
-                            val fullName = parts[3].trim()
-                            val shortName = parts[4].trim()
-                            val departmentsStr = parts[5].trim()
-                            val departments = departmentsStr.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                            val email = parts[6].trim()
-
-                            if (shortName.isNotEmpty()) {
-                                result[shortName] = EmployeeInfo(
-                                    fullName = fullName,
-                                    shortName = shortName,
-                                    departments = departments,
-                                    email = email,
-                                )
-                            }
-                        }
-                    }
-                    result
+                    parseEmployees(reader.readLines())
                 }
             }
         } catch (e: Exception) {
+            Log.e(TAG, "Failed to load employees CSV", e)
             emptyMap()
         }
+    }
+
+    /**
+     * Разбирает строки CSV в карту сотрудников (пропускает заголовок).
+     */
+    private fun parseEmployees(lines: List<String>): Map<String, EmployeeInfo> {
+        return lines.drop(1)
+            .mapNotNull { parseEmployee(it) }
+            .associateBy { it.shortName }
+    }
+
+    /**
+     * Разбирает одну строку CSV в [EmployeeInfo] или null при невалидном формате.
+     */
+    private fun parseEmployee(line: String): EmployeeInfo? {
+        val parts = line.split(";")
+        if (parts.size < MIN_COLUMNS) return null
+
+        val shortName = parts[COL_SHORT_NAME].trim()
+        if (shortName.isEmpty()) return null
+
+        return EmployeeInfo(
+            fullName = parts[COL_FULL_NAME].trim(),
+            shortName = shortName,
+            departments = parts[COL_DEPARTMENTS].split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() },
+            email = parts[COL_EMAIL].trim(),
+        )
+    }
+
+    private companion object {
+        const val TAG = "EmployeeDataSource"
+        const val EMPLOYEES_FILE = "employee/academic_deps_employee.csv"
+        const val MIN_COLUMNS = 7
+        const val COL_FULL_NAME = 3
+        const val COL_SHORT_NAME = 4
+        const val COL_DEPARTMENTS = 5
+        const val COL_EMAIL = 6
     }
 }

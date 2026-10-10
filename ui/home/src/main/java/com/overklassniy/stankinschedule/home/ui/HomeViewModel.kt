@@ -72,8 +72,8 @@ class HomeViewModel @Inject constructor(
     private val _exchangeNews = MutableStateFlow<List<NewsPost>>(emptyList())
     val exchangeNews = _exchangeNews.asStateFlow()
 
-    private val _PhDNews = MutableStateFlow<List<NewsPost>>(emptyList())
-    val PhDNews = _PhDNews.asStateFlow()
+    private val _phdNews = MutableStateFlow<List<NewsPost>>(emptyList())
+    val phdNews = _phdNews.asStateFlow()
 
     private val isDebug = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
@@ -151,7 +151,7 @@ class HomeViewModel @Inject constructor(
                 newsSubdivision = NewsSubdivision.PhD.id,
                 newsCount = NEWS_COUNT
             ).collectLatest {
-                _PhDNews.value = it
+                _phdNews.value = it
             }
         }
 

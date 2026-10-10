@@ -21,6 +21,7 @@ src/main/java/com/overklassniy/stankinschedule/core/ui/
 - `BackButton` - back navigation button
 - `CalendarDialog` - date picker dialog
 - `FileSaveDialog` - file save dialog
+- `NameInputDialog` - name input dialog with error indication (create/rename schedule)
 - `NotificationUpdateDialog` - notification update dialog
 - `OutlinedSelectField` - outlined select field
 - `PagingLazyColumn` - LazyColumn with pagination
@@ -46,6 +47,7 @@ src/main/java/com/overklassniy/stankinschedule/core/ui/
 - `NotificationUtils` - notification utilities
 
 ### theme
+- `AppThemeEntryPoint` - app theme entry point
 - `Color` - color palette
 - `Dimen` - dimensions and padding
 - `Theme` - Material 3 app theme

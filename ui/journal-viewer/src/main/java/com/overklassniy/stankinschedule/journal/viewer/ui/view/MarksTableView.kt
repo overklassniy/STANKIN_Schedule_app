@@ -174,7 +174,21 @@ class MarksTableView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         val fontExtra = (contentPainter.descent() + contentPainter.ascent()) / 2
 
-        // Рисуем хедер типов оценок
+        drawHeader(canvas, fontExtra)
+
+        // Подводящая линия заголовка таблицы
+        canvas.translate(0F, headerHeight + textCellMargin * 2)
+        canvas.drawLine(0F, 0F, measuredWidth.toFloat(), 0F, linePainter)
+        canvas.translate(textCellMargin, textCellMargin)
+
+        drawDisciplineRows(canvas, fontExtra)
+        drawRatingRows(canvas, fontExtra)
+    }
+
+    /**
+     * Рисует хедер таблицы с типами оценок и вертикальные разделители колонок.
+     */
+    private fun drawHeader(canvas: Canvas, fontExtra: Float) {
         var offset = totalDisciplineSize
         for ((size, data) in headerLayout.zip(markHeaderData)) {
             canvas.drawText(
@@ -188,13 +202,12 @@ class MarksTableView @JvmOverloads constructor(
         }
 
         canvas.drawLine(0F, 0F, measuredWidth.toFloat(), 0F, linePainter)
+    }
 
-        // Подводящая линия заголовка таблицы
-        canvas.translate(0F, headerHeight + textCellMargin * 2)
-        canvas.drawLine(0F, 0F, measuredWidth.toFloat(), 0F, linePainter)
-        canvas.translate(textCellMargin, textCellMargin)
-
-        // Рисование дисциплин, их оценок и коэффициент
+    /**
+     * Рисует строки дисциплин с их оценками и коэффициентами.
+     */
+    private fun drawDisciplineRows(canvas: Canvas, fontExtra: Float) {
         for ((layout, discipline) in disciplineLayouts.zip(marksData)) {
             layout.draw(canvas)
 
@@ -236,8 +249,12 @@ class MarksTableView @JvmOverloads constructor(
 
             drawLineAndMove(canvas, layout)
         }
+    }
 
-        // Рейтинг
+    /**
+     * Рисует строки текущего и накопленного рейтинга.
+     */
+    private fun drawRatingRows(canvas: Canvas, fontExtra: Float) {
         for ((value, layout) in listOf(marksData.rating, marksData.accumulatedRating).zip(
             ratingLayout
         )) {

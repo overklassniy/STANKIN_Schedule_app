@@ -224,87 +224,7 @@ private fun convertMarkdownToHtml(markdown: String, isDark: Boolean): String {
     val textColor = if (isDark) "#E0E0E0" else "#000000"
     val linkColor = if (isDark) "#90CAF9" else "#1976D2"
 
-    val lines = markdown.lines()
-    val htmlLines = mutableListOf<String>()
-    var inList = false
-    var listType = ""
-
-    for (line in lines) {
-        val trimmed = line.trim()
-
-        when {
-            trimmed.startsWith("# ") -> {
-                if (inList) {
-                    htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
-                    inList = false
-                }
-                htmlLines.add("<h1>${trimmed.substring(2)}</h1>")
-            }
-
-            trimmed.startsWith("## ") -> {
-                if (inList) {
-                    htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
-                    inList = false
-                }
-                htmlLines.add("<h2>${trimmed.substring(3)}</h2>")
-            }
-
-            trimmed.startsWith("### ") -> {
-                if (inList) {
-                    htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
-                    inList = false
-                }
-                htmlLines.add("<h3>${trimmed.substring(4)}</h3>")
-            }
-
-            trimmed.startsWith("#### ") -> {
-                if (inList) {
-                    htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
-                    inList = false
-                }
-                htmlLines.add("<h4>${trimmed.substring(5)}</h4>")
-            }
-
-            trimmed.startsWith("- ") || trimmed.matches(Regex("^\\d+\\. .+")) -> {
-                val currentListType = if (trimmed.startsWith("- ")) "ul" else "ol"
-                if (!inList || listType != currentListType) {
-                    if (inList) {
-                        htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
-                    }
-                    htmlLines.add(if (currentListType == "ul") "<ul>" else "<ol>")
-                    inList = true
-                    listType = currentListType
-                }
-                val content = if (trimmed.startsWith("- ")) {
-                    trimmed.substring(2)
-                } else {
-                    trimmed.replaceFirst(Regex("^\\d+\\. "), "")
-                }
-                htmlLines.add("<li>${processInlineMarkdown(content, linkColor)}</li>")
-            }
-
-            trimmed.isEmpty() -> {
-                if (inList) {
-                    htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
-                    inList = false
-                }
-            }
-
-            else -> {
-                if (inList) {
-                    htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
-                    inList = false
-                }
-                htmlLines.add("<p>${processInlineMarkdown(trimmed, linkColor)}</p>")
-            }
-        }
-    }
-
-    if (inList) {
-        htmlLines.add(if (listType == "ul") "</ul>" else "</ol>")
-    }
-
-    val html = htmlLines.joinToString("\n")
+    val html = MarkdownBodyConverter(linkColor).convert(markdown)
 
     return """
     <!DOCTYPE html>
@@ -347,6 +267,83 @@ private fun convertMarkdownToHtml(markdown: String, isDark: Boolean): String {
     </body>
     </html>
     """.trimIndent()
+}
+
+/**
+ * Построчный конвертер тела Markdown в HTML-фрагмент.
+ *
+ * Обрабатывает заголовки, маркированные и нумерованные списки, абзацы.
+ */
+private class MarkdownBodyConverter(private val linkColor: String) {
+
+    private val htmlLines = mutableListOf<String>()
+
+    /** Тип текущего открытого списка (`ul`/`ol`) или null, если списка нет. */
+    private var listType: String? = null
+
+    /**
+     * Конвертирует Markdown-текст в HTML-фрагмент (без обёртки страницы).
+     */
+    fun convert(markdown: String): String {
+        for (line in markdown.lines()) {
+            appendLine(line.trim())
+        }
+        closeList()
+        return htmlLines.joinToString("\n")
+    }
+
+    private fun appendLine(trimmed: String) {
+        val heading = HEADING_PREFIXES.entries.firstOrNull { trimmed.startsWith(it.key) }
+        when {
+            heading != null -> {
+                closeList()
+                htmlLines.add("<${heading.value}>${trimmed.substring(heading.key.length)}</${heading.value}>")
+            }
+
+            trimmed.startsWith("- ") || trimmed.matches(ORDERED_ITEM) -> appendListItem(trimmed)
+
+            trimmed.isEmpty() -> closeList()
+
+            else -> {
+                closeList()
+                htmlLines.add("<p>${processInlineMarkdown(trimmed, linkColor)}</p>")
+            }
+        }
+    }
+
+    private fun appendListItem(trimmed: String) {
+        val newType = if (trimmed.startsWith("- ")) "ul" else "ol"
+        if (listType != newType) {
+            closeList()
+            listType = newType
+            htmlLines.add("<$newType>")
+        }
+        val content = if (newType == "ul") {
+            trimmed.substring(2)
+        } else {
+            trimmed.replaceFirst(ORDERED_PREFIX, "")
+        }
+        htmlLines.add("<li>${processInlineMarkdown(content, linkColor)}</li>")
+    }
+
+    private fun closeList() {
+        listType?.let {
+            htmlLines.add("</$it>")
+            listType = null
+        }
+    }
+
+    private companion object {
+        /** Префиксы заголовков от самого длинного к самому короткому. */
+        val HEADING_PREFIXES = linkedMapOf(
+            "#### " to "h4",
+            "### " to "h3",
+            "## " to "h2",
+            "# " to "h1",
+        )
+        val ORDERED_ITEM = Regex("^\\d+\\. .+")
+        val ORDERED_PREFIX = Regex("^\\d+\\. ")
+    }
 }
 
 /**

@@ -8,6 +8,12 @@ import android.text.TextPaint
 import android.text.TextUtils
 import androidx.core.graphics.withRotation
 
+/** Минимально допустимый размер шрифта при подборе под размер ячейки. */
+private const val MIN_FONT_SIZE = 3f
+
+/** Шаг уменьшения размера шрифта при подборе под размер ячейки. */
+private const val FONT_SIZE_STEP = 0.5f
+
 /**
  * Временно устанавливает размер шрифта для [Paint], выполняет отрисовку и восстанавливает исходное значение.
  *
@@ -92,11 +98,11 @@ fun prepareMultilineLayout(
             .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
             .build()
 
-        if (layout.height <= height || currentFontSize < 3f) {
+        if (layout.height <= height || currentFontSize < MIN_FONT_SIZE) {
             break
         }
 
-        currentFontSize -= 0.5f
+        currentFontSize -= FONT_SIZE_STEP
     }
 
     return layout

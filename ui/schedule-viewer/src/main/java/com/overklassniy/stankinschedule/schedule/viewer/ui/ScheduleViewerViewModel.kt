@@ -328,7 +328,7 @@ class ScheduleViewerViewModel @Inject constructor(
             scheduleUseCase.renameSchedule(_scheduleId, newName)
                 .catch { e ->
                     _renameState.value = RenameState.Error(e)
-                    e.printStackTrace()
+                    Log.e("ScheduleViewerVM", "Failed to rename schedule", e)
                 }
                 .collect { isRename ->
                     _renameState.value = if (isRename) {

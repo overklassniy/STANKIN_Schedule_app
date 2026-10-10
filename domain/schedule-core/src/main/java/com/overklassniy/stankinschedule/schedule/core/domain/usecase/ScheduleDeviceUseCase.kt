@@ -25,11 +25,11 @@ class ScheduleDeviceUseCase @Inject constructor(
      * @param scheduleId ID расписания для сохранения
      * @param path Путь для сохранения файла
      * @return Flow с true при успешном сохранении
-     * @throws RuntimeException если расписание не найдено
+     * @throws NoSuchElementException если расписание не найдено
      */
     fun saveToDevice(scheduleId: Long, path: String): Flow<Boolean> = flow {
         val schedule = storage.scheduleModel(scheduleId).first()
-            ?: throw RuntimeException("Schedule not found")
+            ?: throw NoSuchElementException("Schedule not found")
         device.saveToDevice(schedule, path)
         emit(true)
     }.flowOn(Dispatchers.IO)

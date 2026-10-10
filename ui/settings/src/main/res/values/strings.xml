@@ -38,8 +38,6 @@
     <string name="schedule_view_ver">Vertical view of the schedule</string>
     <string name="schedule_view_ver_summary">When viewing, use vertical scrolling instead of horizontal</string>
 
-    <string name="schedule_no_pairs">No classes</string>
-
     <string name="schedule_pair_settings">Pair</string>
 
     <string name="settings_more_title">Additionally</string>

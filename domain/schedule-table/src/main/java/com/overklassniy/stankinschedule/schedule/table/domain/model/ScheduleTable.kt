@@ -2,6 +2,7 @@ package com.overklassniy.stankinschedule.schedule.table.domain.model
 
 import com.overklassniy.stankinschedule.schedule.core.domain.model.DayOfWeek
 import com.overklassniy.stankinschedule.schedule.core.domain.model.ScheduleModel
+import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDate
 
 /**
@@ -52,8 +53,8 @@ class ScheduleTable {
         }
 
         scheduleName = schedule.info.scheduleName +
-                ". " + date.withDayOfWeek(1).toString("dd.MM.yyyy") +
-                "-" + date.withDayOfWeek(7).toString("dd.MM.yyyy")
+                ". " + date.withDayOfWeek(DateTimeConstants.MONDAY).toString("dd.MM.yyyy") +
+                "-" + date.withDayOfWeek(DateTimeConstants.SUNDAY).toString("dd.MM.yyyy")
         mode = TableMode.Weekly
     }
 

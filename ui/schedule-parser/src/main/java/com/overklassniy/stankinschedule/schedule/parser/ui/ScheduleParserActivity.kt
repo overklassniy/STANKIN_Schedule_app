@@ -67,7 +67,7 @@ class ScheduleParserActivity : AppCompatActivity() {
                                 startActivity(intent)
                                 finish()
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                crashReporter.recordException(e)
                                 onBackPressedDispatcher.onBackPressed()
                             }
                         },

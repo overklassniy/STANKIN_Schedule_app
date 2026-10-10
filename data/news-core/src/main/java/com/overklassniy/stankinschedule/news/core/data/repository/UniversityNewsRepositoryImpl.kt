@@ -23,7 +23,9 @@ class UniversityNewsRepositoryImpl @Inject constructor(
     private val rssApi: StankinRSS,
 ) : NewsRemoteRepository {
 
-    private val TAG = "UniversityNewsRepo"
+    private companion object {
+        const val TAG = "UniversityNewsRepo"
+    }
 
     /**
      * Деобфусцирует строку, закодированную через XOR + Base64 на этапе сборки.
@@ -89,19 +91,19 @@ class UniversityNewsRepositoryImpl @Inject constructor(
      * Загружает все элементы NEWS RSS-ленты (с кэшированием).
      */
     private suspend fun getNewsFeedItems(): List<RssItem> {
-        newsFeedCache?.let { return it }
-
-        val url = deobfuscate(BuildConfig.NEWS_RSS_URL)
-        if (url.isBlank()) {
-            Log.e(TAG, "NEWS_RSS_URL is empty, stankin.secret may be missing")
-            return emptyList()
+        return newsFeedCache ?: run {
+            val url = deobfuscate(BuildConfig.NEWS_RSS_URL)
+            if (url.isBlank()) {
+                Log.e(TAG, "NEWS_RSS_URL is empty, stankin.secret may be missing")
+                emptyList()
+            } else {
+                val xml = rssApi.getRssFeed(url).await()
+                val items = RssParser.parse(xml)
+                newsFeedCache = items
+                Log.d(TAG, "NEWS feed loaded: ${items.size} items")
+                items
+            }
         }
-
-        val xml = rssApi.getRssFeed(url).await()
-        val items = RssParser.parse(xml)
-        newsFeedCache = items
-        Log.d(TAG, "NEWS feed loaded: ${items.size} items")
-        return items
     }
 
     /**

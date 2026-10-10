@@ -158,7 +158,7 @@ fun HomeScreen(
         val announcementsNews by viewModel.announcementsNews.collectAsStateWithLifecycle(emptyList())
         val deanNews by viewModel.deanNews.collectAsStateWithLifecycle(emptyList())
         val exchangeNews by viewModel.exchangeNews.collectAsStateWithLifecycle(emptyList())
-        val PhDNews by viewModel.PhDNews.collectAsStateWithLifecycle(emptyList())
+        val phdNews by viewModel.phdNews.collectAsStateWithLifecycle(emptyList())
         val tabCount = 5
 
         val pagerState = rememberPagerState(
@@ -172,7 +172,7 @@ fun HomeScreen(
             announcementsNews,
             deanNews,
             exchangeNews,
-            PhDNews
+            phdNews
         )
 
         val newsUrls = listOf(
@@ -300,7 +300,7 @@ fun HomeScreen(
                         }
                     }
 
-                    // Pager is placed directly under TabRow to avoid layout gaps
+                    // Pager размещается непосредственно под TabRow, чтобы избежать разрывов вёрстки
                     HorizontalPager(
                         state = pagerState,
                         key = { it },

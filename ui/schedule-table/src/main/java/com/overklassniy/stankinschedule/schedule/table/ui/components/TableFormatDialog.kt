@@ -4,7 +4,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,43 +14,6 @@ import com.overklassniy.stankinschedule.core.ui.components.RadioGroup
 import com.overklassniy.stankinschedule.core.ui.components.RadioItem
 import com.overklassniy.stankinschedule.schedule.table.ui.R
 import com.overklassniy.stankinschedule.core.ui.R as R_core
-
-/**
- * Состояние диалога выбора формата сохранения или отправки.
- *
- * @property onFormatSelected Колбэк выбора формата. Вызывается при подтверждении.
- * @property isShow Признак отображения диалога. true - диалог видим.
- * Инвариант: при закрытии диалога isShow всегда устанавливается в false.
- */
-class TableFormatDialogState internal constructor(
-    internal val onFormatSelected: (format: ExportFormat) -> Unit,
-    internal val isShow: MutableState<Boolean>
-) {
-    /**
-     * Открывает диалог выбора формата.
-     *
-     * Побочный эффект: меняет isShow на true, что инициирует показ диалога.
-     */
-    fun showDialog() {
-        isShow.value = true
-    }
-}
-
-/**
- * Создает и запоминает состояние диалога формата.
- *
- * @param onFormatSelected Обработчик выбора формата.
- * @return Экземпляр состояния диалога, привязанный к композиции.
- */
-@Composable
-fun rememberFormatDialogState(
-    onFormatSelected: (format: ExportFormat) -> Unit,
-): TableFormatDialogState {
-    val isShow = remember { mutableStateOf(false) }
-    return remember(onFormatSelected) {
-        TableFormatDialogState(onFormatSelected, isShow)
-    }
-}
 
 /**
  * Диалог выбора формата экспорта.

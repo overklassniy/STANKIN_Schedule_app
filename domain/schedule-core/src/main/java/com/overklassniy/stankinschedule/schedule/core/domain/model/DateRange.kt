@@ -7,6 +7,12 @@ import org.joda.time.Days
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 
+/** Число частей при разбиении формата «yyyy-MM-dd-yyyy-MM-dd» по дефису. */
+private const val DATE_RANGE_HYPHEN_PARTS_COUNT = 6
+
+/** Число компонентов в одной дате формата «yyyy-MM-dd». */
+private const val DATE_PARTS_COUNT = 3
+
 /**
  * Класс, представляющий диапазон дат с определенной периодичностью.
  *
@@ -97,9 +103,10 @@ class DateRange : DateItem {
         }
         val parts = text.split('-')
         // Формат "yyyy-MM-dd-yyyy-MM-dd" даёт 6 частей
-        if (parts.size == 6) {
+        if (parts.size == DATE_RANGE_HYPHEN_PARTS_COUNT) {
             val firstText = "${parts[0]}-${parts[1]}-${parts[2]}"
-            val secondText = "${parts[3]}-${parts[4]}-${parts[5]}"
+            val secondText =
+                "${parts[DATE_PARTS_COUNT]}-${parts[DATE_PARTS_COUNT + 1]}-${parts[DATE_PARTS_COUNT + 2]}"
             return firstText to secondText
         }
         if (parts.size == 2) {
@@ -193,35 +200,23 @@ class DateRange : DateItem {
      * @throws IllegalArgumentException Если передан неизвестный тип элемента даты.
      */
     override fun intersect(item: DateItem): Boolean {
-        if (item is DateSingle) {
-            var it = start
-            while (it.isBefore(end) || it == end) {
-                if (it == item.date) {
-                    return true
-                }
-                it = it.plusDays(frequency.period)
-            }
-            return false
-        }
-
-        if (item is DateRange) {
-            var firstIt = start
-            var secondIt = item.start
-
-            while (firstIt.isBefore(end) || firstIt == end) {
-                while (secondIt.isBefore(item.end) || secondIt == item.end) {
-                    if (firstIt == secondIt) {
-                        return true
-                    }
-                    secondIt = secondIt.plusDays(item.frequency.period)
-                }
-                firstIt = firstIt.plusDays(frequency.period)
+        return when (item) {
+            is DateSingle -> dates().any { it == item.date }
+            is DateRange -> dates().any { firstIt ->
+                item.dates().any { it == firstIt }
             }
 
-            return false
+            else -> throw IllegalArgumentException("Invalid intersect object: $item")
         }
+    }
 
-        throw IllegalArgumentException("Invalid intersect object: $item")
+    /**
+     * Возвращает последовательность всех дат диапазона (включительно),
+     * с шагом периодичности [frequency].
+     */
+    private fun dates(): Sequence<LocalDate> {
+        return generateSequence(start) { it.plusDays(frequency.period) }
+            .takeWhile { !it.isAfter(end) }
     }
 
     /**

@@ -63,9 +63,10 @@ class NewsReviewUseCase @Inject constructor(
      */
     suspend fun refreshNews(subdivision: Int, force: Boolean = false) {
         val lastRefresh = preferenceRepository.currentNewsDateTime(subdivision)
+        val isStale = lastRefresh == null || lastRefresh subMinutes DateTime.now() > 30
 
-        // Проверяем условия обновления: отладка, принудительно, нет данных или устарели (>30 мин)
-        if (isDebug || force || lastRefresh == null || lastRefresh subMinutes DateTime.now() > 30) {
+        // Обновляем при отладке, принудительно или если данные устарели (>30 мин)
+        if (isDebug || force || isStale) {
             if (force) remoteRepository.invalidateCache()
             // Загружаем первую страницу из сети
             val posts = remoteRepository.loadPage(subdivision, page = 1)

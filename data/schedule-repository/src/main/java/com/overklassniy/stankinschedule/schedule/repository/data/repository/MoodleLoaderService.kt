@@ -15,6 +15,7 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -31,12 +32,18 @@ class MoodleLoaderService @Inject constructor(
     private val parserUseCase: ParserUseCase
 ) : ScheduleLoaderService {
 
-    private val TAG = "MoodleLoaderService"
-    private val USER_AGENT =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    private val LOGIN_URL = "https://edu.stankin.ru/login/index.php"
-    private val COURSE_URL = "https://edu.stankin.ru/course/view.php?id=11557"
-    private val TIMEOUT_MS = 60_000
+    private companion object {
+        const val TAG = "MoodleLoaderService"
+        const val USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        const val LOGIN_URL = "https://edu.stankin.ru/login/index.php"
+        const val COURSE_URL = "https://edu.stankin.ru/course/view.php?id=11557"
+        const val TIMEOUT_MS = 60_000
+        const val HTTP_OK = 200
+        const val MAX_BODY_SIZE_BYTES = 50 * 1024 * 1024 // 50 MB
+        const val ERROR_BODY_PREVIEW_LENGTH = 500
+        val HTTP_REDIRECT_CODES = listOf(302, 303)
+    }
 
     /**
      * Загружает и парсит расписание для указанной категории.
@@ -93,7 +100,7 @@ class MoodleLoaderService @Inject constructor(
      * @return true если логин успешен.
      */
     private fun performGuestLogin(cookies: MutableMap<String, String>): Boolean {
-        try {
+        return try {
             Log.d(TAG, "Starting guest login via Jsoup...")
 
             // Шаг 1: Загрузить страницу логина
@@ -130,7 +137,7 @@ class MoodleLoaderService @Inject constructor(
             Log.d(TAG, "Login POST response code: ${loginResponse.statusCode()}")
 
             // Шаг 3: Следовать по редиректу вручную
-            if (loginResponse.statusCode() in listOf(302, 303)) {
+            if (loginResponse.statusCode() in HTTP_REDIRECT_CODES) {
                 val location = loginResponse.header("Location")
                 if (location != null) {
                     Log.d(TAG, "Login redirect to: $location")
@@ -153,18 +160,18 @@ class MoodleLoaderService @Inject constructor(
                     Log.d(TAG, "Course page response code: ${courseResponse.statusCode()}")
                     Log.d(TAG, "Cookies after login: ${cookies.keys}")
 
-                    return true
+                    true
                 } else {
                     Log.e(TAG, "Login redirect failed: Location header is null")
+                    false
                 }
             } else {
                 Log.e(TAG, "Login failed with code: ${loginResponse.statusCode()} (expected 303)")
+                false
             }
-
-            return false
         } catch (e: Exception) {
             Log.e(TAG, "Login failed with exception", e)
-            return false
+            false
         }
     }
 
@@ -196,7 +203,7 @@ class MoodleLoaderService @Inject constructor(
                     .cookies(cookies)
                     .header("Referer", "https://edu.stankin.ru/")
                     .ignoreContentType(true)
-                    .maxBodySize(50 * 1024 * 1024) // 50 MB
+                    .maxBodySize(MAX_BODY_SIZE_BYTES) // 50 MB
                     .execute()
             } catch (e: Exception) {
                 Log.w(TAG, "First download attempt failed with exception: ${e.message}")
@@ -207,7 +214,7 @@ class MoodleLoaderService @Inject constructor(
 
             // Повторная попытка при ошибке или HTML-ответе
             if (downloadResponse == null
-                || downloadResponse.statusCode() != 200
+                || downloadResponse.statusCode() != HTTP_OK
                 || downloadResponse.contentType()?.contains("text/html") == true
             ) {
                 Log.d(TAG, "First attempt failed. Retrying with fresh login...")
@@ -220,23 +227,23 @@ class MoodleLoaderService @Inject constructor(
                     .cookies(cookies)
                     .header("Referer", "https://edu.stankin.ru/")
                     .ignoreContentType(true)
-                    .maxBodySize(50 * 1024 * 1024)
+                    .maxBodySize(MAX_BODY_SIZE_BYTES)
                     .execute()
 
                 Log.d(TAG, "Retry - code: ${downloadResponse.statusCode()}, type: ${downloadResponse.contentType()}")
             }
 
-            if (downloadResponse.statusCode() != 200) {
-                val bodyPreview = try { downloadResponse.body().take(500) } catch (_: Exception) { "N/A" }
+            if (downloadResponse.statusCode() != HTTP_OK) {
+                val bodyPreview = try { downloadResponse.body().take(ERROR_BODY_PREVIEW_LENGTH) } catch (_: Exception) { "N/A" }
                 Log.e(TAG, "Download failed. Code: ${downloadResponse.statusCode()}, Body: $bodyPreview")
-                throw Exception("Failed to download schedule. Response code: ${downloadResponse.statusCode()}")
+                throw IOException("Failed to download schedule. Response code: ${downloadResponse.statusCode()}")
             }
 
             val ct = downloadResponse.contentType() ?: ""
             if (ct.contains("text/html")) {
-                val bodyPreview = try { downloadResponse.body().take(500) } catch (_: Exception) { "N/A" }
+                val bodyPreview = try { downloadResponse.body().take(ERROR_BODY_PREVIEW_LENGTH) } catch (_: Exception) { "N/A" }
                 Log.e(TAG, "Got HTML instead of PDF: $bodyPreview")
-                throw Exception("Server returned HTML instead of PDF file. Login may have failed.")
+                throw IOException("Server returned HTML instead of PDF file. Login may have failed.")
             }
 
             // Сохраняем файл

@@ -17,52 +17,43 @@ object ParserErrorMapper {
      * @return Текст сообщения для пользователя.
      */
     fun getErrorMessage(context: Context, throwable: Throwable): String {
-        return when (throwable) {
-            // Ошибки библиотеки парсинга PDF
-            is PDFParseException -> {
-                when {
-                    throwable.message?.contains("password", ignoreCase = true) == true ->
-                        context.getString(R.string.error_pdf_password_protected)
-
-                    throwable.message?.contains("open", ignoreCase = true) == true ||
-                            throwable.message?.contains("найден", ignoreCase = true) == true ||
-                            throwable.message?.contains("found", ignoreCase = true) == true ->
-                        context.getString(R.string.error_file_not_found)
-
-                    throwable.message?.contains("valid", ignoreCase = true) == true ||
-                            throwable.message?.contains("corrupt", ignoreCase = true) == true ||
-                            throwable.message?.contains("корректн", ignoreCase = true) == true ||
-                            throwable.message?.contains("поврежд", ignoreCase = true) == true ->
-                        context.getString(R.string.error_invalid_pdf)
-
-                    else -> context.getString(R.string.error_pdf_read_failed)
-                }
-            }
-
-            // Специальная проверка на формат СТАНКИН: отсутствует время в таблице
-            is IllegalArgumentException if throwable.message?.contains(
-                "Time not found",
-                ignoreCase = true
-            ) == true ->
+        return when {
+            throwable is PDFParseException -> pdfParseErrorMessage(context, throwable)
+            throwable is IllegalArgumentException && throwable.hasMessage("Time not found") ->
                 context.getString(R.string.error_not_schedule_pdf)
 
-            // Другие ошибки формата расписания: неизвестные поля, отсутствующие структуры
-            is IllegalArgumentException if (
-                    throwable.message?.contains("not found", ignoreCase = true) == true ||
-                            throwable.message?.contains("Unknown", ignoreCase = true) == true ||
-                            throwable.message?.contains("No parse", ignoreCase = true) == true ||
-                            throwable.message?.contains("Invalid", ignoreCase = true) == true
-                    ) ->
-                context.getString(R.string.error_schedule_format)
+            throwable is IllegalArgumentException && throwable.hasMessage(
+                "not found", "Unknown", "No parse", "Invalid"
+            ) -> context.getString(R.string.error_schedule_format)
 
-            // Ошибка ввода-вывода при чтении PDF
-            is java.io.IOException -> context.getString(R.string.error_pdf_read_failed)
-
-            // Некорректное состояние при обработке PDF
-            is IllegalStateException -> context.getString(R.string.error_invalid_pdf)
-
-            // Неизвестная ошибка
+            throwable is java.io.IOException -> context.getString(R.string.error_pdf_read_failed)
+            throwable is IllegalStateException -> context.getString(R.string.error_invalid_pdf)
             else -> context.getString(R.string.error_unknown)
         }
+    }
+
+    /**
+     * Подбирает сообщение для [PDFParseException] по ключевым словам в тексте ошибки.
+     */
+    private fun pdfParseErrorMessage(context: Context, throwable: PDFParseException): String {
+        return when {
+            throwable.hasMessage("password") ->
+                context.getString(R.string.error_pdf_password_protected)
+
+            throwable.hasMessage("open", "найден", "found") ->
+                context.getString(R.string.error_file_not_found)
+
+            throwable.hasMessage("valid", "corrupt", "корректн", "поврежд") ->
+                context.getString(R.string.error_invalid_pdf)
+
+            else -> context.getString(R.string.error_pdf_read_failed)
+        }
+    }
+
+    /**
+     * Проверяет, содержит ли сообщение исключения хотя бы одно из ключевых слов.
+     */
+    private fun Throwable.hasMessage(vararg keywords: String): Boolean {
+        return keywords.any { message?.contains(it, ignoreCase = true) == true }
     }
 }
