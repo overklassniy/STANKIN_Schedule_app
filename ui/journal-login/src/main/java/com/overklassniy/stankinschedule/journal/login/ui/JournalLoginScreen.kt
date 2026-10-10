@@ -141,9 +141,10 @@ fun JournalLoginScreen(
                 // Экран входа: кнопка авторизации через личный кабинет
                 else -> {
                     Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp)
+                            .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                             .padding(Dimen.ContentPadding)
                     ) {

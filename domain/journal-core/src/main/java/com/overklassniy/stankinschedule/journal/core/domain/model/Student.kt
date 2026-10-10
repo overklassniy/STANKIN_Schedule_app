@@ -12,7 +12,7 @@ import com.google.gson.annotations.SerializedName
  *
  * @property name ФИО студента.
  * @property group Группа студента.
- * @property semesters Список семестров, доступных для студента (по возрастанию).
+ * @property semesters Список семестров, доступных для студента (по убыванию — от новых к старым).
  */
 class Student(
     @SerializedName("name") val name: String,

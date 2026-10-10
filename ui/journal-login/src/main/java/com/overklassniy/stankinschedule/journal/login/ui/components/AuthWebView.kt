@@ -70,6 +70,12 @@ fun AuthWebView(
                         }
                     }
 
+                    override fun onPageFinished(view: WebView, url: String) {
+                        // Виджет авторизации задаёт корневому контейнеру фиксированную
+                        // высоту — растягиваем её на весь экран
+                        view.evaluateJavascript(INJECT_FILL_HEIGHT_JS, null)
+                    }
+
                     private fun handleUrl(url: String): Boolean {
                         return if (url.startsWith(Constants.REDIRECT_URI)) {
                             onCallback(url)
@@ -92,3 +98,31 @@ fun AuthWebView(
         modifier = modifier
     )
 }
+
+/**
+ * Скрипт, растягивающий корневой контейнер виджета авторизации
+ * на всю высоту экрана (исходно контейнер ограничен содержимым).
+ *
+ * Высота задаётся в пикселях через `window.innerHeight`: в WebView
+ * единицы vh и проценты от корня вычисляются некорректно.
+ * Тег style сохраняет правило при перерендере виджета на клиенте,
+ * слушатель resize обновляет высоту при повороте экрана.
+ */
+private const val INJECT_FILL_HEIGHT_JS = """
+    (function() {
+        function applyFill() {
+            var style = document.getElementById('app-auth-fill-style');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'app-auth-fill-style';
+                (document.head || document.documentElement).appendChild(style);
+            }
+            style.textContent = 'body > div { min-height: ' + window.innerHeight + 'px !important; }';
+        }
+        applyFill();
+        if (!window.__appAuthFillBound) {
+            window.__appAuthFillBound = true;
+            window.addEventListener('resize', applyFill);
+        }
+    })();
+"""

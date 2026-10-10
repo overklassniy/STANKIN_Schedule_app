@@ -22,12 +22,12 @@ fun AllowedSemesterResponse.toJournalSemester(): JournalSemester {
 /**
  * Извлекает отсортированный список доступных семестров из ответа API.
  *
- * @return Список [JournalSemester] по возрастанию (от старых к новым).
+ * @return Список [JournalSemester] по убыванию (от новых к старым).
  */
 fun ExternalStudyProgressResponse.toSemesters(): List<JournalSemester> {
     return allowedSemesters
         .map { it.toJournalSemester() }
-        .sorted()
+        .sortedDescending()
 }
 
 /**

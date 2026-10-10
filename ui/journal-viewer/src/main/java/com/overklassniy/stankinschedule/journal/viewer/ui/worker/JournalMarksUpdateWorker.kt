@@ -53,7 +53,7 @@ class JournalMarksUpdateWorker @AssistedInject constructor(
             }
 
             if (student != null) {
-                val lastSemester = student.semesters.lastOrNull()
+                val lastSemester = student.semesters.firstOrNull()
                 if (lastSemester != null) {
                     val newMarks = useCase.updateSemesterMarks(lastSemester)
                     if (newMarks.isNotEmpty()) {

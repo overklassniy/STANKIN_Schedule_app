@@ -40,10 +40,22 @@ class JournalStorageRepositoryImpl @Inject constructor(
     /**
      * Загружает данные студента из кэша.
      *
+     * Семестры нормализуются по убыванию (от новых к старым), чтобы кэши,
+     * записанные со старым порядком, отображались единообразно.
+     *
      * @return Контейнер [CacheContainer] с данными студента или null, если кэш отсутствует/пуст.
      */
     override suspend fun loadStudent(): CacheContainer<Student>? {
-        return cache.loadFromCache(Student::class.java, "student")
+        val container = cache.loadFromCache(Student::class.java, "student") ?: return null
+        val student = container.data
+        return CacheContainer(
+            data = Student(
+                name = student.name,
+                group = student.group,
+                semesters = student.semesters.sortedDescending()
+            ),
+            cacheTime = container.cacheTime
+        )
     }
 
     /**
